@@ -16,9 +16,6 @@ const LandingName: React.FC<LandingNameProps> = ({
 
     return (
         <div className={`font-rubik grid gap-15 ${className}`}>
-            <div className='flex flex-row justify-center items-center text-white font-bold cursor-default'>
-                jake neverida
-            </div>
             <div className='flex flex-row justify-center items-center text-gray-500 md:text-[20px] cursor-default'>
                 a computer science student
             </div>
