@@ -11,8 +11,8 @@ export default function Home(){
         <div className="flex min-h-screen justify-center items-center">
           <div className="grid gap-15 items-center">
             <div className="flex justify-center gap-5">
-              <LandingButton title="Work"/>
-              <LandingButton title="Contact"/>
+              <LandingButton title="Work" href="/work" />
+              <LandingButton title="Contact" href="/contact" />
             </div>
 
             <div>
