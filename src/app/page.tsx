@@ -10,7 +10,7 @@ export default function Home(){
 
 
   return (
- <div className="flex flex-col items-center justify-center w-screen h-screen overflow-hidden bg-gradient-to-tl from-black via-zinc-600/15 to-black">
+ <div className="flex flex-col items-center justify-center w-screen h-dvh overflow-hidden bg-gradient-to-tl from-black via-zinc-600/15 to-black">
       <div className="my-16 animate-fade-in">
         <div className="grid gap-15 items-center">
             <div className="flex justify-center gap-5">

@@ -12,6 +12,7 @@ interface ProjectsCardProps {
     date: string;
     description: string;
     href: string;
+    className?: string;
 }
 
 const ProjectsCard: React.FC<ProjectsCardProps> = ({
@@ -19,6 +20,7 @@ const ProjectsCard: React.FC<ProjectsCardProps> = ({
     date,
     description,
     href,
+    className,
 }) => {
     const router = useRouter();
     const mouseX = useSpring(0, { stiffness: 500, damping: 100 });
@@ -40,9 +42,9 @@ const ProjectsCard: React.FC<ProjectsCardProps> = ({
              <div
             onClick={navigate}
 			onMouseMove={onMouseMove}
-			className="overflow-hidden w-full max-w-[300px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[550px] 
+			className={`overflow-hidden w-full max-w-[300px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[550px] 
                         lg:h-[300px] relative duration-700 border rounded-[15px] sm:rounded-[20px] hover:bg-zinc-800/10  
-                        p-5 sm:p-5 md:p-6 lg:p-[30px] hover:border-zinc-400/50 border-zinc-600 cursor-pointer ">
+                        p-5 sm:p-5 md:p-6 lg:p-[30px] hover:border-zinc-400/50 border-zinc-600 cursor-pointer ${className}`}>
 
                 <div className="pointer-events-none">
                     <div className="a</div>bsolute inset-0 z-0  transition duration-1000 [mask-image:linear-gradient(black,transparent)]" />

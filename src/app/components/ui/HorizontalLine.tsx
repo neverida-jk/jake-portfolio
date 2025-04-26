@@ -1,14 +1,14 @@
 import React from 'react';
 
 interface HorizontalLineProps{
-    height: string; 
+    width: string; 
     color?: string; 
     thickness?: string
 }
-const HorizontalLine: React.FC<HorizontalLineProps> = ({ height, color = 'white', thickness = '.5px' }) => {
+const HorizontalLine: React.FC<HorizontalLineProps> = ({ width, color = 'white', thickness = '.5px' }) => {
   const style = {
-    width: thickness,
-    height: height,
+    thickness: thickness,
+    width: width,
     backgroundColor: color,
     display: 'block',
   };
