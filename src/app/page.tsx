@@ -1,13 +1,9 @@
-import {redirect} from 'next/navigation';
+
 import LandingButton from './components/ui/LandingButton';
 import LandingName from './components/ui/LandingName';
 import Particles from './components/ui/Particles';
-import Link from 'next/link';
 
 export default function Home(){
-
-  // redirect('/development');
-
 
   return (
  <div className="flex flex-col items-center justify-center w-screen h-dvh overflow-hidden bg-gradient-to-tl from-black via-zinc-600/15 to-black">

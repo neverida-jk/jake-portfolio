@@ -10,7 +10,6 @@ interface LandingNameProps{
 const LandingName: React.FC<LandingNameProps> = ({
     // children,
     className,
-    ...props
 }) => {
 
 

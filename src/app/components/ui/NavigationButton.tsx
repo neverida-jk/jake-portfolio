@@ -16,8 +16,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
     isHome,
     href,
     className,
-    isCurrentPage,
-    ...props
+    isCurrentPage
 }) => {
 
     if (isHome){
@@ -39,8 +38,8 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
         )
     }
 
-   
- 
+
+
     return(
         <div>
                 {

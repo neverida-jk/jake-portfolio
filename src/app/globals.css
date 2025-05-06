@@ -10,7 +10,7 @@
   .text-edge-outline {
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
   }
-  
+
   /* Animation keyframes from your tailwind config */
   @keyframes fade-in {
     0% { opacity: 0; }
@@ -24,34 +24,34 @@
     30% { transform: translateX(0%); opacity: 1; }
     100% { opacity: 0; }
   }
-  
+
   @keyframes fade-right {
     0% { transform: translateX(-100%); opacity: 0; }
     30% { transform: translateX(0%); opacity: 1; }
     100% { opacity: 0; }
   }
-  
+
   @keyframes title {
     0% { line-height: 0%; letter-spacing: 0.25em; opacity: 0; }
     25% { line-height: 0%; opacity: 0; }
     80% { opacity: 1; }
     100% { line-height: 100%; opacity: 1; }
   }
-  
+
   @keyframes glow {
     0% { background-position: 0% 50%; opacity: 0.5; }
     100% { background-position: 100% 50%; opacity: 1; }
   }
-  
+
   /* Animation classes */
   .animate-fade-in {
     animation: fade-in 3s ease-in-out forwards;
   }
-  
+
   .animate-fade-left {
     animation: fade-left 3s ease-in-out forwards;
   }
-  
+
   .animate-fade-right {
     animation: fade-right 3s ease-in-out forwards;
   }
@@ -59,11 +59,11 @@
   .animate-title {
     animation: title 3s ease-out forwards;
   }
-  
+
   .animate-glow {
     animation: glow 2s ease-in-out infinite alternate;
   }
-  
+
   /* Adding the gradient radial class */
   .bg-gradient-radial {
     background-image: radial-gradient(50% 50% at 50% 50%, var(--tw-gradient-stops));
@@ -72,20 +72,19 @@
   .reveal-item {
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.2s ease;
+    transition: all 0.6s ease;
   }
-  
+
   .reveal-item.visible {
     opacity: 1;
     transform: translateY(0);
   }
-  
-  
-  .reveal-item.exit-top {
-    opacity: 0;
-    transform: translateY(-30px); /* Move up as it exits */
-    transition: opacity 0.2s ease, transform 0.5s ease;
+
+
+  .reveal-item.no-animation {
+    transition: none !important;
   }
+
 }
 
 @theme inline {
