@@ -3,7 +3,7 @@ import AboutMe from '../components/sections/AboutMe';
 import Navbar from '../components/layout/Navbar';
 import AnimationController from '../components/ui/AnimationController';
 
-export default function DevelopmentPage() {
+export default function ContactPage() {
   return (
     <div className="grid lg:grid lg:m-10">
       <AnimationController />
