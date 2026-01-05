@@ -1,5 +1,7 @@
+"use client";
 import Link from 'next/link';
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { IoMdHome } from "react-icons/io";
 
 
@@ -9,6 +11,7 @@ interface NavigationButtonProps {
     href: string;
     className?: string;
     isCurrentPage?: boolean;
+    scrollToId?: string;
 }
 
 const NavigationButton: React.FC<NavigationButtonProps> = ({
@@ -16,8 +19,26 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
     isHome,
     href,
     className,
-    isCurrentPage
+    isCurrentPage,
+    scrollToId
 }) => {
+    const pathname = usePathname();
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (scrollToId) {
+            e.preventDefault();
+            // If we're already on the contact page, scroll to the section
+            if (pathname === '/contact') {
+                const element = document.getElementById(scrollToId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                // Otherwise, navigate to contact page with hash
+                window.location.href = href;
+            }
+        }
+    };
 
     if (isHome){
         return(
@@ -48,11 +69,19 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
                             {text}
                          </button>
                     :
-                        <Link href={href}>
-                            <button className = {`text-white text-[13px] hover:bg-[#464646] duration-300 transition-colors ease-linear font-rubik font-bold items-center rounded-[10px] h-[28px] w-[80px] cursor-pointer ${className}`}>
+                        scrollToId ? (
+                            <button
+                                onClick={handleClick}
+                                className = {`text-white text-[13px] hover:bg-[#464646] duration-300 transition-colors ease-linear font-rubik font-bold items-center rounded-[10px] h-[28px] w-[80px] cursor-pointer ${className}`}>
                                 {text}
                             </button>
-                        </Link>
+                        ) : (
+                            <Link href={href}>
+                                <button className = {`text-white text-[13px] hover:bg-[#464646] duration-300 transition-colors ease-linear font-rubik font-bold items-center rounded-[10px] h-[28px] w-[80px] cursor-pointer ${className}`}>
+                                    {text}
+                                </button>
+                            </Link>
+                        )
                 }
             </div>
     )

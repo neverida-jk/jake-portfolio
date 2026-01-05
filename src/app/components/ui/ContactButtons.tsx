@@ -18,13 +18,13 @@ const ContactButton: React.FC<ContactButtonProps> = ({
 }) => {
   return (
     <Link href={href} passHref target="_blank" rel="noopener noreferrer">
-      <div className={`flex flex-row items-center justify-center gap-2 box-border hover:bg-[#3F3F3F] transition-all duration-300 bg-black border border-[#C5C5C5] rounded-[28px] w-[148px] h-[45px] ${className}`}>
+      <div className={`flex flex-row items-center justify-center gap-1.5 sm:gap-2 box-border hover:bg-[#3F3F3F] transition-all duration-300 bg-black border border-[#C5C5C5] rounded-[20px] sm:rounded-[24px] md:rounded-[28px] w-[110px] sm:w-[130px] md:w-[148px] h-[36px] sm:h-[40px] md:h-[45px] ${className}`}>
         {iconSrc && (
-          <div>
-            <Image src={iconSrc} alt={`${title} icon`} width={24} height={24} />
+          <div className="w-[16px] h-[16px] sm:w-[20px] sm:h-[20px] md:w-[24px] md:h-[24px] relative">
+            <Image src={iconSrc} alt={`${title} icon`} fill className="object-contain" />
           </div>
         )}
-        <span className="font-rubik font-medium text-[18px] text-white">
+        <span className="font-rubik font-medium text-[14px] sm:text-[16px] md:text-[18px] text-white">
           {title}
         </span>
       </div>
@@ -38,10 +38,10 @@ interface ContactButtonsProps {
 
 const ContactButtons: React.FC<ContactButtonsProps> = ({ className = "" }) => {
   return (
-    <div className={`flex flex-wrap gap-4 ${className}`}>
+    <div className={`flex flex-wrap justify-center md:justify-start gap-2 sm:gap-3 md:gap-4 ${className}`}>
       <ContactButton title="GitHub" href="https://github.com/neverida-jk" iconSrc="/github-icon.png" />
       <ContactButton title="LinkedIn" href="https://linkedin.com/in/your-profile" iconSrc="/linkedin-icon.png" />
-      <ContactButton title="Email" href="mailto:jrneverida@up.edu.ph" iconSrc="/email-icon.png" />
+      <ContactButton title="Resume" href="mailto:jrneverida@up.edu.ph" iconSrc="/email-icon.png" />
     </div>
   );
 };
