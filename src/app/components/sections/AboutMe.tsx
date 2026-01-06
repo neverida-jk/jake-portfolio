@@ -24,8 +24,8 @@ const AboutMe: React.FC<AboutMeProps> = ({ onSkillClick, onCardClick }) => {
                 <HeroSection />
             </div>
             <CredentialsSection onCardClick={onCardClick} />
+             <TechnicalExpertiseSection onSkillClick={onSkillClick} />
             <MyWorksSection onCardClick={onCardClick} />
-            <TechnicalExpertiseSection onSkillClick={onSkillClick} />
             <WhyWorkWithMeSection />
             <CallToActionSection />
         </div>

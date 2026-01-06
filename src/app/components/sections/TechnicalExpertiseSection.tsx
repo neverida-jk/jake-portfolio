@@ -1,5 +1,5 @@
 import React from 'react';
-import ScrollingSkills from '../ui/ScrollingSkills';
+import HiveSkills from '../ui/HiveSkills';
 
 interface TechnicalExpertiseSectionProps {
     onSkillClick?: (skill: string) => void;
@@ -13,15 +13,20 @@ const TechnicalExpertiseSection: React.FC<TechnicalExpertiseSectionProps> = ({ o
             </h2>
             <div className="mb-6 sm:mb-8 md:mb-12 max-w-screen h-px animate-glow bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
 
-            <ScrollingSkills
-                skills={[
-                    "javascript",
-                    "python",
-                    "react",
-                    "TailwindCSS",
-                    "nodejs",
-                    "github",
-                    "mongodb",
+            <HiveSkills
+                groups={[
+                    {
+                        title: "Programming Languages",
+                        skills: ["python", "javascript", "", ""],
+                    },
+                    {
+                        title: "Web & Frameworks",
+                        skills: ["react", "", "nodejs", ""],
+                    },
+                    {
+                        title: "Tools & Databases",
+                        skills: ["github", "mongodb", "", "tailwindcss"],
+                    },
                 ]}
                 onSkillClick={onSkillClick}
             />
