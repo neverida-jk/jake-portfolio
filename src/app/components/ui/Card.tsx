@@ -1,112 +1,105 @@
 "use client";
+
 import React from "react";
 import Image from "next/image";
-import {
-	motion,
-	useMotionTemplate,
-	useSpring,
-} from "framer-motion";
+import { motion, useMotionTemplate, useSpring } from "framer-motion";
 
 interface CardProps {
-    title: string;
-    date?: string;
-    description?: string;
-    className?: string;
-    onClick?: () => void;
-    icon?: React.ReactNode;
-    imageSrc?: string;
-    imageSize?: number;
+  title: string;
+  date?: string;
+  description?: string;
+  className?: string;
+  onClick?: () => void;
+  icon?: React.ReactNode;
+  imageSrc?: string;
+  imageSize?: number;
 }
 
-const Card: React.FC<CardProps> = ({
-    title,
-    date,
-    description,
-    className,
-    onClick,
-    icon,
-    imageSrc,
-    imageSize,
-}) => {
-    const mouseX = useSpring(0, { stiffness: 500, damping: 100 });
-	const mouseY = useSpring(0, { stiffness: 500, damping: 100 });
+export default function Card({
+  title,
+  date,
+  description,
+  className = "",
+  onClick,
+  icon,
+  imageSrc,
+  imageSize,
+}: CardProps) {
+  const mouseX = useSpring(0, { stiffness: 500, damping: 100 });
+  const mouseY = useSpring(0, { stiffness: 500, damping: 100 });
 
-	function onMouseMove({ currentTarget, clientX, clientY }: any) {
-		const { left, top } = currentTarget.getBoundingClientRect();
-		mouseX.set(clientX - left);
-		mouseY.set(clientY - top);
-	}
-	const maskImage = useMotionTemplate`radial-gradient(240px at ${mouseX}px ${mouseY}px, white, transparent)`;
-	const style = { maskImage, WebkitMaskImage: maskImage };
+  function onMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLDivElement>) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
 
-    return (
-        <div
-            onClick={onClick}
-			onMouseMove={onMouseMove}
-			className={`overflow-hidden w-full max-w-[300px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[550px]
-                        relative duration-700 border rounded-[15px] sm:rounded-[20px] hover:bg-zinc-800/10
-                        p-5 sm:p-5 md:p-6 lg:p-[30px] hover:border-zinc-400/50 border-zinc-600 transition-transform
-                        ${onClick ? 'cursor-pointer active:scale-95' : ''} ${className}`}
-        >
-            <div className="pointer-events-none">
-                <div className="absolute inset-0 z-0 transition duration-1000 [mask-image:linear-gradient(black,transparent)]" />
-                <motion.div
-                    className="absolute inset-0 z-10 bg-gradient-to-br opacity-100 via-zinc-100/10 transition duration-1000 group-hover:opacity-50"
-                    style={style}
-                />
-                <motion.div
-                    className="absolute inset-0 z-10 opacity-0 mix-blend-overlay transition duration-1000 group-hover:opacity-100"
-                    style={style}
-                />
-            </div>
+  const maskImage = useMotionTemplate`radial-gradient(200px at ${mouseX}px ${mouseY}px, white, transparent)`;
+  const style = { maskImage, WebkitMaskImage: maskImage };
 
-            {imageSrc && (
-                <div className="relative z-1 mb-3 sm:mb-4 w-full flex justify-center items-center">
-                    <div
-                        className="relative rounded-lg overflow-hidden w-full max-w-[120px] sm:max-w-[150px] md:max-w-[180px] lg:max-w-[200px] aspect-square"
-                        style={imageSize ? {
-                            maxWidth: `min(${imageSize}px, 80%)`,
-                        } : undefined}
-                    >
-                        <Image
-                            src={imageSrc}
-                            alt={title}
-                            fill
-                            className="object-contain"
-                        />
-                    </div>
-                </div>
-            )}
+  return (
+    <div
+      onClick={onClick}
+      onMouseMove={onMouseMove}
+      className={`glass-card overflow-hidden w-full relative rounded-2xl
+                  p-5 sm:p-6 transition-all duration-300
+                  ${
+                    onClick
+                      ? "cursor-pointer hover:border-white/[0.16] active:scale-[0.99]"
+                      : "border-white/[0.06]"
+                  } ${className}`}
+    >
+      {/* Interactive Spotlight Mask */}
+      <div className="pointer-events-none">
+        <div className="absolute inset-0 z-0 transition duration-1000 [mask-image:linear-gradient(black,transparent)]" />
+        <motion.div
+          className="absolute inset-0 z-10 bg-gradient-to-br opacity-80 via-zinc-100/5 transition duration-1000 group-hover:opacity-40"
+          style={style}
+        />
+        <motion.div
+          className="absolute inset-0 z-10 opacity-0 mix-blend-overlay transition duration-1000 group-hover:opacity-100"
+          style={style}
+        />
+      </div>
 
-            {icon && (
-                <div className="relative z-1 mb-4 flex items-center justify-center md:justify-start">
-                    {icon}
-                </div>
-            )}
-
-            <div className='font-rubik font-extrabold text-[22px] sm:text-[26px] md:text-[30px] lg:text-[40px]
-                            mt-[-2px] sm:mt-0 md:mt-[-5px] lg:mt-[-10px]
-                            max-w-full relative z-1'>
-                {title}
-            </div>
-
-            {date && (
-                <div className='font-rubik text-[#939292] text-[11px] sm:text-[12px] md:text-[14px] lg:text-[16px] z-1 relative mt-1 mb-2'>
-                    {date}
-                </div>
-            )}
-
-            {description && (
-                <div className='font-rubik text-[14px] sm:text-[16px] md:text-[18px] lg:text-[20px]
-                                text-[#939292]
-                                mt-2 sm:mt-3 md:mt-4
-                                overflow-ellipsis relative z-1'>
-                    {description}
-                </div>
-            )}
+      {imageSrc && (
+        <div className="relative z-1 mb-3.5 w-full flex justify-center items-center">
+          <div
+            className="relative rounded-xl overflow-hidden w-full max-w-[90px] sm:max-w-[110px] aspect-square bg-zinc-900/60 p-2 flex items-center justify-center border border-white/[0.06]"
+            style={
+              imageSize
+                ? {
+                    maxWidth: `min(${imageSize}px, 80%)`,
+                  }
+                : undefined
+            }
+          >
+            <Image src={imageSrc} alt={title} fill className="object-contain p-2" />
+          </div>
         </div>
-    );
-};
+      )}
 
-export default Card;
+      {icon && (
+        <div className="relative z-1 mb-3 flex items-center">
+          {icon}
+        </div>
+      )}
 
+      <h3 className="font-rubik font-semibold text-base sm:text-lg text-white max-w-full relative z-1 tracking-tight">
+        {title}
+      </h3>
+
+      {date && (
+        <div className="font-mono text-zinc-500 text-xs z-1 relative mt-1 mb-2">
+          {date}
+        </div>
+      )}
+
+      {description && (
+        <p className="font-rubik text-xs sm:text-sm text-zinc-400 mt-2 leading-relaxed relative z-1">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
