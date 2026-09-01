@@ -97,7 +97,7 @@ export default function ContentModal({
     <div className="fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-6 overflow-hidden">
       {/* High-Gloss Ambient Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-xl animate-fade-in-fast transition-opacity"
+        className="fixed inset-0 bg-black/80 backdrop-blur-xl animate-fade-in transition-opacity"
         onClick={() => {
           soundFx.playClick(800);
           onClose();
@@ -276,7 +276,7 @@ export default function ContentModal({
 
           {/* Tab 1: Overview & Media Stage */}
           {activeTab === "overview" && (
-            <div className="space-y-4 animate-fade-in-fast">
+            <div className="space-y-4 animate-fade-in">
               {description && (
                 <div className="bg-zinc-900/40 p-4 rounded-2xl border border-white/[0.04] text-xs sm:text-sm text-zinc-200 font-rubik leading-relaxed">
                   <p>{description}</p>
@@ -329,7 +329,7 @@ export default function ContentModal({
 
           {/* Tab 2: Architecture & Details */}
           {activeTab === "specs" && (
-            <div className="space-y-3 animate-fade-in-fast">
+            <div className="space-y-3 animate-fade-in">
               <div className="p-4 rounded-2xl bg-zinc-950 border border-white/[0.06] space-y-2 font-mono text-xs">
                 <div className="flex items-center justify-between py-1 border-b border-white/[0.04]">
                   <span className="text-zinc-500">Subject:</span>

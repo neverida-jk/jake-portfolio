@@ -39,6 +39,7 @@ interface Project {
   metrics: string;
   tags: string[];
   logo: string;
+  thumbnail: string;
   invert?: boolean;
 }
 
@@ -57,6 +58,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "Kelly Sizing &bull; Order Book Analytics &bull; Polymarket Edge",
     tags: ["Probability Modeling", "Kelly Criterion", "TypeScript", "React", "Prediction Markets"],
     logo: "/python.png",
+    thumbnail: "/projects/quant.png",
   },
   {
     id: "tropa",
@@ -72,6 +74,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "Next.js App Router &bull; Real Trail Logistics &bull; Cost-Split Engine",
     tags: ["Next.js 15", "React 19", "Tailwind CSS", "TypeScript", "Collaborative State"],
     logo: "/next.svg",
+    thumbnail: "/projects/tropa.png",
     invert: true,
   },
   {
@@ -88,6 +91,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "IndexedDB (Dexie.js) &bull; Recharts Analytics &bull; Offline PWA",
     tags: ["React", "Dexie.js", "IndexedDB", "Recharts", "PWA", "Framer Motion"],
     logo: "/react.png",
+    thumbnail: "/projects/finance.png",
   },
   {
     id: "portfolio-v2",
@@ -103,6 +107,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "100/100 Lighthouse &bull; Web Audio API &bull; Turbopack",
     tags: ["Next.js 15", "React 19", "Tailwind v4", "TypeScript", "Web Audio API"],
     logo: "/next.svg",
+    thumbnail: "/projects/portfolio-v2.png",
     invert: true,
   },
 ];
@@ -180,8 +185,22 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
           </div>
 
           {/* Browser Viewport Stage */}
-          <div className="p-6 sm:p-8 bg-gradient-to-b from-zinc-950 to-zinc-900/80 relative overflow-hidden">
-            <div className="max-w-2xl space-y-4">
+          <div className="bg-gradient-to-b from-zinc-950 to-zinc-900/80 relative overflow-hidden">
+            {/* Real landing page screenshot — actual proof it's live, not just a text card */}
+            <div className="relative w-full aspect-video bg-zinc-950 border-b border-white/[0.06]">
+              <Image
+                key={activeProject.id}
+                src={activeProject.thumbnail}
+                alt={`${activeProject.title} landing page`}
+                fill
+                sizes="(max-width: 768px) 100vw, 800px"
+                className="object-cover object-top animate-fade-in-fast"
+                priority={activeProject.id === PROJECTS_DATA[0].id}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
+            </div>
+
+            <div className="max-w-2xl space-y-4 p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-white/[0.08] text-[11px] font-mono">
                   {activeProject.category}
@@ -258,8 +277,62 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
           </div>
         </div>
 
+        {/* Mobile-only: swipeable thumbnail strip. The desktop shelf below
+            duplicates project details already shown above — on a single
+            narrow column that's just repeated scrolling, so mobile gets a
+            compact swipe-to-browse strip of screenshots instead. */}
+        <div className="sm:hidden -mx-4 px-4">
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-hide">
+            {PROJECTS_DATA.map((p) => {
+              const isSelected = p.id === activeProject.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    soundFx.playClick(900);
+                    setActiveProjectId(p.id);
+                  }}
+                  className={`relative shrink-0 w-[75%] snap-center rounded-2xl overflow-hidden border transition-all ${
+                    isSelected ? "border-emerald-500/50 shadow-lg" : "border-white/[0.08] opacity-60"
+                  }`}
+                >
+                  <div className="relative w-full aspect-video bg-zinc-950">
+                    <Image
+                      src={p.thumbnail}
+                      alt={`${p.title} landing page`}
+                      fill
+                      sizes="75vw"
+                      className="object-cover object-top"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                    <h4 className="text-xs font-rubik font-semibold text-white truncate">
+                      {p.title}
+                    </h4>
+                    <span className="text-[10px] font-mono text-emerald-400 truncate block">
+                      {p.domain}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-center gap-1.5 mt-2">
+            {PROJECTS_DATA.map((p) => (
+              <span
+                key={p.id}
+                className={`h-1 rounded-full transition-all ${
+                  p.id === activeProject.id ? "w-4 bg-emerald-400" : "w-1 bg-zinc-700"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Element 2: Project Architecture Shelf (Interactive Selector Strips) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+        <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-4 gap-2.5">
           {PROJECTS_DATA.map((p) => {
             const isSelected = p.id === activeProject.id;
 

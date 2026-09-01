@@ -1342,10 +1342,14 @@ class ParticleEngine {
         </button>
       </div>
 
-      {/* Main Studio Workspace: Code on Left (5 cols) vs Live Visual Stage on Right (7 cols) */}
+      {/* Main Studio Workspace: Code on Left (5 cols) vs Live Visual Stage on Right (7 cols).
+          On mobile these stack — but the Live Stage (the actual interactive
+          demo) is reordered ABOVE the code panel there, since scrolling past
+          a code snippet before reaching the fun part is worse on a phone
+          than on a wide desktop layout where both sit side by side. */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* Left Column: Code & Controls (5 cols) */}
-        <div className="lg:col-span-5 glass-panel rounded-3xl p-5 border border-white/[0.1] bg-[#070709] flex flex-col justify-between space-y-4">
+        <div className="order-2 lg:order-none lg:col-span-5 glass-panel rounded-3xl p-5 border border-white/[0.1] bg-[#070709] flex flex-col justify-between space-y-4">
           <div>
             {/* Window Chrome */}
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.06]">
@@ -1649,7 +1653,7 @@ class ParticleEngine {
         </div>
 
         {/* Right Column: LIVING VISUAL STAGE (7 cols) */}
-        <div className="lg:col-span-7 glass-panel rounded-3xl border border-white/[0.1] shadow-2xl bg-[#060608] flex flex-col justify-between overflow-hidden relative min-h-[410px]">
+        <div className="order-1 lg:order-none lg:col-span-7 glass-panel rounded-3xl border border-white/[0.1] shadow-2xl bg-[#060608] flex flex-col justify-between overflow-hidden relative min-h-[410px]">
           {/* Stage Header */}
           <div className="flex items-center justify-between px-5 py-3 bg-zinc-950 border-b border-white/[0.08] text-xs font-mono">
             <div className="flex items-center gap-2">
