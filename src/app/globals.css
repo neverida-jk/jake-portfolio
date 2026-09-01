@@ -84,6 +84,15 @@
     100% { opacity: 1; }
   }
 
+  /* Distinct from fade-in above: that one holds at opacity 0 for 1.5s of its
+     2s duration, deliberately delaying the page-load ambient particles.
+     Modal backdrops need to respond immediately to a click/keypress —
+     reusing fade-in there made every modal look broken for over a second. */
+  @keyframes fade-in-fast {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
   @keyframes fade-left {
     0% { transform: translateX(100%); opacity: 0; }
     30% { transform: translateX(0%); opacity: 1; }
@@ -124,8 +133,30 @@
     }
   }
 
+  @keyframes ash-drift {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.9;
+    }
+    55% {
+      opacity: 0.65;
+    }
+    100% {
+      transform: translate(var(--ash-dx, 0px), var(--ash-dy, -40px)) scale(0.2);
+      opacity: 0;
+    }
+  }
+
+  .animate-ash-drift {
+    animation: ash-drift 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  }
+
   .animate-fade-in {
     animation: fade-in 2s ease-in-out forwards;
+  }
+
+  .animate-fade-in-fast {
+    animation: fade-in-fast 0.18s ease-out forwards;
   }
 
   .animate-fade-out {

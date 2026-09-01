@@ -139,60 +139,37 @@ interface SoftwareBug {
   isViewport?: boolean; // If true, crawls across user's whole browser viewport!
 }
 
-// Spawns a bug strictly entering from the 4 perimeter edges (arena or viewport)
-function createBugFromEdge(isViewport: boolean = false): SoftwareBug {
+// Spawns a bug strictly entering from one of the 4 arena perimeter edges.
+// Bugs never spawn directly in the viewport — they can only reach it by
+// crawling out through the arena boundary once a breach is active (see the
+// movement loop's escape transition below).
+function createBugFromEdge(): SoftwareBug {
   const edge = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
   let x = 50;
   let y = 50;
   let vx = 0.5;
   let vy = 0.5;
 
-  if (isViewport) {
-    // Viewport coordinates
-    if (edge === 0) {
-      x = Math.floor(Math.random() * 80 + 10);
-      y = 3;
-      vx = (Math.random() - 0.5) * 0.8;
-      vy = Math.random() * 0.4 + 0.3;
-    } else if (edge === 1) {
-      x = 97;
-      y = Math.floor(Math.random() * 70 + 15);
-      vx = -(Math.random() * 0.4 + 0.3);
-      vy = (Math.random() - 0.5) * 0.8;
-    } else if (edge === 2) {
-      x = Math.floor(Math.random() * 80 + 10);
-      y = 94;
-      vx = (Math.random() - 0.5) * 0.8;
-      vy = -(Math.random() * 0.4 + 0.3);
-    } else {
-      x = 3;
-      y = Math.floor(Math.random() * 70 + 15);
-      vx = Math.random() * 0.4 + 0.3;
-      vy = (Math.random() - 0.5) * 0.8;
-    }
+  if (edge === 0) {
+    x = Math.floor(Math.random() * 80 + 10);
+    y = 4;
+    vx = (Math.random() - 0.5) * 1.0;
+    vy = Math.random() * 0.5 + 0.4;
+  } else if (edge === 1) {
+    x = 96;
+    y = Math.floor(Math.random() * 70 + 15);
+    vx = -(Math.random() * 0.5 + 0.4);
+    vy = (Math.random() - 0.5) * 1.0;
+  } else if (edge === 2) {
+    x = Math.floor(Math.random() * 80 + 10);
+    y = 92;
+    vx = (Math.random() - 0.5) * 1.0;
+    vy = -(Math.random() * 0.5 + 0.4);
   } else {
-    // Arena coordinates
-    if (edge === 0) {
-      x = Math.floor(Math.random() * 80 + 10);
-      y = 4;
-      vx = (Math.random() - 0.5) * 1.0;
-      vy = Math.random() * 0.5 + 0.4;
-    } else if (edge === 1) {
-      x = 96;
-      y = Math.floor(Math.random() * 70 + 15);
-      vx = -(Math.random() * 0.5 + 0.4);
-      vy = (Math.random() - 0.5) * 1.0;
-    } else if (edge === 2) {
-      x = Math.floor(Math.random() * 80 + 10);
-      y = 92;
-      vx = (Math.random() - 0.5) * 1.0;
-      vy = -(Math.random() * 0.5 + 0.4);
-    } else {
-      x = 4;
-      y = Math.floor(Math.random() * 70 + 15);
-      vx = Math.random() * 0.5 + 0.4;
-      vy = (Math.random() - 0.5) * 1.0;
-    }
+    x = 4;
+    y = Math.floor(Math.random() * 70 + 15);
+    vx = Math.random() * 0.5 + 0.4;
+    vy = (Math.random() - 0.5) * 1.0;
   }
 
   const chosen = BUG_CATALOG[Math.floor(Math.random() * BUG_CATALOG.length)];
@@ -206,12 +183,50 @@ function createBugFromEdge(isViewport: boolean = false): SoftwareBug {
     vx,
     vy,
     isSmashed: false,
-    isViewport,
+    isViewport: false,
   };
 }
 
 // INITIALLY: Arena starts clean, bugs crawl in incrementally one-by-one!
 const INITIAL_BUGS: SoftwareBug[] = [];
+
+const ASH_PARTICLE_COUNT = 14;
+
+// MCU-style ash: fine gray dust drifting upward and outward, with the
+// occasional glowing ember catching the light — not a symmetric sparkle
+// burst. Offsets are derived from the index (not Math.random()) so they
+// stay stable across re-renders instead of jittering mid-animation.
+function AshParticles({ scale = 1 }: { scale?: number }) {
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {[...Array(ASH_PARTICLE_COUNT)].map((_, i) => {
+        const angle = (i / ASH_PARTICLE_COUNT) * Math.PI * 2 + (i % 2 === 0 ? 0.35 : -0.25);
+        const spread = 14 + (i % 5) * 5;
+        const dx = Math.cos(angle) * spread * scale;
+        const dy = -(26 + (i % 4) * 11) * scale - Math.abs(Math.sin(angle)) * 10 * scale;
+        const isEmber = i % 3 === 0;
+        const size = (isEmber ? 2 : 1.5) * scale;
+
+        return (
+          <span
+            key={i}
+            className={`absolute rounded-full animate-ash-drift ${
+              isEmber ? "bg-amber-400 shadow-[0_0_6px_#f59e0b]" : "bg-zinc-400/90 shadow-[0_0_3px_rgba(161,161,170,0.6)]"
+            }`}
+            style={{
+              width: `${size * 0.4}rem`,
+              height: `${size * 0.4}rem`,
+              left: `${(i % 3) * 10 - 10}px`,
+              top: `${Math.floor(i / 3) * -10 - 4}px`,
+              animationDelay: `${(i % 6) * 45}ms`,
+              ...({ "--ash-dx": `${dx}px`, "--ash-dy": `${dy}px` } as React.CSSProperties),
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
 export default function TechnicalExpertiseSection() {
   const [activeMode, setActiveMode] = useState<StudioMode>("piano");
@@ -235,6 +250,9 @@ export default function TechnicalExpertiseSection() {
   const [hasBeenSnapped, setHasBeenSnapped] = useState<boolean>(false);
   const [viewportBreachActive, setViewportBreachActive] = useState<boolean>(false);
   const arenaRef = useRef<HTMLDivElement | null>(null);
+  const snapTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const qaStartRef = useRef<number>(Date.now());
+  const lastSpawnAtRef = useRef<number>(0);
   const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   const [isHoveringArena, setIsHoveringArena] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -372,6 +390,7 @@ export default function TechnicalExpertiseSection() {
   useEffect(() => {
     return () => {
       if (songTimerRef.current) clearInterval(songTimerRef.current);
+      snapTimeoutsRef.current.forEach(clearTimeout);
     };
   }, []);
 
@@ -389,23 +408,29 @@ export default function TechnicalExpertiseSection() {
       setBugs((prev) => {
         const aliveArena = prev.filter((b) => !b.isViewport && !b.isSmashed);
         if (aliveArena.length > 0) return prev;
-        return [createBugFromEdge(false)];
+        return [createBugFromEdge()];
       });
       spawnedCount = 1;
     }, 250);
 
-    // Subsequent initial bugs enter one-by-one every 950ms
+    // Subsequent initial bugs enter one-by-one every 950ms.
+    // spawnedCount is incremented HERE, in the plain interval callback, not
+    // inside the setBugs updater — React Strict Mode double-invokes updater
+    // functions in dev to catch impurities, and a side effect like this one
+    // living inside the updater would fire twice per real tick, reaching the
+    // cap in half the ticks it should. The updater itself stays a pure
+    // function of prev, safe to double-invoke.
     const incrementalTimer = setInterval(() => {
       if (spawnedCount >= maxInitialBugs) {
         clearInterval(incrementalTimer);
         return;
       }
+      spawnedCount++;
 
       setBugs((prev) => {
         const aliveArena = prev.filter((b) => !b.isViewport && !b.isSmashed && !b.isSnapping);
         if (aliveArena.length >= maxInitialBugs) return prev;
-        spawnedCount++;
-        return [...prev, createBugFromEdge(false)];
+        return [...prev, createBugFromEdge()];
       });
     }, 950);
 
@@ -417,6 +442,8 @@ export default function TechnicalExpertiseSection() {
 
   // -----------------------------------------------------------------
   // VIEWPORT BREACH TIMER: AFTER 7s PLAYING, BUGS ESCAPE TO VIEWPORT!
+  // Keeps time pressure part of the experience — breach also triggers
+  // early if the player smashes 2 bugs first (see smashSingleBug).
   // -----------------------------------------------------------------
   useEffect(() => {
     if (activeMode !== "qa" || hasBeenSnapped) return;
@@ -436,14 +463,24 @@ export default function TechnicalExpertiseSection() {
 
     // Movement loop at ~30 FPS
     const moveInterval = setInterval(() => {
-      setBugs((prev) =>
-        prev.map((b) => {
-          if (b.isSmashed || b.isSnapping) return b;
+      setBugs((prev) => {
+        let viewportCount = prev.filter((b) => b.isViewport && !b.isSmashed && !b.isSnapping).length;
+        // Ramps alongside the arena spawn cap so escaped bugs also build up
+        // pressure over time. Deliberately generous — the mess IS the joke —
+        // still bounded so a 30fps map() over the array never has to work.
+        const viewportCap = Math.min(28, 8 + Math.floor((Date.now() - qaStartRef.current) / 8000));
+
+        return prev.map((b) => {
+          // Bugs keep crawling while the gauntlet ascends. Only once the
+          // SNAP itself lands do they freeze in place — a dramatic held
+          // beat before the dissipation cascade begins.
+          if (b.isSmashed || b.isSnapping || gauntletPhase === "snapping" || gauntletPhase === "fading") return b;
 
           let nx = b.x + b.vx;
           let ny = b.y + b.vy;
           let nvx = b.vx;
           let nvy = b.vy;
+          let nIsViewport = b.isViewport;
 
           if (b.isViewport) {
             // Viewport boundaries
@@ -464,20 +501,44 @@ export default function TechnicalExpertiseSection() {
             }
           } else {
             // Arena boundaries
-            if (nx <= 3) {
-              nx = 3;
-              nvx = Math.abs(nvx);
-            } else if (nx >= 97) {
-              nx = 97;
-              nvx = -Math.abs(nvx);
-            }
+            const hitLeft = nx <= 3;
+            const hitRight = nx >= 97;
+            const hitTop = ny <= 14;
+            const hitBottom = ny >= 88;
 
-            if (ny <= 14) {
-              ny = 14;
-              nvy = Math.abs(nvy);
-            } else if (ny >= 88) {
-              ny = 88;
-              nvy = -Math.abs(nvy);
+            // Once breached, a bug hitting the arena wall may escape into
+            // the full viewport instead of bouncing back — it never spawns
+            // there, it only ever crawls out through the arena boundary.
+            const rect = arenaRef.current?.getBoundingClientRect();
+            if (
+              (hitLeft || hitRight || hitTop || hitBottom) &&
+              viewportBreachActive &&
+              rect &&
+              viewportCount < viewportCap &&
+              Math.random() < 0.35
+            ) {
+              const absX = rect.left + (nx / 100) * rect.width;
+              const absY = rect.top + (ny / 100) * rect.height;
+              nx = Math.min(98, Math.max(2, (absX / window.innerWidth) * 100));
+              ny = Math.min(95, Math.max(3, (absY / window.innerHeight) * 100));
+              nIsViewport = true;
+              viewportCount++;
+            } else {
+              if (hitLeft) {
+                nx = 3;
+                nvx = Math.abs(nvx);
+              } else if (hitRight) {
+                nx = 97;
+                nvx = -Math.abs(nvx);
+              }
+
+              if (hitTop) {
+                ny = 14;
+                nvy = Math.abs(nvy);
+              } else if (hitBottom) {
+                ny = 88;
+                nvy = -Math.abs(nvy);
+              }
             }
           }
 
@@ -489,32 +550,44 @@ export default function TechnicalExpertiseSection() {
             nvy = Math.sin(angle) * speed;
           }
 
-          return { ...b, x: nx, y: ny, vx: nvx, vy: nvy };
-        })
-      );
+          return { ...b, x: nx, y: ny, vx: nvx, vy: nvy, isViewport: nIsViewport };
+        });
+      });
     }, 30);
 
-    // Continuous Edge-Crawling Spawner (Paces at most ONE bug per cycle)
+    // Continuous Edge-Crawling Spawner (Paces at most ONE bug per cycle).
+    // Bugs only ever spawn from the arena edges — they can later escape into
+    // the viewport via the movement loop above, but never spawn there directly.
+    // Pressure ramps up the longer the player survives: the spawn interval
+    // shrinks and the arena cap rises, both on a floor/ceiling so the DOM
+    // and 30fps movement loop never have to handle more than a handful of
+    // extra bugs — plenty of "more crawling" without slowing the app.
+    //
+    // The time-gate check AND the lastSpawnAtRef mutation both live here, in
+    // the plain interval callback — not inside the setBugs updater. React
+    // Strict Mode double-invokes updater functions in dev to catch impure
+    // reducers; a ref mutation living inside the updater gets applied by the
+    // first (discarded) invocation, so the second invocation immediately
+    // sees "just spawned" and silently no-ops — every tick becomes a dud.
     const edgeSpawnInterval = setInterval(() => {
+      if (gauntletPhase !== "hidden" || hasBeenSnapped) return;
+
+      const elapsedMs = Date.now() - qaStartRef.current;
+      const spawnInterval = Math.max(650, 2200 - (elapsedMs / 1000) * 55); // 2200ms -> 650ms floor over ~30s
+
+      if (Date.now() - lastSpawnAtRef.current < spawnInterval) return;
+      lastSpawnAtRef.current = Date.now();
+
+      const arenaCap = Math.min(11, 7 + Math.floor(elapsedMs / 12000)); // +1 every 12s, capped at 11
+
       setBugs((prev) => {
-        if (gauntletPhase !== "hidden" || hasBeenSnapped) return prev;
-
         const aliveArena = prev.filter((b) => !b.isViewport && !b.isSmashed && !b.isSnapping);
-        const aliveViewport = prev.filter((b) => b.isViewport && !b.isSmashed && !b.isSnapping);
-
-        // Incrementally add ONLY ONE bug at a time
-        let newBug: SoftwareBug | null = null;
-        if (viewportBreachActive && aliveViewport.length < 4 && Math.random() < 0.45) {
-          newBug = createBugFromEdge(true);
-        } else if (aliveArena.length < 7) {
-          newBug = createBugFromEdge(false);
-        }
-
         const now = Date.now();
         const cleaned = prev.filter((b) => !b.isSmashed || !b.smashedAt || now - b.smashedAt < 2000);
-        return newBug ? [...cleaned, newBug] : cleaned;
+        if (aliveArena.length >= arenaCap) return cleaned;
+        return [...cleaned, createBugFromEdge()];
       });
-    }, 2000);
+    }, 500);
 
     return () => {
       clearInterval(moveInterval);
@@ -594,57 +667,112 @@ export default function TechnicalExpertiseSection() {
     }
   }, [getAudioContext]);
 
-  // FULL-VIEWPORT CINEMATIC SEQUENCE WITH SUSPENSE DELAY BEFORE DISSIPATION
-  const handleThanosSnapSequence = useCallback(() => {
+  // Every Infinity Snap timer is tracked so a reset (Reset button, or
+  // leaving the QA studio for another mode) can cancel whatever's still
+  // pending — otherwise a still-running sequence keeps firing setState
+  // calls in the background and resurrects stale state after the reset.
+  const scheduleSnapTimer = useCallback((fn: () => void, delay: number) => {
+    const id = setTimeout(fn, delay);
+    snapTimeoutsRef.current.push(id);
+  }, []);
+
+  // Step 1: raises the gauntlet and WAITS — the snap itself is no longer
+  // automatic. It only fires once the player taps the gauntlet (see
+  // handleGauntletTap), so the drama is player-triggered, not a timer.
+  const handleLaunchGauntlet = useCallback(() => {
     const aliveBugs = bugs.filter((b) => !b.isSmashed && !b.isSnapping);
     if (aliveBugs.length === 0) {
       soundFx.playClick(400);
       return;
     }
 
-    setHasBeenSnapped(true);
-
-    // Phase 1 (t = 0ms): Infinity Gauntlet ascends slowly in the center of the viewport
     setGauntletPhase("appearing");
     soundFx.playClick(500);
+  }, [bugs]);
 
-    // Phase 2 (t = 1200ms): Gauntlet SNAPS! (Click sound & full-screen shockwave)
-    setTimeout(() => {
-      setGauntletPhase("snapping");
-      playThanosSnapSound();
+  // Step 2: the player taps the raised gauntlet — THIS triggers the actual
+  // snap (sound + shockwave), then the freeze beat and staggered dissipation.
+  const handleGauntletTap = useCallback(() => {
+    if (gauntletPhase !== "appearing") return;
 
-      // Phase 3 (t = 1200ms + 550ms = 1750ms): AFTER THE SNAP, SUSPENSE DELAY -> DISSIPATION WAVE!
-      setTimeout(() => {
+    const aliveBugs = bugs.filter((b) => !b.isSmashed && !b.isSnapping);
+    if (aliveBugs.length === 0) {
+      setGauntletPhase("hidden");
+      return;
+    }
+
+    const DISSIPATE_START = 700; // held freeze-frame AFTER the tap-triggered snap, before any bug reacts
+    const STAGGER_MS = 320; // bug-by-bug cascade, slow and dramatic — not all at once
+    const FADE_DURATION = 1800; // matches each bug's CSS transition-all duration-[1800ms]
+
+    // The SNAP! (Click sound & full-screen shockwave) — landed by the tap.
+    setGauntletPhase("snapping");
+    playThanosSnapSound();
+
+    // Bugs dissipate ONE BY ONE, staggered — the cascade only starts once
+    // the snap itself has fully landed.
+    aliveBugs.forEach((bug, i) => {
+      scheduleSnapTimer(() => {
+        soundFx.playClick(700 + i * 15);
         setBugs((prev) =>
-          prev.map((b) => (!b.isSmashed ? { ...b, isSnapping: true } : b))
+          prev.map((b) => (b.id === bug.id ? { ...b, isSnapping: true } : b))
         );
-      }, 550);
-    }, 1200);
+      }, DISSIPATE_START + i * STAGGER_MS);
+    });
 
-    // Phase 4 (t = 2900ms): Gauntlet fades into stardust across viewport
-    setTimeout(() => {
+    const lastDissipateAt = DISSIPATE_START + (aliveBugs.length - 1) * STAGGER_MS;
+
+    // Gauntlet fades into stardust once the cascade is underway
+    scheduleSnapTimer(() => {
       setGauntletPhase("fading");
-    }, 2900);
+    }, DISSIPATE_START + 300);
 
-    // Phase 5 (t = 3900ms): Finalize purge - NO MORE RESPAWN!
-    setTimeout(() => {
+    // Finalize purge once the LAST bug has finished dissipating — NO MORE RESPAWN!
+    scheduleSnapTimer(() => {
       setGauntletPhase("hidden");
       soundFx.playSuccess();
+      setHasBeenSnapped(true);
       setBugs((prev) =>
         prev.map((b) => (b.isSnapping ? { ...b, isSmashed: true, isSnapping: false, smashedAt: Date.now() } : b))
       );
       setSmashedCount((c) => c + aliveBugs.length);
-    }, 3900);
-  }, [bugs, playThanosSnapSound]);
+    }, lastDissipateAt + FADE_DURATION + 200);
+  }, [bugs, gauntletPhase, playThanosSnapSound, scheduleSnapTimer]);
 
-  // Restart / Re-simulate fresh bugs on user request
-  const handleResetBugSimulation = () => {
-    soundFx.playClick(900);
+  // Full reset of all QA simulation state — used both by the explicit
+  // "Reset" button and automatically whenever the player leaves the QA
+  // studio, so switching to Piano/Maze/Physics and back always re-simulates
+  // fresh instead of resuming stale bugs, count, or breach state.
+  const resetBugSimulation = useCallback(() => {
+    // Cancel any still-pending Infinity Snap timers so a sequence started
+    // right before the reset can't fire later and resurrect stale state.
+    snapTimeoutsRef.current.forEach(clearTimeout);
+    snapTimeoutsRef.current = [];
+
+    setBugs([]); // Start empty so bugs crawl in incrementally one-by-one!
+    setSmashedCount(0);
     setHasBeenSnapped(false);
     setViewportBreachActive(false);
     setGauntletPhase("hidden");
-    setBugs([]); // Start empty so bugs crawl in incrementally one-by-one!
+    setSplats([]);
+    setViewportSplats([]);
+
+    // Restart the pressure clock — spawn rate ramps back up from scratch.
+    qaStartRef.current = Date.now();
+    lastSpawnAtRef.current = 0;
+  }, []);
+
+  const handleResetBugSimulation = () => {
+    soundFx.playClick(900);
+    resetBugSimulation();
   };
+
+  // Leaving the QA studio for another mode resets the simulation, so it
+  // never keeps crawling/counting in the background of Piano or Maze.
+  useEffect(() => {
+    if (activeMode === "qa") return;
+    resetBugSimulation();
+  }, [activeMode, resetBugSimulation]);
 
   // -----------------------------------------------------------------
   // RANDOM MAZE GENERATION & PATHFINDING
@@ -1080,6 +1208,14 @@ class ParticleEngine {
   };
 
   const activeBugsCount = bugs.filter((b) => !b.isSmashed && !b.isSnapping).length;
+  // viewportBreachActive only means an escape is now ELIGIBLE to happen —
+  // it's probabilistic per arena-wall hit, so "escaped" messaging must key
+  // off an actual escaped bug existing, not just breach eligibility.
+  const hasEscapedBugs = bugs.some((b) => b.isViewport && !b.isSmashed && !b.isSnapping);
+  // "Idle" QA state (purged / no bugs yet) is only meaningful while the QA
+  // studio is actually active — this must never leak into the shared Master
+  // Run Action button's label/style on the other studio tabs.
+  const qaIsIdle = activeMode === "qa" && (hasBeenSnapped || activeBugsCount === 0);
 
   return (
     <section id="skills" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
@@ -1294,41 +1430,6 @@ class ParticleEngine {
               </div>
             )}
 
-            {/* 2. QA BUG SMASHER TELEMETRY HUD */}
-            {activeMode === "qa" && (
-              <div className="space-y-2 text-xs font-mono">
-                <div className="p-3 rounded-2xl bg-zinc-950 border border-white/[0.08] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-zinc-400 font-bold">Defect Telemetry:</span>
-                    <span
-                      className={`px-2 py-0.5 rounded border font-bold ${
-                        hasBeenSnapped || activeBugsCount === 0
-                          ? "bg-emerald-950 text-emerald-400 border-emerald-500/30"
-                          : "bg-amber-950/80 text-amber-300 border-amber-500/30"
-                      }`}
-                    >
-                      {hasBeenSnapped || activeBugsCount === 0
-                        ? "0 Bugs Alive"
-                        : viewportBreachActive
-                        ? `${activeBugsCount} Crawling (Breached to Viewport!)`
-                        : `${activeBugsCount} Crawling in Arena`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-zinc-300">
-                    <span>Purged by Smasher / Gauntlet:</span>
-                    <span className="text-emerald-400 font-bold font-mono">{smashedCount} defects eliminated</span>
-                  </div>
-
-                  <p className="text-[11px] text-zinc-400 font-rubik leading-relaxed">
-                    {viewportBreachActive
-                      ? "⚠️ Containment breach! Bugs have escaped into your browser viewport! Smash them anywhere, or launch the Viewport Infinity Snap!"
-                      : "Defects crawl inside the arena. Play and smash them with your hammer—beware, after playing they might escape onto your screen!"}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* 3. PATHFINDING CONTROLS */}
             {activeMode === "pathfinding" && (
               <div className="space-y-2.5 text-xs font-mono">
@@ -1465,6 +1566,11 @@ class ParticleEngine {
             )}
 
             {/* Master Run Action */}
+            {activeMode === "qa" && (
+              <p className="text-[11px] text-zinc-400 font-mono leading-relaxed">
+                A playful take on QA backlog pressure — defects multiply the longer they run wild, smashable by hand or purged all at once with the Infinity Gauntlet.
+              </p>
+            )}
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -1473,10 +1579,10 @@ class ParticleEngine {
                     if (isPlayingSong) handleStopSong();
                     else handleAutoPlaySong();
                   } else if (activeMode === "qa") {
-                    if (hasBeenSnapped || activeBugsCount === 0) {
+                    if (qaIsIdle) {
                       handleResetBugSimulation();
                     } else {
-                      handleThanosSnapSequence();
+                      handleLaunchGauntlet();
                     }
                   } else if (activeMode === "pathfinding") {
                     runSequentialPathfinder();
@@ -1494,7 +1600,7 @@ class ParticleEngine {
                     ? "bg-emerald-600 text-white cursor-wait"
                     : gauntletPhase !== "hidden"
                     ? "bg-amber-500 text-zinc-950 cursor-wait animate-pulse"
-                    : hasBeenSnapped || activeBugsCount === 0
+                    : qaIsIdle
                     ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-white/[0.1]"
                     : isPlayingSong
                     ? "bg-amber-500 hover:bg-amber-400 text-zinc-950"
@@ -1506,6 +1612,11 @@ class ParticleEngine {
                     <LuRotateCcw className="w-4 h-4 animate-spin" />
                     <span>Tracing Search Wavefront...</span>
                   </>
+                ) : gauntletPhase === "appearing" ? (
+                  <>
+                    <LuRotateCcw className="w-4 h-4 animate-pulse" />
+                    <span>Tap the Gauntlet to Snap! ⚡</span>
+                  </>
                 ) : gauntletPhase !== "hidden" ? (
                   <>
                     <LuRotateCcw className="w-4 h-4 animate-spin" />
@@ -1516,7 +1627,7 @@ class ParticleEngine {
                     <LuRotateCcw className="w-4 h-4 animate-spin" />
                     <span>Stop Auto-Play ⏹</span>
                   </>
-                ) : hasBeenSnapped || activeBugsCount === 0 ? (
+                ) : qaIsIdle ? (
                   <>
                     <LuRotateCcw className="w-4 h-4 text-emerald-400" />
                     <span>Reset &amp; Re-simulate Bugs ↻</span>
@@ -1526,7 +1637,7 @@ class ParticleEngine {
                     <LuPlay className="w-4 h-4 fill-current" />
                     <span>
                       {activeMode === "piano" && "Auto-Play Song on Piano ♫"}
-                      {activeMode === "qa" && "Launch QA Automation Bot (Infinity Snap)"}
+                      {activeMode === "qa" && "Raise the Infinity Gauntlet"}
                       {activeMode === "pathfinding" && "Solve Maze Sequentially"}
                       {activeMode === "physics" && "Run Physics Impulse"}
                     </span>
@@ -1658,7 +1769,7 @@ class ParticleEngine {
                       Smashed: <strong className="text-emerald-400">{smashedCount}</strong>
                     </span>
 
-                    {viewportBreachActive && !hasBeenSnapped && (
+                    {hasEscapedBugs && !hasBeenSnapped && (
                       <span className="hidden sm:inline-block px-2 py-0.5 rounded-lg bg-amber-950/90 border border-amber-500/40 text-amber-300 font-bold animate-pulse text-[10px]">
                         ⚠️ Escaped to Viewport!
                       </span>
@@ -1671,21 +1782,8 @@ class ParticleEngine {
                           : "bg-amber-950/80 text-amber-300 border-amber-500/30"
                       }`}
                     >
-                      {hasBeenSnapped || activeBugsCount === 0 ? "100% Defect-Free" : `${activeBugsCount} Crawling`}
+                      {hasBeenSnapped || activeBugsCount === 0 ? "100% Defect-Free" : "Crawling"}
                     </span>
-
-                    {/* Reset Button when purged */}
-                    {hasBeenSnapped && (
-                      <button
-                        type="button"
-                        onClick={handleResetBugSimulation}
-                        className="px-2.5 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs flex items-center gap-1 border border-white/[0.1] shadow cursor-pointer transition-colors"
-                        title="Restart bug simulation"
-                      >
-                        <LuRotateCcw className="w-3 h-3 text-emerald-400" />
-                        <span>Reset ↻</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -1747,30 +1845,16 @@ class ParticleEngine {
                     >
                       {/* Inner Bug Element (Animates on snap / smash) */}
                       <div
-                        className={`transition-all duration-1000 ${
+                        className={`transition-all duration-[1800ms] ${
                           bug.isSnapping
-                            ? "scale-150 opacity-0 blur-sm -translate-y-12 brightness-200 pointer-events-none"
+                            ? "scale-75 opacity-0 blur-[3px] -translate-y-14 grayscale contrast-125 brightness-[0.55] pointer-events-none"
                             : bug.isSmashed
                             ? "scale-75 opacity-70 pointer-events-none"
                             : "hover:scale-125 active:scale-95"
                         }`}
                       >
-                        {/* Dissipating Dust Particles */}
-                        {bug.isSnapping && (
-                          <div className="absolute inset-0 pointer-events-none">
-                            {[...Array(8)].map((_, i) => (
-                              <span
-                                key={i}
-                                className="absolute w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-ping"
-                                style={{
-                                  left: `${(i % 3) * 12 - 6}px`,
-                                  top: `${Math.floor(i / 3) * -12 - 4}px`,
-                                  animationDuration: `${0.4 + i * 0.1}s`,
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
+                        {/* Dissipating Ash Particles */}
+                        {bug.isSnapping && <AshParticles />}
 
                         {bug.isSmashed ? (
                           <div className="flex items-center gap-1 bg-emerald-950/90 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full text-[9px] font-mono shadow-md font-bold">
@@ -1798,15 +1882,14 @@ class ParticleEngine {
                       <span>Full-Viewport Infinity Snap in progress...</span>
                     </div>
                   ) : hasBeenSnapped || activeBugsCount === 0 ? (
-                    <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 bg-black/60 backdrop-blur px-3 py-1.5 rounded-xl border border-emerald-500/30">
-                      <span className="text-emerald-400 font-bold">✓ 100% Release Verified • All Defects Purged</span>
+                    <div className="flex items-center justify-center text-[11px] font-mono text-zinc-400 bg-black/60 backdrop-blur px-3 py-1.5 rounded-xl border border-emerald-500/30">
                       <span className="text-zinc-400">Click &apos;Reset ↻&apos; anytime to re-simulate</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 bg-black/60 backdrop-blur px-3 py-1.5 rounded-xl border border-white/[0.04]">
                       <span className="flex items-center gap-1.5">
                         <LuTarget className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-                        {viewportBreachActive
+                        {hasEscapedBugs
                           ? "Containment breached! Bugs are crawling across your browser screen!"
                           : "Smash bugs in the arena—play longer and watch what happens!"}
                       </span>
@@ -1939,30 +2022,16 @@ class ParticleEngine {
               >
                 {/* Inner Bug Element (Animates on snap / smash) */}
                 <div
-                  className={`transition-all duration-1000 ${
+                  className={`transition-all duration-[1800ms] ${
                     bug.isSnapping
-                      ? "scale-150 opacity-0 blur-sm -translate-y-14 brightness-200 pointer-events-none"
+                      ? "scale-75 opacity-0 blur-[3px] -translate-y-16 grayscale contrast-125 brightness-[0.55] pointer-events-none"
                       : bug.isSmashed
                       ? "scale-75 opacity-70 pointer-events-none"
                       : "hover:scale-125 active:scale-95"
                   }`}
                 >
-                  {/* Dissipation Particles */}
-                  {bug.isSnapping && (
-                    <div className="absolute inset-0 pointer-events-none">
-                      {[...Array(8)].map((_, i) => (
-                        <span
-                          key={i}
-                          className="absolute w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_#f59e0b] animate-ping"
-                          style={{
-                            left: `${(i % 3) * 14 - 7}px`,
-                            top: `${Math.floor(i / 3) * -14 - 6}px`,
-                            animationDuration: `${0.4 + i * 0.1}s`,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  {/* Dissipating Ash Particles */}
+                  {bug.isSnapping && <AshParticles scale={1.3} />}
 
                   {bug.isSmashed ? (
                     <div className="flex items-center gap-1 bg-emerald-950/95 text-emerald-400 border border-emerald-500/50 px-2 py-0.5 rounded-full text-[9px] font-mono shadow-xl font-bold backdrop-blur-md">
@@ -2016,9 +2085,11 @@ class ParticleEngine {
           )}
 
           <div
+            onClick={gauntletPhase === "appearing" ? handleGauntletTap : undefined}
+            title={gauntletPhase === "appearing" ? "Tap to SNAP!" : undefined}
             className={`relative z-10 flex flex-col items-center justify-center transition-all duration-700 ${
               gauntletPhase === "appearing"
-                ? "scale-115 opacity-100 filter drop-shadow-[0_0_60px_rgba(234,179,8,0.9)]"
+                ? "scale-115 opacity-100 filter drop-shadow-[0_0_60px_rgba(234,179,8,0.9)] pointer-events-auto cursor-pointer animate-pulse hover:scale-125 active:scale-105"
                 : gauntletPhase === "snapping"
                 ? "scale-140 opacity-100 filter brightness-150 drop-shadow-[0_0_100px_rgba(245,158,11,1)]"
                 : "scale-90 opacity-0 filter blur-xl"
@@ -2118,7 +2189,11 @@ class ParticleEngine {
             </div>
 
             <span className="text-xs sm:text-sm font-mono font-bold text-amber-300 tracking-widest uppercase bg-black/90 px-4 py-1.5 rounded-full border border-amber-500/50 mt-2 shadow-2xl backdrop-blur-md">
-              {gauntletPhase === "snapping" ? "⚡ THE SNAP ⚡" : "Infinity Gauntlet"}
+              {gauntletPhase === "snapping"
+                ? "⚡ THE SNAP ⚡"
+                : gauntletPhase === "appearing"
+                ? "👆 Tap to SNAP!"
+                : "Infinity Gauntlet"}
             </span>
           </div>
         </div>

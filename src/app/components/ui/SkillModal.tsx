@@ -243,7 +243,7 @@ export default function SkillModal({ skill, isOpen, onClose }: SkillModalProps) 
     <div className="fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-6 overflow-hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-xl animate-fade-in transition-opacity"
+        className="fixed inset-0 bg-black/80 backdrop-blur-xl animate-fade-in-fast transition-opacity"
         onClick={() => {
           soundFx.playClick(800);
           onClose();

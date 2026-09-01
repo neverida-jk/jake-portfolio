@@ -303,7 +303,7 @@ export default function TerminalSandbox({
 
   return (
     <div
-      className="fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-fade-in-fast"
       onClick={onClose}
     >
       <div
