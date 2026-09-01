@@ -41,7 +41,7 @@ const ContactButtons: React.FC<ContactButtonsProps> = ({ className = "" }) => {
     <div className={`flex flex-wrap justify-center md:justify-start gap-2 sm:gap-3 md:gap-4 ${className}`}>
       <ContactButton title="GitHub" href="https://github.com/neverida-jk" iconSrc="/github-icon.png" />
       <ContactButton title="LinkedIn" href="https://linkedin.com/in/your-profile" iconSrc="/linkedin-icon.png" />
-      <ContactButton title="Resume" href="mailto:jrneverida@up.edu.ph" iconSrc="/email-icon.png" />
+      <ContactButton title="Resume" href="mailto:jlrneverida@gmail.com" iconSrc="/email-icon.png" />
     </div>
   );
 };
