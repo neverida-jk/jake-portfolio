@@ -607,9 +607,18 @@ export default function TechnicalExpertiseSection() {
       setViewportBreachActive(true);
     }
 
-    setBugs((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, isSmashed: true, smashedAt: Date.now() } : b))
-    );
+    setBugs((prev) => {
+      const mapped = prev.map((b) => (b.id === id ? { ...b, isSmashed: true, smashedAt: Date.now() } : b));
+      // Whac-a-mole pressure: smashing a bug immediately spawns a
+      // replacement, so the arena can never actually clear — capped well
+      // above the passive ramp's ceiling so it can't grow unbounded if the
+      // player smashes very fast.
+      const aliveArena = mapped.filter((b) => !b.isViewport && !b.isSmashed && !b.isSnapping);
+      if (aliveArena.length < 16) {
+        return [...mapped, createBugFromEdge()];
+      }
+      return mapped;
+    });
     setSmashedCount((c) => c + 1);
 
     if (clickX !== undefined && clickY !== undefined) {
@@ -1216,6 +1225,10 @@ class ParticleEngine {
   // studio is actually active — this must never leak into the shared Master
   // Run Action button's label/style on the other studio tabs.
   const qaIsIdle = activeMode === "qa" && (hasBeenSnapped || activeBugsCount === 0);
+  // Once the arena gets crowded, glow the gauntlet button to signal "it's
+  // time to click this" instead of leaving the player to notice on their own.
+  const shouldGlowGauntlet =
+    activeMode === "qa" && !qaIsIdle && gauntletPhase === "hidden" && activeBugsCount >= 10;
 
   return (
     <section id="skills" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
@@ -1608,6 +1621,8 @@ class ParticleEngine {
                     ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-white/[0.1]"
                     : isPlayingSong
                     ? "bg-amber-500 hover:bg-amber-400 text-zinc-950"
+                    : shouldGlowGauntlet
+                    ? "bg-emerald-400 hover:bg-emerald-300 text-zinc-950 shadow-[0_0_28px_6px_rgba(16,185,129,0.65)] ring-2 ring-emerald-300/70 animate-pulse"
                     : "bg-emerald-400 hover:bg-emerald-300 text-zinc-950 shadow-emerald-500/25"
                 }`}
               >
