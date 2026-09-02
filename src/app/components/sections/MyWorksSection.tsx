@@ -58,7 +58,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "Kelly Sizing &bull; Order Book Analytics &bull; Polymarket Edge",
     tags: ["Probability Modeling", "Kelly Criterion", "TypeScript", "React", "Prediction Markets"],
     logo: "/python.png",
-    thumbnail: "/projects/quant.png",
+    thumbnail: "/projects/quant.jpg",
   },
   {
     id: "tropa",
@@ -74,7 +74,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "Next.js App Router &bull; Real Trail Logistics &bull; Cost-Split Engine",
     tags: ["Next.js 15", "React 19", "Tailwind CSS", "TypeScript", "Collaborative State"],
     logo: "/next.svg",
-    thumbnail: "/projects/tropa.png",
+    thumbnail: "/projects/tropa.jpg",
     invert: true,
   },
   {
@@ -91,7 +91,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "IndexedDB (Dexie.js) &bull; Recharts Analytics &bull; Offline PWA",
     tags: ["React", "Dexie.js", "IndexedDB", "Recharts", "PWA", "Framer Motion"],
     logo: "/react.png",
-    thumbnail: "/projects/finance.png",
+    thumbnail: "/projects/finance.jpg",
   },
   {
     id: "portfolio-v2",
@@ -107,7 +107,7 @@ const PROJECTS_DATA: Project[] = [
     metrics: "100/100 Lighthouse &bull; Web Audio API &bull; Turbopack",
     tags: ["Next.js 15", "React 19", "Tailwind v4", "TypeScript", "Web Audio API"],
     logo: "/next.svg",
-    thumbnail: "/projects/portfolio-v2.png",
+    thumbnail: "/projects/portfolio-v2.jpg",
     invert: true,
   },
 ];
