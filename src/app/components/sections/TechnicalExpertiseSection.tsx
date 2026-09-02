@@ -76,34 +76,34 @@ const ALGO_DESCRIPTIONS: Record<
   astar: {
     title: "A* Search (Heuristic Navigator)",
     popularApps: "Google Maps, Waze, League of Legends & StarCraft",
-    nonTech: "When you click to move your champion in League of Legends or ask Google Maps for the fastest route, A* calculates your direct GPS distance to the goal and navigates around obstacles straight toward your destination with zero wasted wandering.",
+    nonTech: "When you click to move in League of Legends or ask Google Maps for directions, A* estimates the straight-line distance to your goal and moves toward it, going around obstacles instead of wandering.",
     tech: "Informed heuristic search minimizing f(n) = g(n) + h(n), where h(n) is the direct Manhattan distance.",
     badge: "GPS & Game AI",
   },
   dijkstra: {
     title: "Dijkstra's Shortest Path",
     popularApps: "Cisco Internet Routers (OSPF), Cloudflare & Google Flights",
-    nonTech: "How internet traffic travels around the world! Every time you open a website or search for cheap flight layovers, Dijkstra evaluates millions of fiber-optic cables or airport connections to guarantee the absolute lowest-cost, fastest path.",
+    nonTech: "Every time you load a website or search flight layovers, Dijkstra checks the cost of every possible route through millions of connections to find the cheapest one.",
     tech: "Uniform-cost graph traversal exploring lowest cumulative edge cost g(n) via priority queue.",
     badge: "Internet Core & Routing",
   },
   bfs: {
     title: "Breadth-First Search (BFS)",
     popularApps: "LinkedIn ('1st, 2nd, 3rd Degrees'), Facebook & Google Web Crawler",
-    nonTech: "How LinkedIn finds who you know! It checks your direct friends first (1st degree), then friends-of-friends (2nd degree), radiating outward level-by-level to find the closest social connection with the fewest handshakes.",
+    nonTech: "LinkedIn checks your direct connections first (1st degree), then theirs (2nd degree), expanding outward one layer at a time until it finds the shortest path between two people.",
     tech: "FIFO queue level-order traversal, guaranteeing fewest hops in unweighted graphs.",
     badge: "Social Networks & Crawlers",
   },
   dfs: {
     title: "Depth-First Search (DFS)",
     popularApps: "Stockfish Chess AI, Sudoku Solvers & Git Branch Merging",
-    nonTech: "How Stockfish calculates chess moves! It simulates a tactical move sequence 15 moves deep into the future to hunt for checkmate. If it hits a dead end, it backtracks and tests the next branch.",
+    nonTech: "Stockfish plays out a sequence of moves up to 15 deep, searching for checkmate. Hit a dead end, and it backtracks to try the next branch.",
     tech: "LIFO recursive stack exploration plunging down branches before backtracking.",
     badge: "Game Trees & Solvers",
   },
 };
 
-// 12 EXPANSIVE DEFECT CATEGORIES
+// 12 defect categories
 const BUG_CATALOG = [
   { name: "Memory Leak", icon: "🐞", priority: "P0" as const },
   { name: "XSS Injection", icon: "🪲", priority: "P0" as const },
@@ -2050,8 +2050,8 @@ class ParticleEngine {
                       <span className="flex items-center gap-1.5">
                         <LuTarget className="w-3.5 h-3.5 text-red-400 animate-pulse" />
                         {hasEscapedBugs
-                          ? "Containment breached! Bugs are crawling across your browser screen!"
-                          : "Smash bugs in the arena—play longer and watch what happens!"}
+                          ? "Containment breached — bugs are loose on your screen."
+                          : "Smash bugs in the arena. Wait too long and they escape."}
                       </span>
                       <span className="text-emerald-400 font-bold">{activeBugsCount} crawling</span>
                     </div>
@@ -2148,7 +2148,7 @@ class ParticleEngine {
                   ref={canvasRef}
                   onMouseMove={handleCanvasMouseMove}
                   className="w-full h-[230px] rounded-2xl bg-zinc-950/90 border border-white/[0.06] cursor-crosshair shadow-inner"
-                  title="Hover your cursor over the canvas to push particles!"
+                  title="Hover over the canvas to push particles"
                 />
                 <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
                   <span>Hover cursor over canvas to repel particles</span>
