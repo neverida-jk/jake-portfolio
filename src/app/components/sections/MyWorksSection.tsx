@@ -158,12 +158,17 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
   }, []);
 
   const scrollToIndex = useCallback((idx: number, programmatic = false, instant = false) => {
+    const container = scrollRef.current;
+    const card = cardRefs.current[idx];
+    if (!container || !card) return;
+
     isProgrammaticScrollRef.current = programmatic;
-    cardRefs.current[idx]?.scrollIntoView({
-      behavior: instant ? "auto" : "smooth",
-      inline: "center",
-      block: "nearest",
-    });
+    // scrollIntoView() walks up the ancestor chain and can drag the whole
+    // PAGE down to this section — exactly the bug this caused when
+    // auto-advance fired while the user was elsewhere on the page.
+    // scrollTo() on the container itself only ever moves the carousel.
+    const targetLeft = card.offsetLeft - (container.clientWidth - card.offsetWidth) / 2;
+    container.scrollTo({ left: targetLeft, behavior: instant ? "auto" : "smooth" });
     // Smooth-scroll takes a moment to settle; only clear the flag once it
     // realistically has, so the scroll events it fires along the way don't
     // get misread as user input.
