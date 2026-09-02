@@ -13,8 +13,20 @@ import {
   SiMongodb,
   SiGithub,
   SiCplusplus,
+  SiAnthropic,
+  SiAmazonwebservices,
+  SiDocker,
+  SiGithubactions,
 } from "react-icons/si";
-import { LuCheck, LuX, LuShieldCheck, LuLayers, LuCpu } from "react-icons/lu";
+import {
+  LuCheck,
+  LuX,
+  LuShieldCheck,
+  LuLayers,
+  LuCpu,
+  LuBrainCircuit,
+  LuBot,
+} from "react-icons/lu";
 
 interface SkillModalProps {
   skill: string;
@@ -198,6 +210,90 @@ const SKILL_DETAILS: Record<string, SkillDetail> = {
       "Authoring and executing detailed test plans and regression suites",
       "Defect lifecycle tracking, issue isolation, and triage",
       "Cross-browser quality assurance and release validation",
+    ],
+  },
+  claude: {
+    name: "Claude & Claude Code",
+    category: "AI-Assisted Engineering",
+    level: "Advanced",
+    icon: <SiAnthropic className="w-6 h-6 text-orange-300/90" />,
+    deployedIn: "This entire portfolio — every game, animation, and terminal command",
+    description:
+      "Pairing with Claude Code as a daily engineering tool: scoping tasks, reviewing generated diffs, and chasing down UX bugs that only surface in a live browser.",
+    points: [
+      "Directing multi-step feature builds end-to-end, from spec to shipped code",
+      "Reviewing AI-generated code for edge cases, race conditions, and regressions",
+      "Using Claude Code's terminal workflow for git, testing, and deployment",
+    ],
+  },
+  "context-engineering": {
+    name: "Context Engineering",
+    category: "AI-Assisted Engineering",
+    level: "Proficient",
+    icon: <LuBrainCircuit className="w-6 h-6 text-purple-400/90" />,
+    deployedIn: "Structuring prompts and project context for reliable AI output",
+    description:
+      "Deciding what an AI model actually needs to do a task well — the right file, the right constraint, the right example — instead of dumping everything into the prompt and hoping.",
+    points: [
+      "Scoping tasks tightly enough that an agent can verify its own work",
+      "Writing project instructions that keep AI-generated code from scope-creeping",
+      "Judging when a task needs more context versus a smaller, clearer task",
+    ],
+  },
+  "agentic-development": {
+    name: "Agentic Development",
+    category: "AI-Assisted Engineering",
+    level: "Proficient",
+    icon: <LuBot className="w-6 h-6 text-emerald-400/90" />,
+    deployedIn: "Multi-step feature work delegated to and verified from AI agents",
+    description:
+      "Working with AI agents that plan, write, and test code across several steps — breaking a feature into agent-sized tasks, then reviewing the result the way any code review would.",
+    points: [
+      "Breaking multi-step features into tasks an agent can complete and verify",
+      "Catching AI-introduced bugs like double-invoked effects and state leaks",
+      "Treating agent output as a first draft, not a final answer",
+    ],
+  },
+  aws: {
+    name: "AWS",
+    category: "Cloud & DevOps",
+    level: "Familiar",
+    icon: <SiAmazonwebservices className="w-6 h-6 text-amber-400/90" />,
+    deployedIn: "Cloud infrastructure & deployment fundamentals",
+    description:
+      "Working knowledge of core AWS services for hosting, storage, and deploying web applications in a cloud environment.",
+    points: [
+      "Provisioning and configuring compute and storage resources",
+      "Understanding IAM roles, security groups, and access boundaries",
+      "Reasoning about cost, scaling, and environment separation in cloud setups",
+    ],
+  },
+  docker: {
+    name: "Docker",
+    category: "Cloud & DevOps",
+    level: "Familiar",
+    icon: <SiDocker className="w-6 h-6 text-sky-400/90" />,
+    deployedIn: "Containerized local development & deployment",
+    description:
+      "Packaging applications and their dependencies into containers for consistent behavior across development and production.",
+    points: [
+      "Writing Dockerfiles and managing multi-container setups",
+      "Debugging environment drift between local and containerized runs",
+      "Using containers to keep dev environments reproducible across machines",
+    ],
+  },
+  "github-actions": {
+    name: "GitHub Actions",
+    category: "Cloud & DevOps",
+    level: "Proficient",
+    icon: <SiGithubactions className="w-6 h-6 text-zinc-200" />,
+    deployedIn: "CI/CD pipelines for build, test, and deploy",
+    description:
+      "Automating build, test, and deployment steps so every push is checked the same way, without relying on someone remembering to run it manually.",
+    points: [
+      "Writing workflows that run lint, type-check, and test steps on every push",
+      "Gating merges behind passing checks instead of manual review alone",
+      "Wiring deployment triggers into the same pipeline as CI",
     ],
   },
 };

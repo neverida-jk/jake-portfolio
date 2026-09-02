@@ -13,8 +13,17 @@ import {
   LuClock,
   LuShieldCheck,
   LuGraduationCap,
+  LuBrainCircuit,
+  LuBot,
 } from "react-icons/lu";
-import { SiGithub, SiLinkedin } from "react-icons/si";
+import {
+  SiGithub,
+  SiLinkedin,
+  SiAnthropic,
+  SiAmazonwebservices,
+  SiDocker,
+  SiGithubactions,
+} from "react-icons/si";
 
 interface HeroSectionProps {
   onOpenTerminal?: () => void;
@@ -22,7 +31,15 @@ interface HeroSectionProps {
   onSkillClick?: (skill: string) => void;
 }
 
-const TECH_LOGOS = [
+interface TechLogo {
+  id: string;
+  name: string;
+  src?: string;
+  invert?: boolean;
+  icon?: React.ReactNode;
+}
+
+const TECH_LOGOS: TechLogo[] = [
   { id: "react", name: "React", src: "/react.png" },
   { id: "nextjs", name: "Next.js", src: "/next.svg", invert: true },
   { id: "javascript", name: "JavaScript", src: "/javascript.png" },
@@ -31,6 +48,36 @@ const TECH_LOGOS = [
   { id: "tailwindcss", name: "Tailwind CSS", src: "/tailwindcss.png" },
   { id: "mongodb", name: "MongoDB", src: "/mongodb.png" },
   { id: "github", name: "GitHub", src: "/github.png" },
+  {
+    id: "claude",
+    name: "Claude",
+    icon: <SiAnthropic className="w-full h-full text-orange-300/90" />,
+  },
+  {
+    id: "context-engineering",
+    name: "Context Engineering",
+    icon: <LuBrainCircuit className="w-full h-full text-purple-400/90" />,
+  },
+  {
+    id: "agentic-development",
+    name: "Agentic Development",
+    icon: <LuBot className="w-full h-full text-emerald-400/90" />,
+  },
+  {
+    id: "aws",
+    name: "AWS",
+    icon: <SiAmazonwebservices className="w-full h-full text-amber-400/90" />,
+  },
+  {
+    id: "docker",
+    name: "Docker",
+    icon: <SiDocker className="w-full h-full text-sky-400/90" />,
+  },
+  {
+    id: "github-actions",
+    name: "GitHub Actions",
+    icon: <SiGithubactions className="w-full h-full text-zinc-200" />,
+  },
 ];
 
 export default function HeroSection({
@@ -95,7 +142,7 @@ export default function HeroSection({
     } else if (cleanCmd === "education") {
       response = "BS Computer Science, University of the Philippines Los Baños (2022 - 2026, GWA 1.95).";
     } else if (cleanCmd === "skills") {
-      response = "QA Testing, Test Automation, React 19, Next.js 15, TypeScript, Python, Node.js, Tailwind.";
+      response = "QA Testing, Test Automation, React 19, Next.js 15, TypeScript, Python, Node.js, Tailwind, Claude &amp; agentic development, AWS, Docker.";
     } else if (cleanCmd === "hire") {
       soundFx.playSuccess();
       response = "Let's connect! Email: jlrneverida@gmail.com";
@@ -334,21 +381,24 @@ export default function HeroSection({
               key={tech.id}
               onClick={() => {
                 soundFx.playClick(900);
-                const el = document.getElementById("skills");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
+                onSkillClick?.(tech.id);
               }}
               className="relative w-8 h-8 rounded-lg bg-zinc-900/90 border border-white/[0.06] hover:border-white/[0.25] p-1.5 flex items-center justify-center transition-all duration-200 hover:scale-125 hover:-translate-y-0.5 shrink-0 group cursor-pointer shadow-sm"
-              title={`View ${tech.name} in Arsenal`}
+              title={`View ${tech.name} details`}
             >
-              <Image
-                src={tech.src}
-                alt={tech.name}
-                width={20}
-                height={20}
-                className={`object-contain transition-all ${
-                  tech.invert ? "invert opacity-80 group-hover:opacity-100" : ""
-                }`}
-              />
+              {tech.icon ? (
+                tech.icon
+              ) : (
+                <Image
+                  src={tech.src!}
+                  alt={tech.name}
+                  width={20}
+                  height={20}
+                  className={`object-contain transition-all ${
+                    tech.invert ? "invert opacity-80 group-hover:opacity-100" : ""
+                  }`}
+                />
+              )}
             </button>
           ))}
         </div>

@@ -123,6 +123,8 @@ export default function TerminalSandbox({
               <p><span className="text-zinc-200">QA & Testing:</span> Test Case Authoring, Regression Suites, Defect Management, Release QA</p>
               <p><span className="text-zinc-200">Frontend:</span> React 19, Next.js 15, Tailwind CSS v4, TypeScript, Framer Motion</p>
               <p><span className="text-zinc-200">Backend & DB:</span> Node.js, Express, MongoDB, IndexedDB, RESTful APIs</p>
+              <p><span className="text-zinc-200">AI-Assisted Engineering:</span> Claude & Claude Code, Context Engineering, Agentic Development</p>
+              <p><span className="text-zinc-200">Cloud & DevOps:</span> AWS, Docker, GitHub Actions (CI/CD)</p>
               <p><span className="text-zinc-200">Languages & Tools:</span> TypeScript, JavaScript, Python, C/C++, Git, Vercel</p>
             </div>
           );
