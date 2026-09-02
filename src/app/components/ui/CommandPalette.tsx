@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { soundFx } from "@/util/sound";
-import { fireConfetti } from "@/util/confetti";
 import {
   LuSearch,
   LuUser,
@@ -229,7 +228,7 @@ export default function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[150] flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-[150] flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-md animate-fade-in-fast"
       onClick={onClose}
     >
       <div
