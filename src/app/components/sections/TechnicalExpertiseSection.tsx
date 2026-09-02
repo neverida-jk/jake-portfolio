@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { soundFx } from "@/util/sound";
+import { fireConfetti } from "@/util/confetti";
 import {
   LuPlay,
   LuCopy,
@@ -10,62 +11,56 @@ import {
   LuZap,
   LuShieldCheck,
   LuCompass,
-  LuMusic,
+  LuGauge,
   LuDices,
   LuBug,
   LuTarget,
+  LuRocket,
+  LuSignalHigh,
+  LuTurtle,
+  LuWifiOff,
+  LuTrophy,
+  LuTriangleAlert,
 } from "react-icons/lu";
+import type { IconType } from "react-icons";
 
-type StudioMode = "piano" | "qa" | "pathfinding" | "physics";
+type StudioMode = "latency" | "qa" | "pathfinding" | "physics";
 type PathAlgorithm = "astar" | "dijkstra" | "bfs" | "dfs";
 type GridTool = "wall" | "start" | "goal";
+type BenchmarkPhase = "idle" | "connecting" | "decoy" | "armed" | "result" | "toosoon" | "summary";
 
 interface GridNode {
   x: number;
   y: number;
 }
 
-interface PianoWhiteKey {
-  note: string;
-  freq: number;
-  blackKey?: {
-    note: string;
-    freq: number;
-  };
+interface RoundResult {
+  ms: number;
+  falseStart: boolean;
 }
 
-const PIANO_KEYBOARD: PianoWhiteKey[] = [
-  { note: "C4", freq: 261.63, blackKey: { note: "C#4", freq: 277.18 } },
-  { note: "D4", freq: 293.66, blackKey: { note: "D#4", freq: 311.13 } },
-  { note: "E4", freq: 329.63 },
-  { note: "F4", freq: 349.23, blackKey: { note: "F#4", freq: 369.99 } },
-  { note: "G4", freq: 392.0, blackKey: { note: "G#4", freq: 415.3 } },
-  { note: "A4", freq: 440.0, blackKey: { note: "A#4", freq: 466.16 } },
-  { note: "B4", freq: 493.88 },
-  { note: "C5", freq: 523.25, blackKey: { note: "C#5", freq: 554.37 } },
-  { note: "D5", freq: 587.33, blackKey: { note: "D#5", freq: 622.25 } },
-  { note: "E5", freq: 659.25 },
+const TOTAL_ROUNDS = 5;
+const DECOY_CHANCE = 0.35;
+
+// Fully static class-name literals so Tailwind's build-time scanner can find
+// them — a dynamically interpolated `text-${color}-400` would get purged.
+const LATENCY_TIERS: { max: number; label: string; icon: IconType; textClass: string; barClass: string }[] = [
+  { max: 200, label: "Fiber Optic Reflexes", icon: LuZap, textClass: "text-emerald-400", barClass: "bg-emerald-500" },
+  { max: 300, label: "Broadband Speed", icon: LuRocket, textClass: "text-cyan-400", barClass: "bg-cyan-500" },
+  { max: 450, label: "Solid Connection", icon: LuSignalHigh, textClass: "text-blue-400", barClass: "bg-blue-500" },
+  { max: 600, label: "A Bit Laggy", icon: LuTurtle, textClass: "text-amber-400", barClass: "bg-amber-500" },
+  { max: Infinity, label: "Dial-Up Vibes", icon: LuWifiOff, textClass: "text-red-400", barClass: "bg-red-500" },
 ];
 
-const SONG_PRESETS = [
-  {
-    id: "twinkle",
-    title: "Twinkle Twinkle Little Star",
-    notes: ["C4", "C4", "G4", "G4", "A4", "A4", "G4", "F4", "F4", "E4", "E4", "D4", "D4", "C4"],
-    bpm: 240,
-  },
-  {
-    id: "ode_to_joy",
-    title: "Ode to Joy (Beethoven)",
-    notes: ["E4", "E4", "F4", "G4", "G4", "F4", "E4", "D4", "C4", "C4", "D4", "E4", "E4", "D4", "D4"],
-    bpm: 220,
-  },
-  {
-    id: "happy_birthday",
-    title: "Happy Birthday",
-    notes: ["C4", "C4", "D4", "C4", "F4", "E4", "C4", "C4", "D4", "C4", "G4", "F4"],
-    bpm: 230,
-  },
+function getLatencyTier(ms: number) {
+  return LATENCY_TIERS.find((t) => ms <= t.max) ?? LATENCY_TIERS[LATENCY_TIERS.length - 1];
+}
+
+const CONNECTING_LOG_LINES = [
+  "Resolving host...",
+  "Establishing connection...",
+  "TLS handshake...",
+  "Awaiting response...",
 ];
 
 const ALGO_DESCRIPTIONS: Record<
@@ -229,16 +224,22 @@ function AshParticles({ scale = 1 }: { scale?: number }) {
 }
 
 export default function TechnicalExpertiseSection() {
-  const [activeMode, setActiveMode] = useState<StudioMode>("piano");
+  const [activeMode, setActiveMode] = useState<StudioMode>("latency");
   const [copiedCode, setCopiedCode] = useState(false);
 
   // -----------------------------------------------------------------
-  // 1. PLAYABLE PIANO STATE
+  // 1. LATENCY BENCHMARK STATE (human reaction-time / "ping" test)
   // -----------------------------------------------------------------
-  const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set());
-  const [isPlayingSong, setIsPlayingSong] = useState(false);
-  const [selectedSongId, setSelectedSongId] = useState("twinkle");
-  const songTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [phase, setPhase] = useState<BenchmarkPhase>("idle");
+  const [results, setResults] = useState<RoundResult[]>([]);
+  const [lastMs, setLastMs] = useState<number | null>(null);
+  const [connectingLines, setConnectingLines] = useState<string[]>([]);
+  const [bestEver, setBestEver] = useState<number | null>(null);
+  const [isNewRecord, setIsNewRecord] = useState(false);
+  const armTimeRef = useRef(0);
+  const bestEverRef = useRef<number | null>(null);
+  const benchmarkTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const lineIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   // -----------------------------------------------------------------
@@ -321,76 +322,124 @@ export default function TechnicalExpertiseSection() {
     return audioCtxRef.current;
   }, []);
 
-  const playPianoNote = useCallback(
-    (freq: number, noteName: string) => {
-      setActiveKeys((prev) => new Set(prev).add(noteName));
-      setTimeout(() => {
-        setActiveKeys((prev) => {
-          const next = new Set(prev);
-          next.delete(noteName);
-          return next;
-        });
-      }, 200);
-
-      try {
-        const ctx = getAudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-      } catch {
-        soundFx.playSuccess();
-      }
-    },
-    [getAudioContext]
-  );
-
-  const handleAutoPlaySong = useCallback(() => {
-    if (songTimerRef.current) clearInterval(songTimerRef.current);
-
-    const song = SONG_PRESETS.find((s) => s.id === selectedSongId) || SONG_PRESETS[0];
-    setIsPlayingSong(true);
-    let noteIdx = 0;
-
-    const interval = setInterval(() => {
-      if (noteIdx < song.notes.length) {
-        const noteName = song.notes[noteIdx];
-        let foundFreq = 440;
-        for (const item of PIANO_KEYBOARD) {
-          if (item.note === noteName) foundFreq = item.freq;
-          else if (item.blackKey && item.blackKey.note === noteName) foundFreq = item.blackKey.freq;
-        }
-        playPianoNote(foundFreq, noteName);
-        noteIdx++;
-      } else {
-        clearInterval(interval);
-        setIsPlayingSong(false);
-      }
-    }, song.bpm);
-
-    songTimerRef.current = interval;
-  }, [playPianoNote, selectedSongId]);
-
-  const handleStopSong = useCallback(() => {
-    if (songTimerRef.current) clearInterval(songTimerRef.current);
-    setIsPlayingSong(false);
-    setActiveKeys(new Set());
+  // Load the persisted best score once on mount — mirrored into a ref so the
+  // record-check effect below can compare/update synchronously without
+  // re-reading localStorage (see the note on that effect for why).
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("jake_portfolio_latency_best") : null;
+    const storedNum = stored ? parseInt(stored, 10) : null;
+    bestEverRef.current = storedNum;
+    setBestEver(storedNum);
   }, []);
+
+  const scheduleBenchmarkTimer = useCallback((fn: () => void, delay: number) => {
+    const id = setTimeout(fn, delay);
+    benchmarkTimeoutsRef.current.push(id);
+  }, []);
+
+  // Starts one round: streams a fake connection log, waits a random delay
+  // (occasionally firing a brief decoy flash first), then arms the stage.
+  const startRound = useCallback(() => {
+    setPhase("connecting");
+    setConnectingLines([]);
+    setLastMs(null);
+
+    let lineIdx = 0;
+    lineIntervalRef.current = setInterval(() => {
+      if (lineIdx >= CONNECTING_LOG_LINES.length) {
+        if (lineIntervalRef.current) clearInterval(lineIntervalRef.current);
+        return;
+      }
+      setConnectingLines((prev) => [...prev, CONNECTING_LOG_LINES[lineIdx]]);
+      lineIdx++;
+    }, 350);
+
+    const waitMs = 1200 + Math.random() * 2300;
+    if (Math.random() < DECOY_CHANCE) {
+      const decoyAt = waitMs * (0.35 + Math.random() * 0.3);
+      scheduleBenchmarkTimer(() => {
+        soundFx.playClick(500);
+        setPhase("decoy");
+        scheduleBenchmarkTimer(() => setPhase("connecting"), 260);
+      }, decoyAt);
+    }
+
+    scheduleBenchmarkTimer(() => {
+      if (lineIntervalRef.current) clearInterval(lineIntervalRef.current);
+      armTimeRef.current = performance.now();
+      soundFx.playSuccess();
+      setPhase("armed");
+    }, waitMs);
+  }, [scheduleBenchmarkTimer]);
+
+  const handleStartBenchmark = useCallback(() => {
+    soundFx.playClick(900);
+    benchmarkTimeoutsRef.current.forEach(clearTimeout);
+    benchmarkTimeoutsRef.current = [];
+    setResults([]);
+    setIsNewRecord(false);
+    startRound();
+  }, [startRound]);
+
+  // The whole stage is the click target during connecting/decoy/armed.
+  const handleStageClick = useCallback(() => {
+    if (phase === "connecting" || phase === "decoy") {
+      benchmarkTimeoutsRef.current.forEach(clearTimeout);
+      benchmarkTimeoutsRef.current = [];
+      if (lineIntervalRef.current) clearInterval(lineIntervalRef.current);
+      soundFx.playClick(200);
+      setPhase("toosoon");
+      setResults((prev) => [...prev, { ms: 999, falseStart: true }]);
+      return;
+    }
+    if (phase === "armed") {
+      const ms = Math.max(1, Math.round(performance.now() - armTimeRef.current));
+      soundFx.playSuccess();
+      setLastMs(ms);
+      setPhase("result");
+      setResults((prev) => [...prev, { ms, falseStart: false }]);
+    }
+  }, [phase]);
+
+  // Auto-advances to the next round (or the summary) a beat after a result
+  // lands, so the player doesn't have to click an extra "next" button.
+  useEffect(() => {
+    if (activeMode !== "latency") return;
+    if (phase !== "result" && phase !== "toosoon") return;
+    const isLastRound = results.length >= TOTAL_ROUNDS;
+    const t = setTimeout(() => {
+      if (isLastRound) setPhase("summary");
+      else startRound();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [activeMode, phase, results.length, startRound]);
+
+  // Checks/updates the persisted best score once the run finishes. Compares
+  // against bestEverRef (updated synchronously here) rather than re-reading
+  // localStorage, so a React Strict Mode double-invocation of this effect
+  // body sees its own update on the second pass and no-ops instead of
+  // flip-flopping isNewRecord back to false.
+  useEffect(() => {
+    if (activeMode !== "latency" || phase !== "summary") return;
+    const valid = results.filter((r) => !r.falseStart);
+    if (valid.length === 0) return;
+    const avg = Math.round(valid.reduce((sum, r) => sum + r.ms, 0) / valid.length);
+
+    if (bestEverRef.current === null || avg < bestEverRef.current) {
+      bestEverRef.current = avg;
+      localStorage.setItem("jake_portfolio_latency_best", String(avg));
+      setBestEver(avg);
+      setIsNewRecord(true);
+      soundFx.playSuccess();
+      if (avg < 250) fireConfetti();
+    }
+  }, [activeMode, phase, results]);
 
   useEffect(() => {
     return () => {
-      if (songTimerRef.current) clearInterval(songTimerRef.current);
       snapTimeoutsRef.current.forEach(clearTimeout);
+      benchmarkTimeoutsRef.current.forEach(clearTimeout);
+      if (lineIntervalRef.current) clearInterval(lineIntervalRef.current);
     };
   }, []);
 
@@ -750,7 +799,7 @@ export default function TechnicalExpertiseSection() {
 
   // Full reset of all QA simulation state — used both by the explicit
   // "Reset" button and automatically whenever the player leaves the QA
-  // studio, so switching to Piano/Maze/Physics and back always re-simulates
+  // studio, so switching to Load Test/Maze/Physics and back always re-simulates
   // fresh instead of resuming stale bugs, count, or breach state.
   const resetBugSimulation = useCallback(() => {
     // Cancel any still-pending Infinity Snap timers so a sequence started
@@ -777,7 +826,7 @@ export default function TechnicalExpertiseSection() {
   };
 
   // Leaving the QA studio for another mode resets the simulation, so it
-  // never keeps crawling/counting in the background of Piano or Maze.
+  // never keeps crawling/counting in the background of Load Test or Maze.
   useEffect(() => {
     if (activeMode === "qa") return;
     resetBugSimulation();
@@ -1129,24 +1178,25 @@ export default function TechnicalExpertiseSection() {
   // DYNAMIC MULTI-LANGUAGE CODE GENERATOR
   // -----------------------------------------------------------------
   const getDynamicCodeSnippet = () => {
-    if (activeMode === "piano") {
-      return `// TypeScript: Interactive Web Audio Synthesizer Piano
-import { useEffect } from "react";
+    if (activeMode === "latency") {
+      return `// TypeScript: Human Latency Benchmark
+async function measureRoundTrip(): Promise<number> {
+  await simulateNetworkDelay(1200, 3500);
 
-// Persistent Web Audio context handles rapid polyphonic playing
-export function playPianoNote(frequency: number = 440.0) {
-  const ctx = getSharedAudioContext();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  const sentAt = performance.now();
+  await waitForUserClick(); // the "response" — a human reflex
 
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-  gain.gain.setValueAtTime(0.12, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+  const roundTripMs = performance.now() - sentAt;
+  return Math.round(roundTripMs);
+}
 
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(); // Zero latency acoustic audio synthesis!
+// A click before the response arrives is a false start.
+function classify(ms: number): string {
+  if (ms < 200) return "Fiber Optic Reflexes";
+  if (ms < 300) return "Broadband Speed";
+  if (ms < 450) return "Solid Connection";
+  if (ms < 600) return "A Bit Laggy";
+  return "Dial-Up Vibes";
 }`;
     }
 
@@ -1229,6 +1279,14 @@ class ParticleEngine {
   // time to click this" instead of leaving the player to notice on their own.
   const shouldGlowGauntlet =
     activeMode === "qa" && !qaIsIdle && gauntletPhase === "hidden" && activeBugsCount >= 10;
+  const latencyIsRunning = activeMode === "latency" && phase !== "idle" && phase !== "summary";
+  // One shared "which round is this" number for both the sidebar and the
+  // stage — computing it separately in two places let them disagree (one
+  // showing the round in progress, the other the round just completed).
+  const latencyRoundDisplay =
+    phase === "result" || phase === "toosoon"
+      ? results.length
+      : Math.min(results.length + 1, TOTAL_ROUNDS);
 
   return (
     <section id="skills" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
@@ -1246,29 +1304,29 @@ class ParticleEngine {
 
       {/* 4 Multi-Stack Engineering Studios */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        {/* Studio 1: Playable Piano */}
+        {/* Studio 1: Latency Benchmark */}
         <button
           onClick={() => {
             soundFx.playClick(900);
-            setActiveMode("piano");
+            setActiveMode("latency");
           }}
           className={`p-3 rounded-2xl flex items-center gap-2.5 transition-all text-left cursor-pointer border ${
-            activeMode === "piano"
+            activeMode === "latency"
               ? "bg-zinc-800/90 border-emerald-500/50 shadow-md scale-[1.01]"
               : "bg-zinc-950/70 border-white/[0.06] hover:bg-zinc-900 text-zinc-400"
           }`}
         >
-          <LuMusic
+          <LuGauge
             className={`w-4 h-4 shrink-0 ${
-              activeMode === "piano" ? "text-emerald-400" : "text-zinc-500"
+              activeMode === "latency" ? "text-emerald-400" : "text-zinc-500"
             }`}
           />
           <div className="min-w-0">
             <div className="text-xs font-rubik font-semibold text-white truncate">
-              Playable Piano
+              Latency Benchmark
             </div>
             <div className="text-[10px] font-mono text-cyan-400 truncate">
-              Web Audio Synth
+              Human Ping Test
             </div>
           </div>
         </button>
@@ -1371,7 +1429,7 @@ class ParticleEngine {
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
                 <span className="text-xs font-mono text-zinc-400 font-medium ml-1">
-                  {activeMode === "piano" && "piano_synthesizer.ts"}
+                  {activeMode === "latency" && "latency_benchmark.ts"}
                   {activeMode === "qa" && "test_bug_hunter.py"}
                   {activeMode === "pathfinding" && "graph_pathfinder.py"}
                   {activeMode === "physics" && "physics_vectors.js"}
@@ -1420,28 +1478,36 @@ class ParticleEngine {
 
           {/* Interactive Parameters Strip */}
           <div className="space-y-3 pt-3 border-t border-white/[0.06]">
-            {/* 1. PIANO CONTROLS */}
-            {activeMode === "piano" && (
+            {/* 1. LATENCY BENCHMARK PROGRESS & TIER LEGEND */}
+            {activeMode === "latency" && (
               <div className="space-y-2.5 text-xs font-mono">
-                <span className="text-zinc-400 block">Select Song Preset to Auto-Play:</span>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {SONG_PRESETS.map((song) => (
-                    <button
-                      key={song.id}
-                      type="button"
-                      onClick={() => {
-                        soundFx.playClick(900);
-                        setSelectedSongId(song.id);
-                      }}
-                      className={`p-2 rounded-xl text-left text-[11px] font-mono transition-all cursor-pointer flex items-center justify-between ${
-                        selectedSongId === song.id
-                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold"
-                          : "bg-zinc-900 text-zinc-400 hover:bg-zinc-850"
-                      }`}
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-400">
+                    {phase === "idle"
+                      ? "Ready to benchmark"
+                      : phase === "summary"
+                      ? "Benchmark complete"
+                      : `Round ${latencyRoundDisplay}/${TOTAL_ROUNDS}`}
+                  </span>
+                  {bestEver !== null && (
+                    <span className="text-amber-300 font-bold flex items-center gap-1">
+                      <LuTrophy className="w-3 h-3" /> Best: {bestEver}ms
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-1">
+                  {LATENCY_TIERS.map((tier) => (
+                    <div
+                      key={tier.label}
+                      className="p-1.5 rounded-lg bg-zinc-900 flex items-center justify-between text-[11px]"
                     >
-                      <span className="truncate">{song.title}</span>
-                      <span className="text-[10px] opacity-75">{song.notes.length} notes</span>
-                    </button>
+                      <span className={`font-bold flex items-center gap-1.5 ${tier.textClass}`}>
+                        <tier.icon className="w-3.5 h-3.5 shrink-0" /> {tier.label}
+                      </span>
+                      <span className="text-zinc-500">
+                        {tier.max === Infinity ? "600ms+" : `< ${tier.max}ms`}
+                      </span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1588,13 +1654,17 @@ class ParticleEngine {
                 A playful take on QA backlog pressure — defects multiply the longer they run wild, smashable by hand or purged all at once with the Infinity Gauntlet.
               </p>
             )}
+            {activeMode === "latency" && (
+              <p className="text-[11px] text-zinc-400 font-mono leading-relaxed">
+                A human &quot;ping test&quot; — wait for the signal, click the instant it flashes. Click too early and it&apos;s a false start.
+              </p>
+            )}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
-                  if (activeMode === "piano") {
-                    if (isPlayingSong) handleStopSong();
-                    else handleAutoPlaySong();
+                  if (activeMode === "latency") {
+                    if (phase === "idle" || phase === "summary") handleStartBenchmark();
                   } else if (activeMode === "qa") {
                     if (qaIsIdle) {
                       handleResetBugSimulation();
@@ -1611,7 +1681,7 @@ class ParticleEngine {
                     });
                   }
                 }}
-                disabled={isSolving || (gauntletPhase !== "hidden" && !hasBeenSnapped)}
+                disabled={isSolving || (gauntletPhase !== "hidden" && !hasBeenSnapped) || latencyIsRunning}
                 className={`flex-1 py-3 rounded-2xl font-rubik text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xl active:scale-98 ${
                   isSolving
                     ? "bg-emerald-600 text-white cursor-wait"
@@ -1619,8 +1689,8 @@ class ParticleEngine {
                     ? "bg-amber-500 text-zinc-950 cursor-wait animate-pulse"
                     : qaIsIdle
                     ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-white/[0.1]"
-                    : isPlayingSong
-                    ? "bg-amber-500 hover:bg-amber-400 text-zinc-950"
+                    : latencyIsRunning
+                    ? "bg-zinc-800 text-zinc-400 cursor-wait border border-white/[0.1]"
                     : shouldGlowGauntlet
                     ? "bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-zinc-950 ring-2 ring-amber-300/80 animate-gauntlet-glow"
                     : "bg-emerald-400 hover:bg-emerald-300 text-zinc-950 shadow-emerald-500/25"
@@ -1641,10 +1711,10 @@ class ParticleEngine {
                     <LuRotateCcw className="w-4 h-4 animate-spin" />
                     <span>Executing Viewport Infinity Snap...</span>
                   </>
-                ) : isPlayingSong ? (
+                ) : latencyIsRunning ? (
                   <>
                     <LuRotateCcw className="w-4 h-4 animate-spin" />
-                    <span>Stop Auto-Play ⏹</span>
+                    <span>Watch the Stage...</span>
                   </>
                 ) : qaIsIdle ? (
                   <>
@@ -1655,7 +1725,7 @@ class ParticleEngine {
                   <>
                     <LuPlay className="w-4 h-4 fill-current" />
                     <span>
-                      {activeMode === "piano" && "Auto-Play Song on Piano ♫"}
+                      {activeMode === "latency" && (phase === "summary" ? "Run Again ↻" : "Run Benchmark")}
                       {activeMode === "qa" && "Raise the Infinity Gauntlet"}
                       {activeMode === "pathfinding" && "Solve Maze Sequentially"}
                       {activeMode === "physics" && "Run Physics Impulse"}
@@ -1682,76 +1752,147 @@ class ParticleEngine {
 
           {/* STAGE WORKSPACE */}
           <div className="flex-1 p-3 sm:p-4 flex flex-col justify-center relative overflow-hidden">
-            {/* 1. PLAYABLE PIANO STAGE (Fixed, Non-Shifting, Fast Polyphony) */}
-            {activeMode === "piano" && (
-              <div className="space-y-4 p-4 rounded-2xl bg-zinc-950/90 border border-white/[0.06]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-rubik font-bold text-white text-base">
-                      Interactive Web Audio Piano
-                    </h4>
-                    <p className="text-xs text-zinc-400 font-mono mt-0.5">
-                      Click any key to play notes, or hit Auto-Play above!
+            {/* 1. LATENCY BENCHMARK STAGE — human "ping test" reflex game */}
+            {activeMode === "latency" && (
+              <div
+                onClick={handleStageClick}
+                className={`relative w-full h-[350px] sm:h-[370px] rounded-2xl border shadow-inner overflow-hidden flex flex-col items-center justify-center p-3.5 transition-colors duration-150 select-none ${
+                  phase === "armed"
+                    ? "bg-emerald-400 border-emerald-300 cursor-pointer"
+                    : phase === "decoy"
+                    ? "bg-amber-500/90 border-amber-400 cursor-pointer"
+                    : phase === "toosoon"
+                    ? "bg-red-950 border-red-500/40"
+                    : "bg-gradient-to-b from-zinc-950 via-[#09090d] to-zinc-900 border-white/[0.08]"
+                } ${phase === "connecting" ? "cursor-pointer" : ""}`}
+              >
+                {phase === "idle" && (
+                  <div className="text-center space-y-2">
+                    <LuGauge className="w-10 h-10 text-zinc-600 mx-auto" />
+                    <p className="text-sm font-rubik text-zinc-400">
+                      Press &quot;Run Benchmark&quot; to start
+                    </p>
+                    <p className="text-xs font-mono text-zinc-600">
+                      5 rounds &bull; click the instant it turns green
                     </p>
                   </div>
-                  <span className="text-xs font-mono text-emerald-400 font-bold bg-emerald-950/80 px-2.5 py-1 rounded-xl border border-emerald-500/30">
-                    {activeKeys.size > 0
-                      ? `Active: ${Array.from(activeKeys).join(", ")}`
-                      : "Ready to Play"}
-                  </span>
-                </div>
+                )}
 
-                {/* THE PIANO KEYBOARD - FIXED NON-SHIFTING GEOMETRY */}
-                <div className="w-full h-36 bg-black/90 p-2 rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden flex justify-center">
-                  <div className="flex w-full h-full relative select-none">
-                    {PIANO_KEYBOARD.map((item) => {
-                      const isWhiteActive = activeKeys.has(item.note);
-                      const hasBlack = !!item.blackKey;
-                      const isBlackActive = hasBlack && activeKeys.has(item.blackKey!.note);
-
-                      return (
-                        <div key={item.note} className="relative flex-1 h-full">
-                          {/* White Key */}
-                          <button
-                            type="button"
-                            onClick={() => playPianoNote(item.freq, item.note)}
-                            className={`w-full h-full rounded-b-xl border border-zinc-400/30 transition-colors duration-75 flex flex-col justify-end items-center pb-2 cursor-pointer outline-none focus:outline-none ${
-                              isWhiteActive
-                                ? "bg-emerald-400 text-zinc-950 font-bold shadow-inner"
-                                : "bg-gradient-to-b from-zinc-100 to-zinc-300 hover:from-white hover:to-zinc-200 text-zinc-800 font-mono shadow-md"
-                            }`}
-                          >
-                            <span className="text-[10px] font-bold opacity-75">{item.note}</span>
-                          </button>
-
-                          {/* Black Key */}
-                          {hasBlack && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                playPianoNote(item.blackKey!.freq, item.blackKey!.note);
-                              }}
-                              className={`absolute top-0 -right-[30%] w-[60%] h-[60%] rounded-b-lg border border-black z-20 transition-colors duration-75 flex flex-col justify-end items-center pb-1 cursor-pointer outline-none focus:outline-none ${
-                                isBlackActive
-                                  ? "bg-emerald-400 text-zinc-950 font-bold shadow-inner"
-                                  : "bg-gradient-to-b from-zinc-900 to-black hover:from-zinc-800 hover:to-zinc-950 text-white/80 shadow-2xl"
-                              }`}
-                            >
-                              <span className="text-[7px] font-bold opacity-80">
-                                {item.blackKey!.note.replace("#", "♯")}
-                              </span>
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                {(phase === "connecting" || phase === "decoy") && (
+                  <div className="w-full max-w-sm space-y-2">
+                    <div className="flex items-center gap-2 justify-center mb-3">
+                      <span
+                        className={`w-2 h-2 rounded-full animate-pulse ${
+                          phase === "decoy" ? "bg-zinc-950" : "bg-amber-400"
+                        }`}
+                      />
+                      <span
+                        className={`text-xs font-mono ${
+                          phase === "decoy" ? "text-zinc-950 font-bold" : "text-zinc-400"
+                        }`}
+                      >
+                        {phase === "decoy" ? "Not yet" : "Connecting..."}
+                      </span>
+                    </div>
+                    {phase === "connecting" && (
+                      <div className="font-mono text-[11px] text-zinc-500 space-y-1 text-center">
+                        {connectingLines.map((line, i) => (
+                          <p key={i} className="animate-fade-in-fast">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
 
-                <p className="text-xs text-zinc-400 font-rubik text-center">
-                  Synthesized via browser&apos;s native Web Audio API oscillators. Pure mathematical sound waves!
-                </p>
+                {phase === "armed" && (
+                  <p className="text-3xl sm:text-4xl font-rubik font-black text-zinc-950 tracking-tight">
+                    CLICK NOW!
+                  </p>
+                )}
+
+                {(phase === "result" || phase === "toosoon") && (
+                  <div className="text-center space-y-2">
+                    {phase === "toosoon" ? (
+                      <>
+                        <p className="text-2xl font-rubik font-bold text-red-400 flex items-center justify-center gap-2">
+                          <LuTriangleAlert className="w-6 h-6" /> Too Soon!
+                        </p>
+                        <p className="text-xs font-mono text-red-300/70">Connection Refused (429)</p>
+                      </>
+                    ) : (
+                      lastMs !== null &&
+                      (() => {
+                        const tier = getLatencyTier(lastMs);
+                        return (
+                          <>
+                            <p className={`text-4xl font-rubik font-black ${tier.textClass}`}>{lastMs}ms</p>
+                            <p
+                              className={`text-sm font-mono font-bold flex items-center justify-center gap-1.5 ${tier.textClass}`}
+                            >
+                              <tier.icon className="w-4 h-4" /> {tier.label}
+                            </p>
+                          </>
+                        );
+                      })()
+                    )}
+                    <p className="text-[10px] font-mono text-zinc-600">
+                      Round {latencyRoundDisplay}/{TOTAL_ROUNDS} &bull; next round starting...
+                    </p>
+                  </div>
+                )}
+
+                {phase === "summary" &&
+                  (() => {
+                    const valid = results.filter((r) => !r.falseStart);
+                    const avg = valid.length
+                      ? Math.round(valid.reduce((s, r) => s + r.ms, 0) / valid.length)
+                      : 0;
+                    const best = valid.length ? Math.min(...valid.map((r) => r.ms)) : 0;
+                    const tier = getLatencyTier(avg);
+                    return (
+                      <div className="w-full max-w-sm text-center space-y-3">
+                        <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
+                          Benchmark Complete
+                        </p>
+                        <p className={`text-5xl font-rubik font-black ${tier.textClass}`}>{avg}ms</p>
+                        <p className={`text-sm font-mono font-bold flex items-center justify-center gap-1.5 ${tier.textClass}`}>
+                          <tier.icon className="w-4 h-4" /> {tier.label}
+                        </p>
+
+                        {isNewRecord && (
+                          <p className="text-xs font-mono font-bold text-amber-300 animate-pulse flex items-center justify-center gap-1.5">
+                            <LuTrophy className="w-3.5 h-3.5" /> New Personal Best!
+                          </p>
+                        )}
+
+                        <div className="flex items-end justify-center gap-1.5 h-14 pt-2">
+                          {results.map((r, i) => {
+                            const t = r.falseStart ? null : getLatencyTier(r.ms);
+                            const heightPct = r.falseStart ? 100 : Math.min(100, (r.ms / 700) * 100);
+                            return (
+                              <div key={i} className="flex flex-col items-center gap-1 w-6">
+                                <div className="w-full h-10 bg-zinc-800 rounded-sm overflow-hidden flex flex-col justify-end">
+                                  <div
+                                    className={`w-full ${r.falseStart ? "bg-red-600" : t!.barClass}`}
+                                    style={{ height: `${heightPct}%` }}
+                                  />
+                                </div>
+                                <span className="text-[9px] font-mono text-zinc-600">
+                                  {r.falseStart ? "✗" : r.ms}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <p className="text-[10px] font-mono text-zinc-600">
+                          Best this run: {best}ms &bull; Click &quot;Run Again&quot; to retry
+                        </p>
+                      </div>
+                    );
+                  })()}
               </div>
             )}
 
