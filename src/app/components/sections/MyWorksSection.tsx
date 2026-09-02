@@ -112,10 +112,27 @@ const PROJECTS_DATA: Project[] = [
   },
 ];
 
+const AUTO_ADVANCE_MS = 4000;
+const RESUME_AFTER_MS = 4500;
+
+// A clone of the first project appended after the last one. Auto-advance
+// scrolls onto this clone like any other card, then — once it's settled
+// into view — jumps instantly (no animation) back to the real first card.
+// Since the clone is visually identical, that jump is imperceptible, so
+// the loop reads as one continuous forward motion instead of a rewind.
+const CAROUSEL_ITEMS = [...PROJECTS_DATA, PROJECTS_DATA[0]];
+
 export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  // True only while a scroll was triggered by OUR OWN code (auto-advance or
+  // a dot click), so the scroll listener below can tell "the carousel
+  // moved" apart from "the user moved the carousel" and only pause on the
+  // latter.
+  const isProgrammaticScrollRef = useRef(false);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // One interaction model at every breakpoint: swipe/drag/scroll through
   // full project cards. The active dot tracks whichever card is actually
@@ -140,10 +157,72 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
     return () => observer.disconnect();
   }, []);
 
-  const scrollToIndex = useCallback((idx: number) => {
-    soundFx.playClick(900);
-    cardRefs.current[idx]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  const scrollToIndex = useCallback((idx: number, programmatic = false, instant = false) => {
+    isProgrammaticScrollRef.current = programmatic;
+    cardRefs.current[idx]?.scrollIntoView({
+      behavior: instant ? "auto" : "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+    // Smooth-scroll takes a moment to settle; only clear the flag once it
+    // realistically has, so the scroll events it fires along the way don't
+    // get misread as user input.
+    if (programmatic) {
+      setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, instant ? 50 : 700);
+    }
   }, []);
+
+  // Once the trailing clone card settles into view, snap invisibly back to
+  // the real first card so the loop reads as continuous, not a rewind.
+  useEffect(() => {
+    if (activeIndex !== PROJECTS_DATA.length) return;
+    const timeout = setTimeout(() => {
+      scrollToIndex(0, true, true);
+      setActiveIndex(0);
+    }, 550);
+    return () => clearTimeout(timeout);
+  }, [activeIndex, scrollToIndex]);
+
+  // Auto-advance loop, paused whenever the user has taken control. Skips a
+  // beat while sitting on the clone, mid-loop-reset above.
+  useEffect(() => {
+    if (isPaused || activeIndex >= PROJECTS_DATA.length) return;
+    const interval = setInterval(() => {
+      scrollToIndex(activeIndex + 1, true);
+    }, AUTO_ADVANCE_MS);
+    return () => clearInterval(interval);
+  }, [isPaused, activeIndex, scrollToIndex]);
+
+  // Any real user interaction pauses auto-advance and schedules it to
+  // resume after a period of inactivity — so it never fights a mid-swipe,
+  // but always picks back up once the user stops touching it.
+  const handleUserTakeover = useCallback(() => {
+    setIsPaused(true);
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => setIsPaused(false), RESUME_AFTER_MS);
+  }, []);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (isProgrammaticScrollRef.current) return;
+      handleUserTakeover();
+    };
+
+    container.addEventListener("pointerdown", handleUserTakeover);
+    container.addEventListener("wheel", handleUserTakeover, { passive: true });
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener("pointerdown", handleUserTakeover);
+      container.removeEventListener("wheel", handleUserTakeover);
+      container.removeEventListener("scroll", handleScroll);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
+  }, [handleUserTakeover]);
 
   return (
     <section id="projects" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
@@ -162,9 +241,9 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
       >
-        {PROJECTS_DATA.map((p, idx) => (
+        {CAROUSEL_ITEMS.map((p, idx) => (
           <div
-            key={p.id}
+            key={idx < PROJECTS_DATA.length ? p.id : `${p.id}-clone`}
             ref={(el) => {
               cardRefs.current[idx] = el;
             }}
@@ -287,10 +366,13 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
           <button
             key={p.id}
             type="button"
-            onClick={() => scrollToIndex(idx)}
+            onClick={() => {
+              soundFx.playClick(900);
+              scrollToIndex(idx);
+            }}
             aria-label={`Go to ${p.title}`}
             className={`h-1.5 rounded-full transition-all cursor-pointer ${
-              idx === activeIndex ? "w-6 bg-emerald-400" : "w-1.5 bg-zinc-700 hover:bg-zinc-600"
+              idx === activeIndex % PROJECTS_DATA.length ? "w-6 bg-emerald-400" : "w-1.5 bg-zinc-700 hover:bg-zinc-600"
             }`}
           />
         ))}
