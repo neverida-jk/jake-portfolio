@@ -1622,7 +1622,7 @@ class ParticleEngine {
                     : isPlayingSong
                     ? "bg-amber-500 hover:bg-amber-400 text-zinc-950"
                     : shouldGlowGauntlet
-                    ? "bg-emerald-400 hover:bg-emerald-300 text-zinc-950 shadow-[0_0_28px_6px_rgba(16,185,129,0.65)] ring-2 ring-emerald-300/70 animate-pulse"
+                    ? "bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-zinc-950 ring-2 ring-amber-300/80 animate-gauntlet-glow"
                     : "bg-emerald-400 hover:bg-emerald-300 text-zinc-950 shadow-emerald-500/25"
                 }`}
               >
@@ -1790,7 +1790,7 @@ class ParticleEngine {
 
                     {hasEscapedBugs && !hasBeenSnapped && (
                       <span className="hidden sm:inline-block px-2 py-0.5 rounded-lg bg-amber-950/90 border border-amber-500/40 text-amber-300 font-bold animate-pulse text-[10px]">
-                        ⚠️ Escaped to Viewport!
+                        ⚠️ On the Loose!
                       </span>
                     )}
 

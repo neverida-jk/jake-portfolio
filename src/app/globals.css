@@ -151,6 +151,22 @@
     animation: ash-drift 1.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
   }
 
+  /* Gold breathing glow for the "raise the gauntlet" call-to-action —
+     matches the Infinity Gauntlet's own gold palette, and pulses the
+     shadow/ring intensity rather than just fading opacity in and out. */
+  @keyframes gauntlet-glow {
+    0%, 100% {
+      box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.35), 0 0 0 0 rgba(252, 211, 77, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 32px 10px rgba(245, 158, 11, 0.85), 0 0 0 5px rgba(252, 211, 77, 0.25);
+    }
+  }
+
+  .animate-gauntlet-glow {
+    animation: gauntlet-glow 1.3s ease-in-out infinite;
+  }
+
   .animate-fade-in {
     animation: fade-in 2s ease-in-out forwards;
   }
