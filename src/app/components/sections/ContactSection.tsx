@@ -12,6 +12,7 @@ import Dual from "@/components/system/Dual";
 import { spring } from "@/lib/motion";
 import { LuCopy, LuCheck, LuMail, LuArrowUpRight } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
+import LoadTime from "../system/LoadTime";
 
 interface ContactSectionProps {
   onCopyEmail?: () => void;
@@ -243,13 +244,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
           <span className="hidden sm:inline text-ink-3">&bull;</span>
           <span className="text-ink-3">Built with Next.js 15, React 19, and Tailwind CSS v4.</span>
         </div>
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-break-it"))}
-          className="mt-4 text-ink-3 underline decoration-dotted underline-offset-4 transition-colors hover:text-alpine focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit rounded cursor-pointer"
-        >
-          {copy.common.breakIt}
-        </button>
+        <LoadTime template={copy.common.loadTime} />
       </footer>
     </section>
   );

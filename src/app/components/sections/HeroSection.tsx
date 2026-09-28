@@ -15,6 +15,7 @@ import { LuArrowDown, LuCheck, LuCopy, LuMapPin } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
 import Dual from "../system/Dual";
 import Contours from "../system/Contours";
+import { INTRO_REVEAL_EVENT } from "../system/IntroSequence";
 import Magnetic from "../motion/Magnetic";
 import GitHubActivity from "../system/GitHubActivity";
 import { copy } from "@/content/copy";
@@ -27,7 +28,6 @@ interface HeroSectionProps {
 }
 
 const EMAIL = "jlrneverida@gmail.com";
-const INTRO_KEY = "jake.intro.seen";
 const NAME_LINES = ["Jake", "Neverida"];
 
 // The intro timeline, in seconds (§5.6). The name leads — it's the LCP
@@ -58,6 +58,10 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [copied, setCopied] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // Contours mount when the hero starts (not behind the intro overlay), as
+  // ONE instance for the current breakpoint — two animated copies, one
+  // CSS-hidden, was wasted work on every frame of the draw-in.
+  const [contours, setContours] = useState<null | "mobile" | "desktop">(null);
   const time = useManilaTime();
 
   // Keyframed from 0 so the animation starts from the CSS-hidden state
@@ -67,6 +71,16 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       opacity: [0, 1],
       y: [14, 0],
       transition: { duration: 0.7, delay: d * speed.current, ease: ease.out },
+    }),
+  };
+  // Transform-only entrance for the role line: fully opaque from the first
+  // paint, so the browser records it as the largest early paint and the
+  // page's load time settles immediately — instead of on whatever small
+  // element arrives later (like the GitHub line).
+  const lift: Variants = {
+    show: (d: number) => ({
+      y: [16, 0],
+      transition: { duration: 0.8, delay: d * speed.current, ease: ease.out },
     }),
   };
   const rise: Variants = {
@@ -80,7 +94,10 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     // Hydrated after the CSS failsafe already revealed everything (slow
     // device/network) — replaying the intro now would flash content out.
     const lateHydration = performance.now() > 3200;
-    const seen = sessionStorage.getItem(INTRO_KEY) === "1";
+    const root = document.documentElement;
+    // The opening is playing: wait for its fly-through before rising.
+    const introPlaying = !root.classList.contains("intro-seen");
+    const layout = window.matchMedia("(min-width: 640px)").matches ? "desktop" : "mobile";
 
     // Read the preference directly: the hook reports false on its first pass
     // (hydration safety), which would start the intro for a frame and then
@@ -88,16 +105,16 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced || lateHydration) {
       controls.set("show");
+      setContours(layout);
       return;
     }
 
-    // Repeat visits in the same session get a brisk version, not the full show.
-    speed.current = seen ? 0.3 : 1;
+    // Straight after the opening: the full rise. Repeat visits: brisk.
+    speed.current = introPlaying ? 1 : 0.35;
     let done = false;
     const finish = () => {
       if (done) return;
       done = true;
-      sessionStorage.setItem(INTRO_KEY, "1");
       window.removeEventListener("keydown", skip);
       window.removeEventListener("pointerdown", skip);
       window.removeEventListener("wheel", skip);
@@ -114,8 +131,22 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     window.addEventListener("wheel", skip, { passive: true });
     window.addEventListener("touchstart", skip, { passive: true });
 
-    controls.start("show").then(finish);
-    return finish;
+    const begin = () => {
+      setContours(layout);
+      controls.start("show").then(finish);
+    };
+    let fallback: ReturnType<typeof setTimeout> | undefined;
+    if (introPlaying) {
+      window.addEventListener(INTRO_REVEAL_EVENT, begin, { once: true });
+      fallback = setTimeout(begin, 3000); // in case the opening never reports
+    } else {
+      begin();
+    }
+    return () => {
+      window.removeEventListener(INTRO_REVEAL_EVENT, begin);
+      if (fallback) clearTimeout(fallback);
+      finish();
+    };
   }, [controls]);
 
   // Leaving base camp: the hero recedes as you scroll past it.
@@ -154,8 +185,8 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
         aria-hidden="true"
       >
         {/* Mobile: the peak sits in the open space top-right, clear of the name. */}
-        <Contours
-          className="absolute right-0 top-0 h-[62svh] w-full sm:hidden opacity-80"
+        {contours === "mobile" && <Contours
+          className="absolute right-0 top-0 h-[62svh] w-full opacity-80"
           seed={2954}
           rings={9}
           cx={800}
@@ -164,15 +195,15 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           dr={40}
           draw
           drawDelay={0.05}
-        />
+        />}
         {/* Desktop: a wide landform behind the Now panel. */}
-        <Contours
-          className="absolute -right-[10%] top-[-8%] hidden h-[118%] w-[78%] sm:block lg:w-[64%] opacity-90"
+        {contours === "desktop" && <Contours
+          className="absolute -right-[10%] top-[-8%] h-[118%] w-[78%] lg:w-[64%] opacity-90"
           seed={2954}
           rings={10}
           draw
           drawDelay={0.05}
-        />
+        />}
       </motion.div>
 
       <motion.div
@@ -221,9 +252,9 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           </h1>
 
           <motion.div
-            className="intro-fade mt-7 max-w-[34rem]"
+            className="intro-lift mt-7 max-w-[34rem]"
             custom={T.role}
-            variants={fade}
+            variants={lift}
             animate={controls}
           >
             <Dual value={copy.hero.role} className="text-h3 leading-snug text-ink-2 text-balance" />
@@ -292,7 +323,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           variants={fade}
           animate={controls}
         >
-          <div className="rounded-3xl border border-line bg-surface/85 p-6 shadow-[var(--e2)] backdrop-blur-[2px]">
+          <div className="rounded-3xl border border-line bg-surface/90 p-6 shadow-[var(--e2)]">
             <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.14em]">
               <span className="flex items-center gap-2 text-ink-2">
                 <span className="relative flex h-2 w-2" aria-hidden="true">
@@ -357,8 +388,10 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           <span className="relative block h-7 w-px overflow-hidden bg-line">
             <motion.span
               className="absolute inset-x-0 top-0 block h-3 bg-ink-2"
-              animate={reduceMotion ? undefined : { y: ["-100%", "240%"] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: ease.inOut }}
+              // Stops once the visitor scrolls — an infinite loop kept writing
+              // styles every frame long after the cue had faded out.
+              animate={reduceMotion || scrolled ? { y: "-100%" } : { y: ["-100%", "240%"] }}
+              transition={scrolled ? { duration: 0 } : { duration: 1.6, repeat: Infinity, ease: ease.inOut }}
             />
           </span>
         </motion.div>

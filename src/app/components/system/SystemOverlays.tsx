@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuVolume2 } from "react-icons/lu";
 import { copy } from "@/content/copy";
@@ -10,25 +9,15 @@ import { soundFx } from "@/util/sound";
 import { fireConfetti } from "@/util/confetti";
 import Cursor from "./Cursor";
 
-// Loaded only when someone actually opens Break It mode (§10: lazy-load heavy layers).
-const BreakItHUD = dynamic(() => import("./BreakItHUD"), { ssr: false });
 
 const INVITE_KEY = "jake.soundInvite.shown";
 const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
 
 // Site-wide, opt-in layers that don't belong to any one section: the custom
-// cursor, Break It mode, the one-time sound invite, and the Konami egg.
+// cursor, the one-time sound invite, and the Konami egg.
 export default function SystemOverlays() {
-  const [breakIt, setBreakIt] = useState(false);
   const [invite, setInvite] = useState(false);
   const konamiPos = useRef(0);
-
-  // Break It opens from the command palette and the footer link.
-  useEffect(() => {
-    const open = () => setBreakIt(true);
-    window.addEventListener("open-break-it", open);
-    return () => window.removeEventListener("open-break-it", open);
-  }, []);
 
   // Sound is muted by default. After the visitor's first real click on
   // something interactive, offer it once per session — never auto-play.
@@ -76,7 +65,6 @@ export default function SystemOverlays() {
   return (
     <>
       <Cursor />
-      {breakIt && <BreakItHUD isOpen={breakIt} onClose={() => setBreakIt(false)} />}
 
       <AnimatePresence>
         {invite && (

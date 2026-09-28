@@ -33,14 +33,17 @@ function scrollToSection(id: string) {
 export default function Altimeter() {
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
-  const springProgress = useSpring(scrollYProgress, { stiffness: 58, damping: 22, mass: 0.4 });
   // Reduced motion: track raw scroll directly — no spring lag/overshoot —
   // rather than freezing the readout, since this is a functional progress
   // indicator, not ambient motion.
-  const progress = reduceMotion ? scrollYProgress : springProgress;
+  // Raw scroll, not the spring: the rail is a progress indicator, and a
+  // spring made it visibly trail behind the scroll.
+  const progress = scrollYProgress;
   const activeId = useActiveSection();
   const [offsets, setOffsets] = useState<Record<string, number>>({});
-  const [metres, setMetres] = useState(0);
+  // The readout is written straight to the DOM: a React state update per
+  // scroll frame re-rendered the whole rail (and its layout-animated dots).
+  const readoutRef = useRef<HTMLSpanElement>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const lastWaypoint = useRef<string | null>(null);
 
@@ -72,7 +75,7 @@ export default function Altimeter() {
   }, []);
 
   useMotionValueEvent(progress, "change", (latest) => {
-    setMetres(Math.round(latest * SUMMIT_METRES));
+    if (readoutRef.current) readoutRef.current.textContent = `${Math.round(latest * SUMMIT_METRES).toLocaleString("en-US")} m`;
   });
 
   useEffect(() => {
@@ -101,8 +104,8 @@ export default function Altimeter() {
         aria-hidden="true"
         data-print-hide
       >
-        <span className="font-mono text-[11px] text-ink-2 tabular-nums">
-          {metres.toLocaleString("en-US")} m
+        <span ref={readoutRef} className="font-mono text-[11px] text-ink-2 tabular-nums">
+          0 m
         </span>
 
         <div className="relative w-px h-56 bg-line">

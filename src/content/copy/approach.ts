@@ -23,7 +23,7 @@ export function getApproachPrinciples(projectCount: number): ApproachPrinciple[]
       citesWork: false,
       body: {
         plain: "Quality is a habit, not a final step — I test as I build.",
-        technical: "Press ⌘K → Break It to run this site's own accessibility and behaviour test suite against itself.",
+        technical: "This site is keyboard-, screen-reader- and reduced-motion-tested — and the footer shows how fast it loaded on your device, measured live.",
       },
     },
     {

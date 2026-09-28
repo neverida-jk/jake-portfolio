@@ -18,7 +18,6 @@ import {
   LuVolume2,
   LuVolumeX,
   LuPrinter,
-  LuBug,
   LuFlag,
   LuMountainSnow,
 } from "react-icons/lu";
@@ -201,7 +200,6 @@ export default function CommandPalette({
       { id: "act-github", title: "Open GitHub profile", category: "Actions", icon: <SiGithub className="h-4 w-4" />, action: () => window.open("https://github.com/neverida-jk", "_blank", "noopener,noreferrer") },
       { id: "act-terminal", title: "Open terminal", category: "Actions", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => onOpenTerminal?.() },
       { id: "act-print", title: "Print résumé", category: "Actions", icon: <LuPrinter className="h-4 w-4" />, action: () => window.print() },
-      { id: "act-break-it", title: "Break It mode", category: "Actions", icon: <LuBug className="h-4 w-4" />, keywords: "qa test self-check", action: () => window.dispatchEvent(new CustomEvent("open-break-it")) },
       { id: "act-summit", title: "Jump to summit", category: "Actions", icon: <LuFlag className="h-4 w-4" />, action: () => scrollToSection("contact") },
       {
         id: "act-sound",
@@ -217,7 +215,7 @@ export default function CommandPalette({
 
   const results = useMemo(() => {
     if (!query.trim()) {
-      const ids = recentIds.length > 0 ? recentIds : ["nav-hero", "nav-work", "nav-toolkit", "nav-contact", "act-print", "act-break-it"];
+      const ids = recentIds.length > 0 ? recentIds : ["nav-hero", "nav-work", "nav-toolkit", "nav-contact", "act-print"];
       const byId = new Map(commands.map((c) => [c.id, c]));
       const suggested = ids.map((id) => byId.get(id)).filter((c): c is CommandItem => !!c);
       return suggested.map((c) => ({ cmd: c, indices: [] as number[] }));

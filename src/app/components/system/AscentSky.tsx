@@ -1,22 +1,11 @@
 "use client";
 
 import React from "react";
-import {
-  motion,
-  useMotionValue,
-  useMotionTemplate,
-  useScroll,
-  useSpring,
-  useTransform,
-} from "framer-motion";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
-// Deterministic PRNG (mulberry32) — pure 32-bit integer ops only, so it
-// produces the exact same sequence on server and client. Math.sin-based
-// "seeded" randomness looked deterministic but wasn't: sin's argument
-// reduction for large inputs can differ at the ULP level between the
-// Node and browser V8 builds, which showed up as a real hydration
-// mismatch (§3.3 — "seeded, not Math.random at render").
+// Deterministic PRNG (mulberry32) — pure 32-bit integer ops, so server and
+// client produce the same star field (no hydration mismatch).
 function mulberry32(seed: number) {
   let t = seed;
   return () => {
@@ -28,103 +17,81 @@ function mulberry32(seed: number) {
   };
 }
 
-const STAR_COUNT = 40;
 const randStar = mulberry32(20260601);
-const STARS = Array.from({ length: STAR_COUNT }, () => ({
+const STARS = Array.from({ length: 46 }, () => ({
   x: randStar() * 100,
-  y: randStar() * 55,
+  y: randStar() * 100,
   size: 1 + randStar() * 0.9,
+  o: 0.25 + randStar() * 0.35,
 }));
 
-// Hand-authored mountain silhouettes, three depths. Plain static paths —
-// deterministic by construction, no randomness needed.
-const RIDGE_FAR =
+// The whole climb as ONE gradient painted down the full length of the page:
+// pre-dawn at the top, sunrise at the summit. It scrolls natively with the
+// content, so the sky changes colour as you climb with zero JavaScript and
+// zero per-frame repaints. (The previous version re-painted a full-screen
+// gradient every scroll frame — the main source of scroll lag.)
+const CLIMB_GRADIENT =
+  "linear-gradient(180deg, #04060C 0%, #05081A 14%, #0B1530 35%, #1A1634 52%, #2A1B36 64%, #402334 80%, #5E3030 91%, #7E4428 100%)";
+
+const RIDGES =
   "M0,230 L120,160 L220,200 L340,120 L460,190 L600,130 L720,185 L860,140 L1000,200 L1140,160 L1280,210 L1280,320 L0,320 Z";
-const RIDGE_MID =
+const RIDGES_MID =
   "M0,265 L160,205 L300,245 L420,175 L560,235 L700,185 L840,240 L980,195 L1120,250 L1280,215 L1280,320 L0,320 Z";
-const RIDGE_NEAR =
+const RIDGES_NEAR =
   "M0,292 L140,252 L280,287 L440,237 L600,282 L760,242 L920,287 L1080,247 L1280,282 L1280,320 L0,320 Z";
 
-// Fixed, decorative, behind everything (§5.1). One scroll-linked layer for
-// the whole site — sky gradient, sun, seeded stars, three parallax ridges.
 export default function AscentSky() {
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
-  const spring = useSpring(scrollYProgress, { stiffness: 58, damping: 22, mass: 0.4 });
-  const fixedProgress = useMotionValue(0.5);
-  const p = reduceMotion ? fixedProgress : spring;
+  const p = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.5 });
 
-  const top = useTransform(p, [0, 0.35, 0.62, 0.85, 1], ["#04060C", "#070F22", "#141230", "#241730", "#2A1A28"]);
-  const bottom = useTransform(p, [0, 0.35, 0.62, 0.85, 1], ["#070D1A", "#0F1C38", "#2E1E3C", "#5A2F33", "#8A4A28"]);
-  const bg = useMotionTemplate`linear-gradient(180deg, ${top} 0%, ${bottom} 100%)`;
-
-  const sunY = useTransform(p, [0.55, 1], ["115vh", "38vh"]);
-  const sunO = useTransform(p, [0.55, 0.8, 1], [0, 0.5, 0.9]);
-  // Capped well below full brightness: at full opacity, a star landing in a
-  // gap between words reads as stray punctuation.
-  const starO = useTransform(p, [0, 0.5], [0.55, 0]);
-
-  // Bounded, not proportional to raw scrollY: an unbounded -scrollY*k offset
-  // flings the ridges off-screen long before the summit, which is exactly
-  // where the sun needs them to crest behind. Climbing puts you above the
-  // range, so the ridges *sink* a little — nearer ones more (parallax depth).
-  const yFar = useTransform(p, [0, 1], [0, 18]);
-  const yMid = useTransform(p, [0, 1], [0, 38]);
-  const yNear = useTransform(p, [0, 1], [0, 64]);
+  // The sun is the one moving element: a single small composited layer,
+  // soft by gradient (no blur filter, no blend mode).
+  const sunY = useTransform(p, [0.55, 1], ["115vh", "40vh"]);
+  const sunO = useTransform(p, [0.55, 0.8, 1], [0, 0.55, 1]);
 
   return (
-    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none" aria-hidden="true" data-print-hide>
-      <motion.div className="absolute inset-0" style={{ background: bg }} />
-
-      <motion.div
-        className="absolute left-1/2 w-[60vmin] h-[60vmin] -translate-x-1/2 rounded-full"
-        style={{
-          top: 0,
-          y: sunY,
-          opacity: reduceMotion ? 0.7 : sunO,
-          willChange: "transform",
-          background: "radial-gradient(circle, var(--color-summit) 0%, transparent 70%)",
-          filter: "blur(40px)",
-          mixBlendMode: "screen",
-        }}
-      />
-
-      <motion.div className="absolute inset-0" style={{ opacity: reduceMotion ? 0 : starO }}>
-        {STARS.map((s, i) => (
-          <span
-            key={i}
-            className="absolute rounded-full bg-ink"
-            style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.size, height: s.size }}
-          />
-        ))}
-      </motion.div>
-
-      <svg
-        className="absolute bottom-0 left-0 w-full"
-        style={{ height: "40vh" }}
-        viewBox="0 0 1280 320"
-        preserveAspectRatio="none"
+    <>
+      {/* Sky + stars: part of the document, scrolls natively. */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-50 overflow-hidden"
+        style={{ background: CLIMB_GRADIENT }}
+        aria-hidden="true"
+        data-print-hide
       >
-        {/* Atmospheric perspective: far ridges are hazy and let the sky tint
-            through, near ridges are the darkest, most solid silhouettes. */}
-        <motion.path
-          d={RIDGE_FAR}
-          fill="var(--color-raised)"
-          fillOpacity={0.5}
-          style={{ y: reduceMotion ? 0 : yFar, willChange: "transform" }}
+        <div className="absolute inset-x-0 top-0 h-[150vh]">
+          {STARS.map((s, i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-ink"
+              style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.size, height: s.size, opacity: s.o }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Sun + ridgeline: fixed to the viewport, behind the content. */}
+      <div className="pointer-events-none fixed inset-0 -z-40 overflow-hidden" aria-hidden="true" data-print-hide>
+        <motion.div
+          className="absolute left-1/2 top-0 h-[70vmin] w-[70vmin] -translate-x-1/2 rounded-full"
+          style={{
+            y: reduceMotion ? "60vh" : sunY,
+            opacity: reduceMotion ? 0.6 : sunO,
+            willChange: "transform, opacity",
+            background:
+              "radial-gradient(circle, rgba(255,196,120,0.95) 0%, rgba(255,180,84,0.55) 18%, rgba(255,160,84,0.22) 38%, rgba(255,150,84,0.07) 56%, rgba(255,150,84,0) 70%)",
+          }}
         />
-        <motion.path
-          d={RIDGE_MID}
-          fill="var(--color-surface)"
-          fillOpacity={0.82}
-          style={{ y: reduceMotion ? 0 : yMid, willChange: "transform" }}
-        />
-        <motion.path
-          d={RIDGE_NEAR}
-          fill="var(--color-void)"
-          style={{ y: reduceMotion ? 0 : yNear, willChange: "transform" }}
-        />
-      </svg>
-    </div>
+        <svg
+          className="absolute inset-x-0 bottom-0 h-[40vh] w-full"
+          viewBox="0 0 1280 320"
+          preserveAspectRatio="none"
+        >
+          <path d={RIDGES} fill="var(--color-raised)" fillOpacity={0.5} />
+          <path d={RIDGES_MID} fill="var(--color-surface)" fillOpacity={0.82} />
+          <path d={RIDGES_NEAR} fill="var(--color-void)" />
+        </svg>
+      </div>
+    </>
   );
 }

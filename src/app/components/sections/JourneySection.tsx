@@ -68,7 +68,9 @@ function Trail({
 }) {
   const pathRef = useRef<SVGPathElement>(null);
   const [points, setPoints] = useState<Pt[]>([]);
-  const lengthRef = useRef(0);
+  // The hiker reads its position from a table sampled once at mount;
+  // getPointAtLength() on every scroll frame was measurable main-thread work.
+  const lut = useRef<Pt[]>([]);
   const hx = useMotionValue(60);
   const hy = useMotionValue(540);
 
@@ -76,7 +78,11 @@ function Trail({
     const path = pathRef.current;
     if (!path) return;
     const L = path.getTotalLength();
-    lengthRef.current = L;
+    const SAMPLES = 240;
+    lut.current = Array.from({ length: SAMPLES + 1 }, (_, i) => {
+      const p = path.getPointAtLength((i / SAMPLES) * L);
+      return { x: p.x, y: p.y };
+    });
     setPoints(FRACTIONS.map((f) => {
       const p = path.getPointAtLength(f * L);
       return { x: p.x, y: p.y };
@@ -85,11 +91,15 @@ function Trail({
 
   const placeHiker = useCallback(
     (v: number) => {
-      const path = pathRef.current;
-      if (!path || !lengthRef.current) return;
-      const p = path.getPointAtLength(Math.min(1, Math.max(0, v)) * lengthRef.current);
-      hx.set(p.x);
-      hy.set(p.y);
+      const table = lut.current;
+      if (table.length < 2) return;
+      const f = Math.min(1, Math.max(0, v)) * (table.length - 1);
+      const i = Math.floor(f);
+      const a = table[i];
+      const b = table[Math.min(i + 1, table.length - 1)];
+      const t = f - i;
+      hx.set(a.x + (b.x - a.x) * t);
+      hy.set(a.y + (b.y - a.y) * t);
     },
     [hx, hy]
   );
@@ -202,10 +212,16 @@ export default function JourneySection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [detail, setDetail] = useState<Milestone | null>(null);
   const isDesktop = useRef(false);
+  // Only the trail for the current breakpoint is mounted — the CSS-hidden
+  // twin was still doing all its per-frame work.
+  const [layout, setLayout] = useState<"mobile" | "desktop" | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
-    const update = () => (isDesktop.current = mq.matches);
+    const update = () => {
+      isDesktop.current = mq.matches;
+      setLayout(mq.matches ? "desktop" : "mobile");
+    };
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
@@ -224,7 +240,9 @@ export default function JourneySection() {
     if (!isDesktop.current) raw.set(p);
   });
 
-  const smooth = useSpring(raw, { stiffness: 140, damping: 30, mass: 0.6 });
+  // Stiff: the trail and hiker should track the scroll almost directly —
+  // a soft spring here read as the page lagging behind the finger.
+  const smooth = useSpring(raw, { stiffness: 420, damping: 44, mass: 0.5 });
   const drawn = reduceMotion ? raw : smooth;
 
   useMotionValueEvent(drawn, "change", (v) => {
@@ -344,11 +362,19 @@ export default function JourneySection() {
             data-print-hide
           >
             <div className="lg:hidden">
-              <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} compact />
+              {layout === "mobile" ? (
+                <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} compact />
+              ) : (
+                <div className="aspect-[2/1]" aria-hidden="true" />
+              )}
               <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-canvas to-transparent" aria-hidden="true" />
             </div>
             <div className="hidden lg:block">
-              <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} />
+              {layout === "desktop" ? (
+                <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} />
+              ) : (
+                <div className="aspect-[2/1]" aria-hidden="true" />
+              )}
             </div>
           </div>
 

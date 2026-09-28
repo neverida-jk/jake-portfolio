@@ -60,10 +60,11 @@
   /* Elevation & glass — solid surfaces everywhere except the nav dock and
      overlay backdrops (§3.5). This is the single place that restyles every
      existing .glass-card/.glass-panel/.glass-dock consumer at once. */
+  /* No backdrop-filter: re-blurring the content scrolling beneath the dock
+     cost a full blur pass on every scroll frame. Near-opaque reads the same
+     over this dark sky. */
   .glass-dock {
-    background: rgb(12 18 32 / 0.82);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    background: rgb(10 15 27 / 0.94);
     border: 1px solid var(--color-line);
     box-shadow: var(--e2);
   }
@@ -159,6 +160,8 @@ html {
 }
 
 body {
+  /* Anchors the full-length sky gradient (AscentSky) to the document. */
+  position: relative;
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
@@ -190,11 +193,11 @@ body {
    than that, so the two can never fight. */
 .js .intro-fade {
   opacity: 0;
-  animation: intro-failsafe-fade 0.4s ease-out 3.5s forwards;
+  animation: intro-failsafe-fade 0.4s ease-out 6s forwards;
 }
 .js .intro-char {
   transform: translateY(105%);
-  animation: intro-failsafe-char 0.4s ease-out 3.5s forwards;
+  animation: intro-failsafe-char 0.4s ease-out 6s forwards;
 }
 @keyframes intro-failsafe-fade {
   to { opacity: 1; }
@@ -356,4 +359,26 @@ body {
   .print-resume p { margin: 1pt 0; }
   .print-resume ul { margin: 2pt 0 0 12pt; padding: 0; }
   .print-resume li { margin: 0; }
+}
+
+/* Opening sequence gate (IntroSequence.tsx). Shown only when JS runs and the
+   pre-paint script hasn't marked the visit intro-seen. If JS stalls, the
+   failsafe fades it away after 5s so the page is never held hostage. */
+.intro-overlay { display: none; }
+.js:not(.intro-seen) .intro-overlay {
+  display: flex;
+  animation: intro-overlay-failsafe 0.5s ease-out 5s forwards;
+}
+@keyframes intro-overlay-failsafe {
+  to { opacity: 0; visibility: hidden; }
+}
+
+/* Transform-only intro state (HeroSection `lift`): visible from first
+   paint, so it counts toward LCP; only its position animates. */
+.js .intro-lift {
+  transform: translateY(16px);
+  animation: intro-failsafe-char 0.4s ease-out 6s forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .intro-lift { transform: none; animation: none; }
 }

@@ -4,6 +4,7 @@ import { ToolFocusProvider } from "./components/system/ToolFocusProvider";
 import AscentSky from "./components/system/AscentSky";
 import Altimeter from "./components/system/Altimeter";
 import SystemOverlays from "./components/system/SystemOverlays";
+import IntroSequence from "./components/system/IntroSequence";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -79,7 +80,9 @@ export default function RootLayout({
       <head>
         {/* Runs before first paint. Scroll-reveal hiding is scoped to `.js`,
             so with JavaScript unavailable every section is simply visible. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Before first paint: mark JS, and decide whether the opening plays
+            (first visit per session, motion allowed). */}
+        <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.classList.add('js');try{if(sessionStorage.getItem('jake.intro.seen')==='1'||matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('intro-seen')}catch(e){d.classList.add('intro-seen')}" }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-canvas text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
@@ -94,6 +97,7 @@ export default function RootLayout({
         <ToolFocusProvider>{children}</ToolFocusProvider>
         <Altimeter />
         <SystemOverlays />
+        <IntroSequence />
       </body>
     </html>
   );
