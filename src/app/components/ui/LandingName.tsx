@@ -1,29 +1,33 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
-interface LandingNameProps{
-    // children: React.ReactNode;
+interface LandingNameProps {
     className?: string;
     phrases?: string[];
     typingSpeed?: number;
     deletingSpeed?: number;
     delayBetweenPhrases?: number;
+    showCursor?: boolean;
 }
 
 const LandingName: React.FC<LandingNameProps> = ({
-    // children,
     className,
     phrases = [],
     typingSpeed = 100,
     deletingSpeed = 50,
     delayBetweenPhrases = 2000,
+    showCursor = true,
 }) => {
+    const reduceMotion = useReducedMotion();
     const [text, setText] = useState('');
     const [phraseIndex, setPhraseIndex] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
 
     useEffect(() => {
+        if (reduceMotion) return;
+
         const currentPhrase = phrases[phraseIndex];
 
         const typeEffect = () => {
@@ -64,12 +68,17 @@ const LandingName: React.FC<LandingNameProps> = ({
         };
 
         typeEffect();
-    }, [text, phraseIndex, isDeleting, isWaiting, phrases, typingSpeed, deletingSpeed, delayBetweenPhrases]);
+    }, [text, phraseIndex, isDeleting, isWaiting, phrases, typingSpeed, deletingSpeed, delayBetweenPhrases, reduceMotion]);
+
+    // Reduced motion: skip the typewriter entirely and just show the final
+    // phrase, statically — no flashing cursor, no per-character timers.
+    const displayText = reduceMotion ? (phrases[0] ?? '') : text;
 
     return (
-        <div className={`font-rubik ${className}`}>
+        <div className={`font-sans ${className}`}>
             <div className='text-gray-500 md:text-[20px] cursor-default break-words'>
-                {text}<span className="animate-pulse">|</span>
+                {displayText}
+                {showCursor && !reduceMotion && <span className="animate-pulse">|</span>}
             </div>
         </div>
     )

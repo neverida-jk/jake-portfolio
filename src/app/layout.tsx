@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Rubik } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { ToolFocusProvider } from "./components/system/ToolFocusProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,13 +13,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const rubik = Rubik({
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
   subsets: ["latin"],
-  variable: "--font-rubik",
+  variable: "--font-instrument-serif",
+  display: "swap",
 });
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: "#070B14",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -63,9 +67,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${rubik.variable} font-sans antialiased bg-[#050505] text-[#ededed] min-h-screen selection:bg-zinc-700 selection:text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-base text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
       >
-        {children}
+        <ToolFocusProvider>{children}</ToolFocusProvider>
       </body>
     </html>
   );

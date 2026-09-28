@@ -18,7 +18,7 @@ interface MediaItem {
   alt?: string;
 }
 
-interface CredentialsSectionProps {
+interface JourneySectionProps {
   onCardClick?: (
     title: string,
     cardDescription: string,
@@ -30,7 +30,7 @@ interface CredentialsSectionProps {
   ) => void;
 }
 
-export default function CredentialsSection({ onCardClick }: CredentialsSectionProps) {
+export default function JourneySection({ onCardClick }: JourneySectionProps) {
   const experienceVertere = {
     id: "vertere",
     title: "Quality Assurance Analyst",
@@ -97,10 +97,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
   };
 
   return (
-    <section id="credentials" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
+    <section id="journey" aria-labelledby="journey-heading" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-6 pb-2 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl sm:text-2xl font-bold font-rubik text-zinc-100 tracking-tight">
+          <h2 id="journey-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
             Experience & Education
           </h2>
         </div>
@@ -149,10 +149,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                       </span>
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     </div>
-                    <h3 className="font-rubik font-bold text-base sm:text-lg text-white group-hover:text-emerald-300 transition-colors">
+                    <h3 className="font-sans font-bold text-base sm:text-lg text-white group-hover:text-emerald-300 transition-colors">
                       {experienceVertere.title}
                     </h3>
-                    <p className="text-xs text-zinc-400 font-rubik">
+                    <p className="text-xs text-zinc-400 font-sans">
                       {experienceVertere.company}
                     </p>
                   </div>
@@ -163,13 +163,13 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 </span>
               </div>
 
-              <p className="text-xs text-zinc-300 font-rubik leading-relaxed mb-3">
+              <p className="text-xs text-zinc-300 font-sans leading-relaxed mb-3">
                 {experienceVertere.summary}
               </p>
 
               <div className="space-y-1.5 mb-3">
                 {experienceVertere.deliverables.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-zinc-400 font-rubik">
+                  <div key={idx} className="flex items-start gap-2 text-xs text-zinc-400 font-sans">
                     <LuCheck className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
                     <span>{item}</span>
                   </div>
@@ -221,10 +221,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                     />
                   </div>
                   <div>
-                    <h3 className="font-rubik font-semibold text-sm sm:text-base text-white group-hover:text-zinc-200 transition-colors">
+                    <h3 className="font-sans font-semibold text-sm sm:text-base text-white group-hover:text-zinc-200 transition-colors">
                       {experienceLimitless.title}
                     </h3>
-                    <p className="text-xs text-zinc-400 font-rubik">
+                    <p className="text-xs text-zinc-400 font-sans">
                       {experienceLimitless.company}
                     </p>
                   </div>
@@ -235,13 +235,13 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 </span>
               </div>
 
-              <p className="text-xs text-zinc-400 font-rubik leading-relaxed mb-2.5">
+              <p className="text-xs text-zinc-400 font-sans leading-relaxed mb-2.5">
                 {experienceLimitless.summary}
               </p>
 
               <div className="space-y-1.5 mb-2.5">
                 {experienceLimitless.deliverables.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-zinc-400 font-rubik">
+                  <div key={idx} className="flex items-start gap-2 text-xs text-zinc-400 font-sans">
                     <LuCheck className="w-3.5 h-3.5 text-zinc-500 mt-0.5 shrink-0" />
                     <span>{item}</span>
                   </div>
@@ -309,10 +309,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                     <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 block">
                       {education.badge}
                     </span>
-                    <h3 className="font-rubik font-bold text-base sm:text-lg text-white group-hover:text-emerald-300 transition-colors">
+                    <h3 className="font-sans font-bold text-base sm:text-lg text-white group-hover:text-emerald-300 transition-colors">
                       {education.title}
                     </h3>
-                    <p className="text-xs text-zinc-400 font-rubik mt-0.5">
+                    <p className="text-xs text-zinc-400 font-sans mt-0.5">
                       {education.institution}
                     </p>
                   </div>
@@ -335,14 +335,14 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-rubik mb-3">
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-sans mb-3">
                 {education.summary}
               </p>
 
               {/* Core Academic Foundations */}
               <div className="space-y-1.5 mb-3">
                 {education.highlights.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-zinc-300 font-rubik">
+                  <div key={idx} className="flex items-start gap-2 text-xs text-zinc-300 font-sans">
                     <LuCheck className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
                     <span>{item}</span>
                   </div>

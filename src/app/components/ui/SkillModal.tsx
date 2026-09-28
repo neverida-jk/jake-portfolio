@@ -415,7 +415,7 @@ export default function SkillModal({ skill, isOpen, onClose }: SkillModalProps) 
                   {details.level}
                 </span>
               </div>
-              <h3 className="font-rubik font-bold text-lg text-white truncate">
+              <h3 className="font-sans font-bold text-lg text-white truncate">
                 {details.name}
               </h3>
             </div>
@@ -430,7 +430,7 @@ export default function SkillModal({ skill, isOpen, onClose }: SkillModalProps) 
           </div>
 
           {/* Description */}
-          <p className="text-xs sm:text-sm text-zinc-300 font-rubik leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed">
             {details.description}
           </p>
 
@@ -444,7 +444,7 @@ export default function SkillModal({ skill, isOpen, onClose }: SkillModalProps) 
               {details.points.map((pt, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2 text-xs font-rubik text-zinc-300 bg-zinc-950 p-2.5 rounded-xl border border-white/[0.04]"
+                  className="flex items-start gap-2 text-xs font-sans text-zinc-300 bg-zinc-950 p-2.5 rounded-xl border border-white/[0.04]"
                 >
                   <LuCheck className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
                   <span>{pt}</span>
@@ -465,7 +465,7 @@ export default function SkillModal({ skill, isOpen, onClose }: SkillModalProps) 
               soundFx.playClick(800);
               onClose();
             }}
-            className="px-4 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-rubik text-xs border border-white/[0.08] transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-sans text-xs border border-white/[0.08] transition-colors cursor-pointer"
           >
             Done
           </button>

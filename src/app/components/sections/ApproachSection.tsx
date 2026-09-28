@@ -14,7 +14,7 @@ interface Principle {
   standards: string[];
 }
 
-export default function WhyWorkWithMeSection() {
+export default function ApproachSection() {
   const [activeTab, setActiveTab] = useState<string>("qa");
 
   const principles: Principle[] = [
@@ -76,10 +76,10 @@ export default function WhyWorkWithMeSection() {
     principles.find((p) => p.id === activeTab) || principles[0];
 
   return (
-    <section id="why-work-with-me" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
+    <section id="approach" aria-labelledby="approach-heading" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-6 pb-2 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl sm:text-2xl font-bold font-rubik text-zinc-100 tracking-tight">
+          <h2 id="approach-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
             Approach & Engineering Philosophy
           </h2>
         </div>
@@ -119,7 +119,7 @@ export default function WhyWorkWithMeSection() {
                       {p.icon}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs font-rubik font-semibold text-white truncate">
+                      <div className="text-xs font-sans font-semibold text-white truncate">
                         {p.title}
                       </div>
                       <div className="text-[10px] font-mono text-zinc-400 truncate">
@@ -164,13 +164,13 @@ export default function WhyWorkWithMeSection() {
                   <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 block">
                     Engineering Commitment
                   </span>
-                  <h3 className="font-rubik font-bold text-lg sm:text-xl text-white">
+                  <h3 className="font-sans font-bold text-lg sm:text-xl text-white">
                     {currentPrinciple.title}
                   </h3>
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-zinc-300 font-rubik leading-relaxed">
+              <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed">
                 {currentPrinciple.description}
               </p>
 
@@ -186,7 +186,7 @@ export default function WhyWorkWithMeSection() {
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.05 * idx, duration: 0.2 }}
-                      className="flex items-center gap-2.5 text-xs font-rubik text-zinc-200 bg-zinc-900/80 px-3.5 py-2 rounded-xl border border-white/[0.04]"
+                      className="flex items-center gap-2.5 text-xs font-sans text-zinc-200 bg-zinc-900/80 px-3.5 py-2 rounded-xl border border-white/[0.04]"
                     >
                       <LuCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       <span>{std}</span>

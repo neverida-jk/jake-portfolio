@@ -57,7 +57,7 @@ function TypedLine({ text }: { text: string }) {
   const done = shown.length >= text.length;
 
   return (
-    <p className="text-xs sm:text-sm text-zinc-300 font-rubik leading-relaxed">
+    <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed">
       {shown}
       {!done && <span className="animate-pulse text-emerald-400">|</span>}
     </p>
@@ -97,8 +97,8 @@ function StoryLayer() {
               {m.year}
             </span>
             <div>
-              <div className="text-sm font-rubik font-semibold text-white">{m.label}</div>
-              <div className="text-xs text-zinc-400 font-rubik">{m.detail}</div>
+              <div className="text-sm font-sans font-semibold text-white">{m.label}</div>
+              <div className="text-xs text-zinc-400 font-sans">{m.detail}</div>
             </div>
           </motion.div>
         ))}
@@ -112,7 +112,7 @@ function HobbiesLayer({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-zinc-300 font-rubik leading-relaxed">
+      <p className="text-sm text-zinc-300 font-sans leading-relaxed">
         I climb mountains around the Philippines with a small group of friends. Planning those
         trips got annoying enough that I built an app for it.
       </p>
@@ -135,7 +135,7 @@ function HobbiesLayer({ onClose }: { onClose: () => void }) {
         onClick={() => {
           soundFx.playClick(900);
           onClose();
-          jumpTo("projects");
+          jumpTo("work");
         }}
         whileHover={{ x: 3 }}
         className="flex items-center gap-1.5 text-xs font-mono text-amber-400 hover:text-amber-300 cursor-pointer"
@@ -152,11 +152,11 @@ function PhilosophyLayer({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-base sm:text-lg font-rubik font-semibold text-white leading-snug">
+      <p className="text-base sm:text-lg font-sans font-semibold text-white leading-snug">
         &ldquo;I&apos;d rather ship something small that works than something big that mostly
         works.&rdquo;
       </p>
-      <p className="text-xs sm:text-sm text-zinc-400 font-rubik leading-relaxed">
+      <p className="text-xs sm:text-sm text-zinc-400 font-sans leading-relaxed">
         Quality isn&apos;t a phase at the end — it&apos;s a habit, whether I&apos;m testing someone
         else&apos;s code or writing my own.
       </p>
@@ -179,7 +179,7 @@ function PhilosophyLayer({ onClose }: { onClose: () => void }) {
         onClick={() => {
           soundFx.playClick(900);
           onClose();
-          jumpTo("why-work-with-me");
+          jumpTo("approach");
         }}
         whileHover={{ x: 3 }}
         className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 cursor-pointer"
@@ -206,7 +206,7 @@ function FunFactLayer() {
       >
         🎉
       </motion.div>
-      <p className="text-sm sm:text-base text-zinc-200 font-rubik leading-relaxed">
+      <p className="text-sm sm:text-base text-zinc-200 font-sans leading-relaxed">
         This whole site has a working terminal, a command palette, and sound effects I
         synthesized myself — nobody asked for that, I just wanted to see if I could.
       </p>
@@ -219,7 +219,7 @@ function SayHiLayer({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-zinc-300 font-rubik leading-relaxed">
+      <p className="text-sm text-zinc-300 font-sans leading-relaxed">
         Always happy to talk shop or just chat. Say hi below, or jump straight to the contact
         form.
       </p>
@@ -248,7 +248,7 @@ function SayHiLayer({ onClose }: { onClose: () => void }) {
           }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.96 }}
-          className="px-4 py-2 rounded-full bg-white text-zinc-950 text-xs font-rubik font-medium flex items-center gap-1.5 cursor-pointer"
+          className="px-4 py-2 rounded-full bg-white text-zinc-950 text-xs font-sans font-medium flex items-center gap-1.5 cursor-pointer"
         >
           <span>Jump to Contact</span>
           <LuArrowRight className="w-3.5 h-3.5" />
@@ -276,7 +276,7 @@ const ACCENT_CLASSES: Record<string, { text: string; border: string; iconBg: str
   fuchsia: { text: "text-fuchsia-400", border: "border-fuchsia-500/30", iconBg: "bg-fuchsia-950/60" },
 };
 
-export default function TechnicalExpertiseSection() {
+export default function BeyondResumeSection() {
   const [log, setLog] = useState<LogEntry[]>([
     {
       id: 0,
@@ -338,10 +338,10 @@ export default function TechnicalExpertiseSection() {
   const closeLayer = useCallback(() => setActiveLayer(null), []);
 
   return (
-    <section id="skills" className="reveal-item px-4 sm:px-6 max-w-3xl mx-auto">
+    <section id="beyond" aria-labelledby="beyond-heading" className="reveal-item px-4 sm:px-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-6 pb-2 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl sm:text-2xl font-bold font-rubik text-zinc-100 tracking-tight">
+          <h2 id="beyond-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
             Beyond the Resume
           </h2>
         </div>
@@ -444,7 +444,7 @@ export default function TechnicalExpertiseSection() {
                     <span className={`text-[10px] font-mono uppercase tracking-wider block ${ACCENT_CLASSES[LAYER_META[activeLayer].accent].text}`}>
                       {LAYER_META[activeLayer].eyebrow}
                     </span>
-                    <h3 className="font-rubik font-bold text-lg sm:text-xl text-white">
+                    <h3 className="font-sans font-bold text-lg sm:text-xl text-white">
                       {LAYER_META[activeLayer].title}
                     </h3>
                   </div>

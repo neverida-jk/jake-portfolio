@@ -1,10 +1,11 @@
 import React from "react";
 import HeroSection from "./HeroSection";
-import CredentialsSection from "./CredentialsSection";
-import TechnicalExpertiseSection from "./TechnicalExpertiseSection";
-import MyWorksSection from "./MyWorksSection";
-import WhyWorkWithMeSection from "./WhyWorkWithMeSection";
-import CallToActionSection from "./CallToActionSection";
+import JourneySection from "./JourneySection";
+import WorkSection from "./WorkSection";
+import ToolkitSection from "./ToolkitSection";
+import ApproachSection from "./ApproachSection";
+import BeyondResumeSection from "./BeyondResumeSection";
+import ContactSection from "./ContactSection";
 
 interface MediaItem {
   src: string;
@@ -27,6 +28,8 @@ interface AboutMeProps {
   onCopyEmail?: () => void;
 }
 
+// Section order/ids follow the climb in ASCENT_MASTERPLAN.md §4:
+// hero -> journey -> work -> toolkit -> approach -> beyond -> contact.
 const AboutMe: React.FC<AboutMeProps> = ({
   onSkillClick,
   onCardClick,
@@ -34,7 +37,7 @@ const AboutMe: React.FC<AboutMeProps> = ({
   onCopyEmail,
 }) => {
   return (
-    <div className="font-rubik space-y-12 sm:space-y-16 md:space-y-20">
+    <div className="font-sans space-y-12 sm:space-y-16 md:space-y-20">
       <div className="pt-20 sm:pt-24">
         <HeroSection
           onOpenTerminal={onOpenTerminal}
@@ -42,11 +45,12 @@ const AboutMe: React.FC<AboutMeProps> = ({
           onSkillClick={onSkillClick}
         />
       </div>
-      <CredentialsSection onCardClick={onCardClick} />
-      <TechnicalExpertiseSection />
-      <MyWorksSection onCardClick={onCardClick} />
-      <WhyWorkWithMeSection />
-      <CallToActionSection onCopyEmail={onCopyEmail} />
+      <JourneySection onCardClick={onCardClick} />
+      <WorkSection onCardClick={onCardClick} />
+      <ToolkitSection />
+      <ApproachSection />
+      <BeyondResumeSection />
+      <ContactSection onCopyEmail={onCopyEmail} />
     </div>
   );
 };

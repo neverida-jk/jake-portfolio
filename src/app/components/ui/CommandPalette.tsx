@@ -13,7 +13,6 @@ import {
   LuCopy,
   LuTerminal,
   LuVolume2,
-  LuZap,
 } from "react-icons/lu";
 import { SiGithub, SiLinkedin } from "react-icons/si";
 
@@ -30,7 +29,6 @@ interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenTerminal?: () => void;
-  onToggleParticles?: () => void;
   onCopyEmail?: () => void;
 }
 
@@ -38,7 +36,6 @@ export default function CommandPalette({
   isOpen,
   onClose,
   onOpenTerminal,
-  onToggleParticles,
   onCopyEmail,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
@@ -63,36 +60,36 @@ export default function CommandPalette({
         action: () => scrollToSection("hero"),
       },
       {
-        id: "nav-credentials",
-        title: "Experience & Education",
+        id: "nav-journey",
+        title: "Journey",
         category: "Navigation",
         icon: <LuGraduationCap className="w-4 h-4 text-zinc-400" />,
-        shortcut: "E",
-        action: () => scrollToSection("credentials"),
+        shortcut: "J",
+        action: () => scrollToSection("journey"),
       },
       {
-        id: "nav-skills",
-        title: "Skills & Technologies",
+        id: "nav-work",
+        title: "Work",
+        category: "Navigation",
+        icon: <LuFolder className="w-4 h-4 text-zinc-400" />,
+        shortcut: "W",
+        action: () => scrollToSection("work"),
+      },
+      {
+        id: "nav-toolkit",
+        title: "Skills & Toolkit",
         category: "Navigation",
         icon: <LuCode className="w-4 h-4 text-zinc-400" />,
         shortcut: "S",
-        action: () => scrollToSection("skills"),
+        action: () => scrollToSection("toolkit"),
       },
       {
-        id: "nav-projects",
-        title: "Featured Projects",
-        category: "Navigation",
-        icon: <LuFolder className="w-4 h-4 text-zinc-400" />,
-        shortcut: "P",
-        action: () => scrollToSection("projects"),
-      },
-      {
-        id: "nav-why",
+        id: "nav-approach",
         title: "Approach & Principles",
         category: "Navigation",
         icon: <LuLayers className="w-4 h-4 text-zinc-400" />,
         shortcut: "A",
-        action: () => scrollToSection("why-work-with-me"),
+        action: () => scrollToSection("approach"),
       },
       {
         id: "nav-contact",
@@ -148,17 +145,8 @@ export default function CommandPalette({
           soundFx.toggleMute();
         },
       },
-      {
-        id: "int-particles",
-        title: "Toggle Particle Field",
-        category: "Preferences",
-        icon: <LuZap className="w-4 h-4 text-zinc-400" />,
-        action: () => {
-          if (onToggleParticles) onToggleParticles();
-        },
-      },
     ],
-    [onCopyEmail, onOpenTerminal, onToggleParticles, scrollToSection]
+    [onCopyEmail, onOpenTerminal, scrollToSection]
   );
 
   const filteredCommands = useMemo(() => {
@@ -247,7 +235,7 @@ export default function CommandPalette({
               setQuery(e.target.value);
               soundFx.playKey();
             }}
-            className="w-full bg-transparent text-white placeholder-zinc-500 text-xs sm:text-sm outline-none font-rubik"
+            className="w-full bg-transparent text-white placeholder-zinc-500 text-xs sm:text-sm outline-none font-sans"
           />
           <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] text-zinc-400 bg-zinc-900 border border-white/[0.08] rounded font-mono">
             ESC
@@ -281,7 +269,7 @@ export default function CommandPalette({
                   <div className="flex items-center gap-2.5">
                     {cmd.icon}
                     <div>
-                      <div className="text-xs font-medium font-rubik text-zinc-200">
+                      <div className="text-xs font-medium font-sans text-zinc-200">
                         {cmd.title}
                       </div>
                       <div className="text-[10px] text-zinc-500 font-mono">

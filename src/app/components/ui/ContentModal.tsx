@@ -225,7 +225,7 @@ export default function ContentModal({
                 )}
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-bold font-rubik text-white tracking-tight leading-snug">
+              <h2 className="text-xl sm:text-2xl font-bold font-sans text-white tracking-tight leading-snug">
                 {title}
               </h2>
 
@@ -278,7 +278,7 @@ export default function ContentModal({
           {activeTab === "overview" && (
             <div className="space-y-4 animate-fade-in-fast">
               {description && (
-                <div className="bg-zinc-900/40 p-4 rounded-2xl border border-white/[0.04] text-xs sm:text-sm text-zinc-200 font-rubik leading-relaxed">
+                <div className="bg-zinc-900/40 p-4 rounded-2xl border border-white/[0.04] text-xs sm:text-sm text-zinc-200 font-sans leading-relaxed">
                   <p>{description}</p>
                 </div>
               )}
@@ -349,7 +349,7 @@ export default function ContentModal({
                 </div>
               </div>
 
-              <p className="text-xs text-zinc-400 font-rubik leading-relaxed px-1">
+              <p className="text-xs text-zinc-400 font-sans leading-relaxed px-1">
                 For detailed technical architecture, system design documentation, or test strategy walkthroughs, feel free to reach out directly via email or terminal CLI.
               </p>
             </div>
@@ -365,7 +365,7 @@ export default function ContentModal({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => soundFx.playClick(900)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-zinc-950 font-rubik font-semibold text-xs hover:bg-zinc-200 transition-all shadow-md active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-zinc-950 font-sans font-semibold text-xs hover:bg-zinc-200 transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 <span>Launch Live System</span>
                 <LuExternalLink className="w-3.5 h-3.5" />
@@ -377,7 +377,7 @@ export default function ContentModal({
                   soundFx.playClick(900);
                   onClose();
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-zinc-950 font-rubik font-semibold text-xs hover:bg-zinc-200 transition-all shadow-md active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-zinc-950 font-sans font-semibold text-xs hover:bg-zinc-200 transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 <span>Inquire on this Role</span>
                 <LuBriefcase className="w-3.5 h-3.5" />
@@ -387,7 +387,7 @@ export default function ContentModal({
             {liveUrl && (
               <button
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-rubik text-xs border border-white/[0.08] transition-colors active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-sans text-xs border border-white/[0.08] transition-colors active:scale-95 cursor-pointer"
               >
                 <LuCopy className="w-3.5 h-3.5" />
                 <span>{copied ? "Copied URL!" : "Copy URL"}</span>
@@ -400,7 +400,7 @@ export default function ContentModal({
               soundFx.playClick(800);
               onClose();
             }}
-            className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-white font-rubik text-xs border border-white/[0.06] transition-colors active:scale-95 cursor-pointer ml-auto"
+            className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-white font-sans text-xs border border-white/[0.06] transition-colors active:scale-95 cursor-pointer ml-auto"
           >
             Dismiss
           </button>

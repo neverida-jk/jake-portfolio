@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import LandingName from "../ui/LandingName";
+import Dual from "../system/Dual";
+import { copy } from "@/content/copy";
 import { soundFx } from "@/util/sound";
 import {
   LuArrowDown,
@@ -214,7 +216,7 @@ export default function HeroSection({
               </div>
 
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl sm:text-4xl font-bold tracking-tight font-rubik text-white leading-tight">
+                <h1 className="text-2xl sm:text-4xl font-bold tracking-tight font-sans text-white leading-tight">
                   Jake Neverida
                 </h1>
                 <div className="min-h-[24px] mt-0.5 flex items-center">
@@ -234,7 +236,7 @@ export default function HeroSection({
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-emerald-500/25 text-xs font-mono text-zinc-300 min-w-0 max-w-full">
                 <LuShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="truncate min-w-0">QA Analyst @ Vertere Global Solutions</span>
+                <Dual value={copy.hero.status} as="span" note="none" className="truncate min-w-0" />
                 <span className="text-emerald-400/80 font-medium shrink-0">Current</span>
               </div>
 
@@ -245,21 +247,22 @@ export default function HeroSection({
             </div>
 
             {/* Balanced Professional Bio */}
-            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-rubik">
-              QA Analyst & Software Engineer, BS Computer Science (UPLB, 1.95 GWA).
-              Building test suites and high-performance web systems in Next.js, React, and TypeScript.
-            </p>
+            <Dual
+              value={copy.hero.role}
+              as="p"
+              className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-sans"
+            />
           </div>
 
           {/* Action Row */}
           <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/[0.04] mt-4">
             <motion.a
-              href="#projects"
+              href="#work"
               onClick={() => soundFx.playClick(950)}
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.94 }}
               transition={{ type: "spring", stiffness: 500, damping: 22 }}
-              className="px-4 py-2 rounded-full bg-white text-zinc-950 font-rubik font-medium text-xs sm:text-sm hover:bg-zinc-200 shadow-md flex items-center gap-1.5"
+              className="px-4 py-2 rounded-full bg-white text-zinc-950 font-sans font-medium text-xs sm:text-sm hover:bg-zinc-200 shadow-md flex items-center gap-1.5"
             >
               <span>Featured Work</span>
               <motion.span
@@ -275,7 +278,7 @@ export default function HeroSection({
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.94 }}
               transition={{ type: "spring", stiffness: 500, damping: 22 }}
-              className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-rubik text-xs sm:text-sm border border-white/[0.08] flex items-center gap-1.5"
+              className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-sans text-xs sm:text-sm border border-white/[0.08] flex items-center gap-1.5"
             >
               {copiedToast ? (
                 <LuCheck className="w-3.5 h-3.5 text-emerald-400" />

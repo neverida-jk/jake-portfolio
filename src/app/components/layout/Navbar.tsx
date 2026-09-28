@@ -34,10 +34,11 @@ export default function Navbar({
     const handleScroll = () => {
       const sections = [
         "hero",
-        "credentials",
-        "skills",
-        "projects",
-        "why-work-with-me",
+        "journey",
+        "work",
+        "toolkit",
+        "approach",
+        "beyond",
         "contact",
       ];
       const scrollPosition = window.scrollY + 180;
@@ -74,12 +75,14 @@ export default function Navbar({
     setIsMuted(muted);
   }, []);
 
+  // §4: Beyond the Resume is deliberately absent — it's a reward for
+  // scrolling, not a nav destination.
   const navLinks = [
     { id: "hero", label: "About" },
-    { id: "credentials", label: "Experience" },
-    { id: "skills", label: "Skills" },
-    { id: "projects", label: "Projects" },
-    { id: "why-work-with-me", label: "Approach" },
+    { id: "journey", label: "Journey" },
+    { id: "work", label: "Work" },
+    { id: "toolkit", label: "Skills" },
+    { id: "approach", label: "Approach" },
     { id: "contact", label: "Contact" },
   ];
 
@@ -90,7 +93,7 @@ export default function Navbar({
         <a
           href="#hero"
           onClick={(e) => handleNavClick(e, "hero")}
-          className="flex items-center gap-2 pl-2 pr-2.5 py-1 group rounded-full text-zinc-200 font-rubik font-semibold text-xs tracking-tight"
+          className="flex items-center gap-2 pl-2 pr-2.5 py-1 group rounded-full text-zinc-200 font-sans font-semibold text-xs tracking-tight"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
           <span className="group-hover:text-white transition-colors">
@@ -107,7 +110,7 @@ export default function Navbar({
                 key={link.id}
                 href={`#${link.id}`}
                 onClick={(e) => handleNavClick(e, link.id)}
-                className={`relative px-3 py-1 rounded-full text-xs font-medium font-rubik transition-colors duration-150 ${
+                className={`relative px-3 py-1 rounded-full text-xs font-medium font-sans transition-colors duration-150 ${
                   isActive ? "text-white" : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >
@@ -198,7 +201,7 @@ export default function Navbar({
               key={link.id}
               href={`#${link.id}`}
               onClick={(e) => handleNavClick(e, link.id)}
-              className={`block px-3.5 py-2 rounded-xl text-xs font-medium font-rubik ${
+              className={`block px-3.5 py-2 rounded-xl text-xs font-medium font-sans ${
                 activeSection === link.id
                   ? "bg-zinc-800 text-white"
                   : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
@@ -224,7 +227,7 @@ export default function Navbar({
                 setIsMobileMenuOpen(false);
                 if (onCopyEmail) onCopyEmail();
               }}
-              className="py-1.5 px-2 text-zinc-300 hover:text-white font-rubik flex items-center gap-1.5"
+              className="py-1.5 px-2 text-zinc-300 hover:text-white font-sans flex items-center gap-1.5"
             >
               <LuCopy className="w-3 h-3 text-emerald-400" />
               <span>Copy Email</span>

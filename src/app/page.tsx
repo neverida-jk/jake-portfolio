@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "./components/layout/Navbar";
 import AboutMe from "./components/sections/AboutMe";
 import AnimationController from "./components/ui/AnimationController";
-import Particles from "./components/ui/Particles";
 import SkillModal from "./components/ui/SkillModal";
 import ContentModal from "./components/ui/ContentModal";
 import CommandPalette from "./components/ui/CommandPalette";
@@ -32,7 +31,6 @@ export default function Home() {
 
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [particleRefresh, setParticleRefresh] = useState(false);
   const [copiedGlobalToast, setCopiedGlobalToast] = useState(false);
 
   useEffect(() => {
@@ -84,22 +82,11 @@ export default function Home() {
     setTimeout(() => setCopiedGlobalToast(false), 2200);
   }, []);
 
-  const handleToggleParticles = useCallback(() => {
-    setParticleRefresh((prev) => !prev);
-  }, []);
-
   const isModalActive =
     isSkillModalOpen || isCardModalOpen || isCommandPaletteOpen || isTerminalOpen;
 
   return (
-    <main className="relative min-h-screen bg-[#050505] text-[#ededed] overflow-x-hidden">
-      {/* Background Interactive Ambient Particles */}
-      <Particles
-        className="fixed inset-0 pointer-events-none -z-10 animate-fade-in opacity-70"
-        quantity={45}
-        refresh={particleRefresh}
-      />
-
+    <main className="relative min-h-screen overflow-x-hidden">
       {/* Global Scroll Animation Observer */}
       <AnimationController />
 
@@ -152,7 +139,6 @@ export default function Home() {
           setIsCommandPaletteOpen(false);
           setIsTerminalOpen(true);
         }}
-        onToggleParticles={handleToggleParticles}
         onCopyEmail={handleCopyEmail}
       />
 

@@ -15,7 +15,7 @@ interface MediaItem {
   alt?: string;
 }
 
-interface MyWorksSectionProps {
+interface WorkSectionProps {
   onCardClick?: (
     title: string,
     cardDescription: string,
@@ -122,7 +122,7 @@ const RESUME_AFTER_MS = 4500;
 // the loop reads as one continuous forward motion instead of a rewind.
 const CAROUSEL_ITEMS = [...PROJECTS_DATA, PROJECTS_DATA[0]];
 
-export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
+export default function WorkSection({ onCardClick }: WorkSectionProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -230,10 +230,10 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
   }, [handleUserTakeover]);
 
   return (
-    <section id="projects" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
+    <section id="work" aria-labelledby="work-heading" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-6 pb-2 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl sm:text-2xl font-bold font-rubik text-zinc-100 tracking-tight">
+          <h2 id="work-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
             Featured Projects & Live Systems
           </h2>
         </div>
@@ -299,15 +299,15 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
               </div>
 
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold font-rubik text-white tracking-tight">
+                <h3 className="text-xl sm:text-2xl font-bold font-sans text-white tracking-tight">
                   {p.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-zinc-400 font-rubik mt-1">
+                <p className="text-xs sm:text-sm text-zinc-400 font-sans mt-1">
                   {p.tagline}
                 </p>
               </div>
 
-              <p className="text-xs sm:text-sm text-zinc-300 font-rubik leading-relaxed line-clamp-3">
+              <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed line-clamp-3">
                 {p.summary}
               </p>
 
@@ -335,7 +335,7 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => soundFx.playClick(900)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-zinc-950 font-rubik text-xs font-medium hover:bg-zinc-200 transition-colors shadow-md active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-zinc-950 font-sans text-xs font-medium hover:bg-zinc-200 transition-colors shadow-md active:scale-95 cursor-pointer"
                 >
                   <LuExternalLink className="w-3.5 h-3.5" />
                   <span>Launch {p.domain}</span>
@@ -354,7 +354,7 @@ export default function MyWorksSection({ onCardClick }: MyWorksSectionProps) {
                       [{ src: p.logo, type: "image", alt: p.title }]
                     );
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-rubik text-xs border border-white/[0.08] transition-colors active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-sans text-xs border border-white/[0.08] transition-colors active:scale-95 cursor-pointer"
                 >
                   <span>Technical Specs</span>
                   <LuArrowUpRight className="w-3.5 h-3.5" />
