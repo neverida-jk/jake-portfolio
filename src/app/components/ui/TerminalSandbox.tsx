@@ -26,12 +26,12 @@ export default function TerminalSandbox({
     {
       command: "init",
       output: (
-        <div className="space-y-0.5 text-zinc-400 font-mono text-xs">
-          <p className="text-zinc-200 font-semibold">
+        <div className="space-y-0.5 text-ink-2 font-mono text-xs">
+          <p className="text-ink font-semibold">
             jake.dev [version 2.1.0] &bull; UPLB CS &apos;26 Alumnus
           </p>
-          <p className="text-zinc-500">
-            Type <span className="text-zinc-300">help</span> to view available commands.
+          <p className="text-ink-3">
+            Type <span className="text-ink-2">help</span> to view available commands.
           </p>
         </div>
       ),
@@ -40,7 +40,7 @@ export default function TerminalSandbox({
   const [commandListHistory, setCommandListHistory] = useState<string[]>([]);
   const [historyPointer, setHistoryPointer] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const availableCommands = [
     "help",
@@ -53,12 +53,17 @@ export default function TerminalSandbox({
     "contact",
     "resume",
     "celebrate",
-    "hire",
+    "sudo hire me",
     "clear",
   ];
 
+  // Scroll only the terminal's own body, never the page. The previous
+  // implementation called scrollIntoView() on a sentinel, which walks up
+  // every ancestor (including transformed .reveal-item sections) and can
+  // drag the whole page to this modal instead of just the log.
   const scrollToBottom = () => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = bodyRef.current;
+    if (container) container.scrollTop = container.scrollHeight;
   };
 
   useEffect(() => {
@@ -87,19 +92,18 @@ export default function TerminalSandbox({
       switch (cmd) {
         case "help":
           output = (
-            <div className="space-y-1 text-xs text-zinc-300 font-mono">
-              <p className="text-zinc-400 font-semibold mb-1">Commands:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-zinc-400">
-                <div><span className="text-zinc-200">whoami</span> - Developer overview</div>
-                <div><span className="text-zinc-200">skills</span> - Technical stack & tools</div>
-                <div><span className="text-zinc-200">projects</span> - Selected projects</div>
-                <div><span className="text-zinc-200">experience</span> - QA Analyst & SWE background</div>
-                <div><span className="text-zinc-200">skills</span> - Engineering & QA stack</div>
-                <div><span className="text-zinc-200">education</span> - UPLB degree</div>
-                <div><span className="text-zinc-200">resume</span> - Plain-text resume</div>
-                <div><span className="text-zinc-200">hire</span> - Trigger direct contact</div>
-                <div><span className="text-zinc-200">contact</span> - Email & links</div>
-                <div><span className="text-zinc-200">clear</span> - Clear terminal</div>
+            <div className="space-y-1 text-xs text-ink-2 font-mono">
+              <p className="text-ink-2 font-semibold mb-1">Commands:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-ink-2">
+                <div><span className="text-ink">whoami</span> - Developer overview</div>
+                <div><span className="text-ink">skills</span> - Technical stack &amp; tools</div>
+                <div><span className="text-ink">projects</span> - Selected projects</div>
+                <div><span className="text-ink">experience</span> - QA Analyst &amp; SWE background</div>
+                <div><span className="text-ink">education</span> - UPLB degree</div>
+                <div><span className="text-ink">resume</span> - Plain-text resume</div>
+                <div><span className="text-ink">sudo hire me</span> - You know what to do</div>
+                <div><span className="text-ink">contact</span> - Email &amp; links</div>
+                <div><span className="text-ink">clear</span> - Clear terminal</div>
               </div>
             </div>
           );
@@ -107,47 +111,46 @@ export default function TerminalSandbox({
 
         case "whoami":
           output = (
-            <div className="space-y-1 text-xs text-zinc-300 font-mono">
-              <p className="text-white font-semibold">Jake Neverida</p>
-              <p className="text-emerald-400">Quality Assurance Analyst @ Vertere Global Solutions Inc.</p>
+            <div className="space-y-1 text-xs text-ink-2 font-mono">
+              <p className="text-ink font-semibold">Jake Neverida</p>
+              <p className="text-moss">Quality Assurance Analyst @ Vertere Global Solutions Inc.</p>
               <p>Software Engineer &bull; Full-Stack Web Developer</p>
-              <p className="text-zinc-400">Building production web systems with Next.js, React, TypeScript, and rigorous QA test suites.</p>
+              <p className="text-ink-2">Building production web systems with Next.js, React, TypeScript, and rigorous QA test suites.</p>
             </div>
           );
           break;
 
         case "skills":
           output = (
-            <div className="space-y-1 text-xs text-zinc-300 font-mono">
-              <p className="text-zinc-400 font-semibold mb-1">Skills:</p>
-              <p><span className="text-zinc-200">QA & Testing:</span> Test Case Authoring, Regression Suites, Defect Management, Release QA</p>
-              <p><span className="text-zinc-200">Frontend:</span> React 19, Next.js 15, Tailwind CSS v4, TypeScript, Framer Motion</p>
-              <p><span className="text-zinc-200">Backend & DB:</span> Node.js, Express, MongoDB, IndexedDB, RESTful APIs</p>
-              <p><span className="text-zinc-200">AI-Assisted Engineering:</span> Claude & Claude Code, Context Engineering, Agentic Development</p>
-              <p><span className="text-zinc-200">Cloud & DevOps:</span> AWS, Docker, GitHub Actions (CI/CD)</p>
-              <p><span className="text-zinc-200">Languages & Tools:</span> TypeScript, JavaScript, Python, C/C++, Git, Vercel</p>
+            <div className="space-y-1 text-xs text-ink-2 font-mono">
+              <p className="text-ink-2 font-semibold mb-1">Skills:</p>
+              <p><span className="text-ink">QA &amp; Testing:</span> Test Case Authoring, Regression Suites, Defect Management, Release QA</p>
+              <p><span className="text-ink">Frontend:</span> React 19, Next.js 15, Tailwind CSS v4, TypeScript, Framer Motion</p>
+              <p><span className="text-ink">Backend &amp; DB:</span> Node.js, Express, MongoDB, IndexedDB, RESTful APIs</p>
+              <p><span className="text-ink">Cloud &amp; DevOps:</span> AWS, Docker, GitHub Actions (CI/CD)</p>
+              <p><span className="text-ink">Languages &amp; Tools:</span> TypeScript, JavaScript, Python, C/C++, Git, Vercel</p>
             </div>
           );
           break;
 
         case "projects":
           output = (
-            <div className="space-y-2 text-xs text-zinc-300 font-mono">
+            <div className="space-y-2 text-xs text-ink-2 font-mono">
               <div>
-                <p className="text-white font-semibold">1. Prediction Market Edge Engine (<a href="https://quant.dev-jk.me" target="_blank" rel="noreferrer" className="text-emerald-400 underline">quant.dev-jk.me</a>)</p>
-                <p className="text-zinc-400">Quantitative probability modeling & Kelly criterion position sizing for prediction markets.</p>
+                <p className="text-ink font-semibold">1. Prediction Market Edge Engine (<a href="https://quant.dev-jk.me" target="_blank" rel="noreferrer" className="text-moss underline">quant.dev-jk.me</a>)</p>
+                <p className="text-ink-2">Quantitative probability modeling &amp; Kelly criterion position sizing for prediction markets.</p>
               </div>
               <div>
-                <p className="text-white font-semibold">2. Tropa — Mountain Climb Coordinator (<a href="https://tropa.dev-jk.me" target="_blank" rel="noreferrer" className="text-emerald-400 underline">tropa.dev-jk.me</a>)</p>
-                <p className="text-zinc-400">Next.js 15 platform for Philippine trail itineraries, logistics, and multi-party expense splitting.</p>
+                <p className="text-ink font-semibold">2. Tropa — Mountain Climb Coordinator (<a href="https://tropa.dev-jk.me" target="_blank" rel="noreferrer" className="text-moss underline">tropa.dev-jk.me</a>)</p>
+                <p className="text-ink-2">Next.js 15 platform for Philippine trail itineraries, logistics, and multi-party expense splitting.</p>
               </div>
               <div>
-                <p className="text-white font-semibold">3. Finance Tracker PWA (<a href="https://finance.dev-jk.me" target="_blank" rel="noreferrer" className="text-emerald-400 underline">finance.dev-jk.me</a>)</p>
-                <p className="text-zinc-400">Offline-first personal finance management using Dexie.js (IndexedDB) and Recharts analytics.</p>
+                <p className="text-ink font-semibold">3. Finance Tracker PWA (<a href="https://finance.dev-jk.me" target="_blank" rel="noreferrer" className="text-moss underline">finance.dev-jk.me</a>)</p>
+                <p className="text-ink-2">Offline-first personal finance management using Dexie.js (IndexedDB) and Recharts analytics.</p>
               </div>
               <div>
-                <p className="text-white font-semibold">4. Developer Portfolio v2 (<a href="https://neverida-jk.github.io/portfolio" target="_blank" rel="noreferrer" className="text-emerald-400 underline">dev-jk.me</a>)</p>
-                <p className="text-zinc-400">Next.js 15, React 19, Tailwind v4, Web Audio API haptics, and embedded Unix shell.</p>
+                <p className="text-ink font-semibold">4. Developer Portfolio v2 (<a href="https://neverida-jk.github.io/portfolio" target="_blank" rel="noreferrer" className="text-moss underline">dev-jk.me</a>)</p>
+                <p className="text-ink-2">Next.js 15, React 19, Tailwind v4, Web Audio API haptics, and an embedded Unix shell.</p>
               </div>
             </div>
           );
@@ -155,26 +158,26 @@ export default function TerminalSandbox({
 
         case "education":
           output = (
-            <div className="space-y-1 text-xs text-zinc-300 font-mono">
-              <p className="text-white font-semibold">University of the Philippines Los Baños</p>
-              <p>Bachelor of Science in Computer Science &bull; <span className="text-emerald-400 font-bold">Graduated (2022 - 2026)</span></p>
-              <p>Iskolar ng Bayan &bull; Cumulative GWA: <span className="text-emerald-400 font-bold">1.95</span></p>
+            <div className="space-y-1 text-xs text-ink-2 font-mono">
+              <p className="text-ink font-semibold">University of the Philippines Los Baños</p>
+              <p>Bachelor of Science in Computer Science &bull; <span className="text-moss font-bold">Graduated (2022 - 2026)</span></p>
+              <p>Iskolar ng Bayan &bull; Cumulative GWA: <span className="text-moss font-bold">1.95</span></p>
             </div>
           );
           break;
 
         case "experience":
           output = (
-            <div className="space-y-2 text-xs text-zinc-300 font-mono">
+            <div className="space-y-2 text-xs text-ink-2 font-mono">
               <div>
-                <p className="text-white font-semibold">1. Vertere Global Solutions Inc.</p>
-                <p className="text-emerald-400 font-semibold">Quality Assurance Analyst (June 2026 - Present)</p>
-                <p className="text-zinc-400">Software testing, test execution, regression suites, defect tracking, and release quality verification.</p>
+                <p className="text-ink font-semibold">1. Vertere Global Solutions Inc.</p>
+                <p className="text-moss font-semibold">Quality Assurance Analyst (June 2026 - Present)</p>
+                <p className="text-ink-2">Software testing, test execution, regression suites, defect tracking, and release quality verification.</p>
               </div>
               <div>
-                <p className="text-white font-semibold">2. Limitless Lab</p>
-                <p className="text-zinc-400">Software Engineer Intern (May 2025 - July 2025)</p>
-                <p className="text-zinc-400">Developed frontend features with React and Next.js; collaborated on agile sprints.</p>
+                <p className="text-ink font-semibold">2. Limitless Lab</p>
+                <p className="text-ink-2">Software Engineer Intern (May 2025 - July 2025)</p>
+                <p className="text-ink-2">Developed frontend features with React and Next.js; collaborated on agile sprints.</p>
               </div>
             </div>
           );
@@ -182,8 +185,8 @@ export default function TerminalSandbox({
 
         case "gwa":
           output = (
-            <div className="text-xs text-zinc-300 font-mono">
-              Cumulative GWA: <span className="text-emerald-400 font-bold">1.95</span> (UP Los Baños BS Computer Science, Graduated 2026)
+            <div className="text-xs text-ink-2 font-mono">
+              Cumulative GWA: <span className="text-moss font-bold">1.95</span> (UP Los Baños BS Computer Science, Graduated 2026)
             </div>
           );
           break;
@@ -192,7 +195,7 @@ export default function TerminalSandbox({
           soundFx.playSuccess();
           fireConfetti();
           output = (
-            <div className="text-xs text-emerald-400 font-mono">
+            <div className="text-xs text-moss font-mono">
               Class of 2026! BS Computer Science, UP Los Baños (GWA 1.95).
             </div>
           );
@@ -200,25 +203,27 @@ export default function TerminalSandbox({
 
         case "resume":
           output = (
-            <div className="space-y-1 text-xs text-zinc-300 font-mono bg-zinc-900/60 p-2.5 rounded border border-white/[0.06]">
-              <p className="text-white font-bold">Jake Neverida</p>
-              <p className="text-zinc-400">Email: jlrneverida@gmail.com | GitHub: github.com/neverida-jk</p>
-              <p className="text-zinc-500">----------------------------------------</p>
-              <p className="text-zinc-200">Current: Quality Assurance Analyst @ Vertere Global Solutions Inc. (June 2026 - Present)</p>
-              <p className="text-zinc-400">Previous: Software Engineer Intern @ Limitless Lab (May - July 2025)</p>
-              <p className="text-zinc-200">Education: BS Computer Science, UP Los Baños (2022-2026 Graduated | GWA 1.95)</p>
-              <p className="text-zinc-200">Stack: React, Next.js, TypeScript, Python, Node.js, Tailwind, MongoDB, QA Testing</p>
+            <div className="space-y-1 text-xs text-ink-2 font-mono bg-raised/60 p-2.5 rounded border border-line">
+              <p className="text-ink font-bold">Jake Neverida</p>
+              <p className="text-ink-2">Email: jlrneverida@gmail.com | GitHub: github.com/neverida-jk</p>
+              <p className="text-ink-3">----------------------------------------</p>
+              <p className="text-ink">Current: Quality Assurance Analyst @ Vertere Global Solutions Inc. (June 2026 - Present)</p>
+              <p className="text-ink-2">Previous: Software Engineer Intern @ Limitless Lab (May - July 2025)</p>
+              <p className="text-ink">Education: BS Computer Science, UP Los Baños (2022-2026 Graduated | GWA 1.95)</p>
+              <p className="text-ink">Stack: React, Next.js, TypeScript, Python, Node.js, Tailwind, MongoDB, QA Testing</p>
             </div>
           );
           break;
 
+        // Easter egg (§7.9 / §9 of ASCENT_MASTERPLAN.md item 9) — a warm
+        // response plus a direct link to the summit.
+        case "sudo hire me":
         case "hire":
-        case "sudo hire":
           soundFx.playSuccess();
           fireConfetti();
           output = (
-            <div className="space-y-1 text-xs text-zinc-300 font-mono bg-zinc-900/60 p-2.5 rounded border border-emerald-500/30">
-              <p className="text-emerald-400 font-semibold">Opportunity noted. Ready to bring high-velocity engineering value!</p>
+            <div className="space-y-1 text-xs text-ink-2 font-mono bg-raised/60 p-2.5 rounded border border-moss/30">
+              <p className="text-moss font-semibold">Permission granted. Let&apos;s talk.</p>
               <p>Direct inquiry: jlrneverida@gmail.com</p>
               <button
                 onClick={() => {
@@ -227,7 +232,7 @@ export default function TerminalSandbox({
                     onClose();
                   }
                 }}
-                className="mt-1 px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-white rounded text-[11px] font-mono transition-colors"
+                className="mt-1 px-2.5 py-1 bg-raised hover:bg-void text-ink rounded text-[11px] font-mono transition-colors cursor-pointer border border-line"
               >
                 Go to contact form &rarr;
               </button>
@@ -237,10 +242,9 @@ export default function TerminalSandbox({
 
         case "contact":
           output = (
-            <div className="space-y-0.5 text-xs text-zinc-300 font-mono">
-              <p>Email: <a href="mailto:jlrneverida@gmail.com" className="text-white underline">jlrneverida@gmail.com</a></p>
-              <p>GitHub: <a href="https://github.com/neverida-jk" target="_blank" rel="noreferrer" className="text-white underline">github.com/neverida-jk</a></p>
-              <p>LinkedIn: <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noreferrer" className="text-white underline">linkedin.com/in/your-profile</a></p>
+            <div className="space-y-0.5 text-xs text-ink-2 font-mono">
+              <p>Email: <a href="mailto:jlrneverida@gmail.com" className="text-ink underline">jlrneverida@gmail.com</a></p>
+              <p>GitHub: <a href="https://github.com/neverida-jk" target="_blank" rel="noreferrer" className="text-ink underline">github.com/neverida-jk</a></p>
             </div>
           );
           break;
@@ -252,8 +256,8 @@ export default function TerminalSandbox({
 
         default:
           output = (
-            <div className="text-xs text-zinc-400 font-mono">
-              command not found: {cmdRaw}. Type <span className="text-zinc-200">help</span> for commands.
+            <div className="text-xs text-ink-2 font-mono">
+              command not found: {cmdRaw}. Type <span className="text-ink">help</span> for commands.
             </div>
           );
           break;
@@ -305,43 +309,48 @@ export default function TerminalSandbox({
 
   return (
     <div
-      className="fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-fade-in-fast"
+      className="fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-4 bg-void/70 backdrop-blur-md animate-fade-in-fast"
       onClick={onClose}
+      data-print-hide
     >
       <div
-        className="w-full max-w-2xl glass-panel rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl font-mono flex flex-col h-[65vh] max-h-[520px] animate-modal-enter"
+        className="w-full max-w-2xl glass-panel rounded-2xl overflow-hidden font-mono flex flex-col h-[65vh] max-h-[520px] animate-modal-enter"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Terminal"
       >
         {/* Terminal Header */}
-        <div className="flex items-center justify-between px-3.5 py-2.5 bg-zinc-950/80 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-3.5 py-2.5 bg-void/80 border-b border-line">
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="w-2.5 h-2.5 rounded-full bg-zinc-600 hover:bg-zinc-400 transition-colors"
+              className="w-2.5 h-2.5 rounded-full bg-ink-3/60 hover:bg-ink-2 transition-colors cursor-pointer"
               title="Close"
             />
-            <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-            <span className="ml-2 text-xs text-zinc-400">
+            <div className="w-2.5 h-2.5 rounded-full bg-line" />
+            <div className="w-2.5 h-2.5 rounded-full bg-line" />
+            <span className="ml-2 text-xs text-ink-2">
               jake@portfolio:~ (uplb-grad-2026)
             </span>
           </div>
 
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1"
+            className="text-ink-3 hover:text-ink-2 transition-colors p-1 cursor-pointer"
+            aria-label="Close terminal"
           >
             <LuX className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Quick Suggestion Pills */}
-        <div className="px-3 py-1.5 bg-zinc-950/40 border-b border-white/[0.04] flex items-center gap-1.5 overflow-x-auto scrollbar-hide text-xs">
-          {["help", "whoami", "skills", "projects", "education", "celebrate", "hire"].map((cmd) => (
+        <div className="px-3 py-1.5 bg-void/40 border-b border-line flex items-center gap-1.5 overflow-x-auto scrollbar-hide text-xs">
+          {["help", "whoami", "skills", "projects", "education", "celebrate", "sudo hire me"].map((cmd) => (
             <button
               key={cmd}
               onClick={() => executeCommand(cmd)}
-              className="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-zinc-200 border border-white/[0.04] transition-colors text-[11px] shrink-0 cursor-pointer"
+              className="px-2 py-0.5 rounded bg-raised hover:bg-void/80 text-ink-2 hover:text-ink border border-line transition-colors text-[11px] shrink-0 cursor-pointer"
             >
               {cmd}
             </button>
@@ -350,14 +359,15 @@ export default function TerminalSandbox({
 
         {/* Terminal Body */}
         <div
-          className="flex-1 overflow-y-auto p-3.5 space-y-2.5 bg-[#070709]/90 text-xs scrollbar-hide"
+          ref={bodyRef}
+          className="flex-1 overflow-y-auto p-3.5 space-y-2.5 bg-void/90 text-xs scrollbar-hide"
           onClick={() => inputRef.current?.focus()}
         >
           {history.map((item, idx) => (
             <div key={idx} className="space-y-1">
-              <div className="flex items-center gap-1.5 text-zinc-500">
-                <span className="text-zinc-400">&gt;</span>
-                <span className="text-zinc-200 font-mono">{item.command}</span>
+              <div className="flex items-center gap-1.5 text-ink-3">
+                <span className="text-ink-2">&gt;</span>
+                <span className="text-ink font-mono">{item.command}</span>
               </div>
               <div className="pl-3">{item.output}</div>
             </div>
@@ -365,7 +375,7 @@ export default function TerminalSandbox({
 
           {/* Active Input Line */}
           <div className="flex items-center gap-1.5 pt-1">
-            <span className="text-zinc-400">&gt;</span>
+            <span className="text-ink-2">&gt;</span>
             <div className="flex-1 flex items-center">
               <input
                 ref={inputRef}
@@ -373,18 +383,16 @@ export default function TerminalSandbox({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-zinc-100 text-xs outline-none font-mono caret-white"
+                className="w-full bg-transparent text-ink text-xs outline-none font-mono caret-summit"
                 autoFocus
-                placeholder="type a command (try 'celebrate')..."
+                placeholder="type a command (try 'sudo hire me')..."
               />
             </div>
           </div>
-
-          <div ref={terminalEndRef} />
         </div>
 
         {/* Terminal Footer */}
-        <div className="px-3.5 py-1.5 bg-zinc-950 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-zinc-500">
+        <div className="px-3.5 py-1.5 bg-void border-t border-line flex items-center justify-between text-[10px] text-ink-3">
           <span>Tab: complete &bull; &uarr;&darr;: history</span>
           <span>zsh</span>
         </div>

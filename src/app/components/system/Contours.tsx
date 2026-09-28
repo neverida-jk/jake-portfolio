@@ -134,6 +134,7 @@ export default function Contours({
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       fill="none"
+      data-print-hide
     >
       {paths.map((d, i) => {
         const isPeak = summitRing && i === 0;

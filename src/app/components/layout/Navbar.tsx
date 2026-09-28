@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { soundFx } from "@/util/sound";
 import { useActiveSection } from "@/lib/useActiveSection";
@@ -20,17 +20,25 @@ interface NavbarProps {
   onCopyEmail?: () => void;
 }
 
+const TRIPLE_CLICK_WINDOW_MS = 500;
+
 export default function Navbar({
   onOpenCommandPalette,
   onOpenTerminal,
   onCopyEmail,
 }: NavbarProps) {
   const activeSection = useActiveSection();
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const logoClicks = useRef<number[]>([]);
 
   useEffect(() => {
     setIsMuted(soundFx.getIsMuted());
+    // Sound can be toggled from the command palette too — stay in sync
+    // regardless of where the mute state actually changed.
+    const onSoundChanged = (e: Event) => setIsMuted((e as CustomEvent<boolean>).detail);
+    window.addEventListener("sound-changed", onSoundChanged);
+    return () => window.removeEventListener("sound-changed", onSoundChanged);
   }, []);
 
   const handleNavClick = useCallback(
@@ -41,16 +49,30 @@ export default function Navbar({
 
       const el = document.getElementById(sectionId);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
       }
     },
     []
   );
 
   const handleToggleSound = useCallback(() => {
-    const muted = soundFx.toggleMute();
-    setIsMuted(muted);
+    soundFx.toggleMute();
   }, []);
+
+  // Easter egg #3 (opt-in, hidden): triple-click the wordmark for a tiny
+  // build-info toast. Never blocks the normal single-click nav-home action.
+  const [showBuildInfo, setShowBuildInfo] = useState(false);
+  const handleLogoClick = useCallback((e: React.MouseEvent) => {
+    handleNavClick(e, "hero");
+    const now = Date.now();
+    logoClicks.current = [...logoClicks.current, now].filter((t) => now - t < TRIPLE_CLICK_WINDOW_MS);
+    if (logoClicks.current.length >= 3) {
+      logoClicks.current = [];
+      setShowBuildInfo(true);
+      setTimeout(() => setShowBuildInfo(false), 4000);
+    }
+  }, [handleNavClick]);
 
   // §4: Beyond the Resume is deliberately absent — it's a reward for
   // scrolling, not a nav destination.
@@ -64,18 +86,28 @@ export default function Navbar({
   ];
 
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-2xl">
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-2xl" data-print-hide>
       <nav className="glass-dock rounded-full px-3 py-1.5 flex items-center justify-between shadow-lg transition-all duration-300">
         {/* Brand */}
         <a
           href="#hero"
-          onClick={(e) => handleNavClick(e, "hero")}
-          className="flex items-center gap-2 pl-2 pr-2.5 py-1 group rounded-full text-zinc-200 font-sans font-semibold text-xs tracking-tight"
+          onClick={handleLogoClick}
+          className="relative flex items-center gap-2 pl-2 pr-2.5 py-1 group rounded-full text-ink font-sans font-semibold text-xs tracking-tight"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="group-hover:text-white transition-colors">
-            jake<span className="text-zinc-500 font-normal">.dev</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-moss" />
+          <span className="group-hover:text-ink transition-colors">
+            jake<span className="text-ink-3 font-normal">.dev</span>
           </span>
+          {showBuildInfo && (
+            <motion.span
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute top-full left-0 mt-2 whitespace-nowrap rounded-lg border border-line bg-raised px-2.5 py-1.5 text-[10px] font-mono text-ink-2 shadow-[var(--e2)]"
+            >
+              build {process.env.NEXT_PUBLIC_BUILD_ID ?? "local"} &bull; next 15 &bull; react 19
+            </motion.span>
+          )}
         </a>
 
         {/* Center Links */}
@@ -88,13 +120,13 @@ export default function Navbar({
                 href={`#${link.id}`}
                 onClick={(e) => handleNavClick(e, link.id)}
                 className={`relative px-3 py-1 rounded-full text-xs font-medium font-sans transition-colors duration-150 ${
-                  isActive ? "text-white" : "text-zinc-400 hover:text-zinc-200"
+                  isActive ? "text-ink" : "text-ink-3 hover:text-ink-2"
                 }`}
               >
                 {isActive && (
                   <motion.span
                     layoutId="navActivePill"
-                    className="absolute inset-0 rounded-full bg-zinc-800/80 -z-10"
+                    className="absolute inset-0 rounded-full bg-raised -z-10"
                     transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   />
                 )}
@@ -116,7 +148,7 @@ export default function Navbar({
             whileTap={{ scale: 0.9 }}
             transition={{ type: "spring", stiffness: 500, damping: 15 }}
             title="Terminal CLI"
-            className="p-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06]"
+            className="p-1.5 rounded-full bg-raised/80 hover:bg-raised text-ink-3 hover:text-ink-2 border border-line cursor-pointer"
           >
             <LuTerminal className="w-3.5 h-3.5" />
           </motion.button>
@@ -131,7 +163,7 @@ export default function Navbar({
             whileTap={{ scale: 0.9 }}
             transition={{ type: "spring", stiffness: 500, damping: 15 }}
             title="Command Palette (Cmd+K)"
-            className="p-1.5 sm:px-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06] flex items-center gap-1 text-xs font-mono"
+            className="p-1.5 sm:px-2 rounded-full bg-raised/80 hover:bg-raised text-ink-3 hover:text-ink-2 border border-line flex items-center gap-1 text-xs font-mono cursor-pointer"
           >
             <LuCommand className="w-3.5 h-3.5" />
             <span className="hidden sm:inline text-[11px]">K</span>
@@ -144,12 +176,13 @@ export default function Navbar({
             whileTap={{ scale: 0.9, rotate: -15 }}
             transition={{ type: "spring", stiffness: 500, damping: 15 }}
             title={isMuted ? "Unmute audio" : "Mute audio"}
-            className="p-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06]"
+            aria-pressed={!isMuted}
+            className="p-1.5 rounded-full bg-raised/80 hover:bg-raised text-ink-3 hover:text-ink-2 border border-line cursor-pointer"
           >
             {isMuted ? (
-              <LuVolumeX className="w-3.5 h-3.5 text-zinc-500" />
+              <LuVolumeX className="w-3.5 h-3.5 text-ink-3" />
             ) : (
-              <LuVolume2 className="w-3.5 h-3.5 text-zinc-300" />
+              <LuVolume2 className="w-3.5 h-3.5 text-moss" />
             )}
           </motion.button>
 
@@ -158,7 +191,7 @@ export default function Navbar({
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileTap={{ scale: 0.85 }}
             transition={{ type: "spring", stiffness: 500, damping: 15 }}
-            className="md:hidden p-1.5 rounded-full bg-zinc-900/80 text-zinc-300 border border-white/[0.06]"
+            className="md:hidden p-1.5 rounded-full bg-raised/80 text-ink-2 border border-line cursor-pointer"
             aria-label="Toggle Menu"
           >
             {isMobileMenuOpen ? (
@@ -172,7 +205,7 @@ export default function Navbar({
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden mt-2 glass-panel rounded-2xl p-2 border border-white/[0.08] shadow-2xl animate-modal-enter space-y-0.5">
+        <div className="md:hidden mt-2 glass-panel rounded-2xl p-2 animate-modal-enter space-y-0.5">
           {navLinks.map((link) => (
             <a
               key={link.id}
@@ -180,23 +213,23 @@ export default function Navbar({
               onClick={(e) => handleNavClick(e, link.id)}
               className={`block px-3.5 py-2 rounded-xl text-xs font-medium font-sans ${
                 activeSection === link.id
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                  ? "bg-raised text-ink"
+                  : "text-ink-2 hover:bg-raised/60 hover:text-ink"
               }`}
             >
               {link.label}
             </a>
           ))}
 
-          <div className="pt-2 border-t border-zinc-800/60 flex items-center justify-between px-2 text-xs">
+          <div className="pt-2 border-t border-line flex items-center justify-between px-2 text-xs">
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
                 if (onOpenTerminal) onOpenTerminal();
               }}
-              className="py-1.5 px-2 text-zinc-300 hover:text-white font-mono flex items-center gap-1.5"
+              className="py-1.5 px-2 text-ink-2 hover:text-ink font-mono flex items-center gap-1.5 cursor-pointer"
             >
-              <LuTerminal className="w-3 h-3 text-emerald-400" />
+              <LuTerminal className="w-3 h-3 text-moss" />
               <span>Terminal</span>
             </button>
             <button
@@ -204,9 +237,9 @@ export default function Navbar({
                 setIsMobileMenuOpen(false);
                 if (onCopyEmail) onCopyEmail();
               }}
-              className="py-1.5 px-2 text-zinc-300 hover:text-white font-sans flex items-center gap-1.5"
+              className="py-1.5 px-2 text-ink-2 hover:text-ink font-sans flex items-center gap-1.5 cursor-pointer"
             >
-              <LuCopy className="w-3 h-3 text-emerald-400" />
+              <LuCopy className="w-3 h-3 text-moss" />
               <span>Copy Email</span>
             </button>
           </div>

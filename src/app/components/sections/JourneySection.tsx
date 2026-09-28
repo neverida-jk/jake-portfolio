@@ -273,8 +273,9 @@ export default function JourneySection(_: JourneySectionProps) {
               <Dual value={copy.journey.intro} className="text-base leading-relaxed text-ink-2" />
             </div>
 
-            {/* Desktop: one milestone at a time, in step with the hiker. */}
-            <div className="hidden lg:block">
+            {/* Desktop: one milestone at a time, in step with the hiker.
+                Print shows every milestone as a flat list instead (below). */}
+            <div className="hidden lg:block" data-print-hide>
               {/* Crossfade (cards stacked absolutely), not mode="wait": scrolling
                   fast past several milestones fires key changes faster than
                   exits finish, and "wait" can then leave no card visible. */}
@@ -343,7 +344,10 @@ export default function JourneySection(_: JourneySectionProps) {
           {/* Mobile: pinned beneath the nav while the milestones scroll by. */}
           {/* Solid band + a soft fade below it, so cards slide cleanly under
               the pinned trail instead of showing through it. */}
-          <div className="sticky top-0 z-10 -mx-4 bg-base px-4 pb-5 pt-[4.5rem] sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0">
+          <div
+            className="sticky top-0 z-10 -mx-4 bg-base px-4 pb-5 pt-[4.5rem] sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0"
+            data-print-hide
+          >
             <div className="lg:hidden">
               <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} compact />
               <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-base to-transparent" aria-hidden="true" />
@@ -353,8 +357,9 @@ export default function JourneySection(_: JourneySectionProps) {
             </div>
           </div>
 
-          {/* Mobile: every milestone as a card, the reached ones lit. */}
-          <ol ref={listRef} className="relative mt-2 space-y-5 pb-10 lg:hidden">
+          {/* Mobile: every milestone as a card, the reached ones lit. Print
+              forces this list visible too — it's the flat résumé view. */}
+          <ol ref={listRef} className="relative mt-2 space-y-5 pb-10 lg:hidden" data-print-show>
             {MILESTONES.map((m, i) => {
               const reached = i <= activeIndex;
               return (

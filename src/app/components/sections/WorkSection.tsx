@@ -393,6 +393,21 @@ export default function WorkSection(_: WorkSectionProps) {
     }
   }, []);
 
+  // The command palette can open a case study after load (e.g. from search)
+  // by setting the hash and dispatching a synthetic hashchange — the effect
+  // above only runs once, on mount, so this is what actually reacts to it.
+  useEffect(() => {
+    const onHashChange = () => {
+      const m = window.location.hash.match(/^#work\/([\w-]+)$/);
+      if (m && projectById(m[1])) {
+        setMorphId(null);
+        setOpenId(m[1]);
+      }
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
   const open = openId ? projectById(openId) : undefined;
 
   return (

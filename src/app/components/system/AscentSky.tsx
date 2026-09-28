@@ -73,7 +73,7 @@ export default function AscentSky() {
   const yNear = useTransform(p, [0, 1], [0, 64]);
 
   return (
-    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none" aria-hidden="true" data-print-hide>
       <motion.div className="absolute inset-0" style={{ background: bg }} />
 
       <motion.div
