@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { spring, dur } from "@/lib/motion";
@@ -12,7 +13,18 @@ interface SheetProps {
   titleId: string;
   children: React.ReactNode;
   className?: string;
+  /** "md" (default) — a compact dialog; "xl" — wide, for case studies. */
+  size?: "md" | "xl";
+  /** Desktop entrance: "slide" (default) or "fade". Use "fade" when the
+   *  content contains a layoutId shared element — an ancestor that is
+   *  itself translating would distort the morph. Mobile always slides. */
+  desktopMotion?: "slide" | "fade";
 }
+
+const SIZE_CLASSES = {
+  md: "sm:w-auto sm:min-w-[420px] sm:max-h-[80vh]",
+  xl: "sm:w-[min(1040px,94vw)] sm:max-h-[88vh]",
+};
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -21,11 +33,35 @@ const FOCUSABLE_SELECTOR =
 // One component, responsive via Tailwind breakpoints — the drag/dismiss
 // physics apply everywhere but only read as a "sheet" once the viewport is
 // narrow enough for the panel to dock to the bottom edge.
-export default function Sheet({ isOpen, onClose, titleId, children, className }: SheetProps) {
+export default function Sheet({
+  isOpen,
+  onClose,
+  titleId,
+  children,
+  className,
+  size = "md",
+  desktopMotion = "slide",
+}: SheetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const reduceMotion = useReducedMotion();
   const dragControls = useDragControls();
+  const [desktop, setDesktop] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const update = () => setDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const fade = reduceMotion || (desktop && desktopMotion === "fade");
+  const panelMotion = fade
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" } };
 
   // Callers usually pass an inline arrow. With onClose as an effect
   // dependency, every parent re-render would tear down and re-run the
@@ -95,7 +131,11 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
     if (info.offset.y > 120 || info.velocity.y > 650) onCloseRef.current();
   }, []);
 
-  return (
+  // Portalled to <body>: a transformed ancestor (e.g. a .reveal-item section)
+  // turns position:fixed into "fixed to that ancestor", boxing the overlay
+  // inside the section instead of covering the viewport.
+  if (!mounted) return null;
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -116,17 +156,15 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
             // Drag starts only from the grab handle. Making the whole panel the
             // drag target (with touch-action:none) hijacks vertical touch, so
             // long sheet content could never scroll on a phone.
-            drag={reduceMotion ? false : "y"}
+            drag={fade ? false : "y"}
             dragListener={false}
             dragControls={dragControls}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.55 }}
             onDragEnd={handleDragEnd}
-            initial={{ y: reduceMotion ? 0 : "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: reduceMotion ? 0 : "100%" }}
-            transition={reduceMotion ? { duration: 0.2 } : spring.sheet}
-            className={`w-full sm:w-auto sm:min-w-[420px] max-h-[85vh] sm:max-h-[80vh] overflow-y-auto overscroll-contain bg-surface border border-line rounded-t-3xl sm:rounded-3xl shadow-2xl ${className ?? ""}`}
+            {...panelMotion}
+            transition={fade ? { duration: reduceMotion ? 0.2 : dur.md } : spring.sheet}
+            className={`w-full max-h-[88vh] overflow-y-auto overscroll-contain bg-surface border border-line rounded-t-3xl sm:rounded-3xl shadow-2xl ${SIZE_CLASSES[size]} ${className ?? ""}`}
           >
             <div
               className="sticky top-0 z-10 flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing bg-surface rounded-t-3xl"
@@ -140,6 +178,7 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

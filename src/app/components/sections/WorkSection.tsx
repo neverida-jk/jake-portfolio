@@ -1,146 +1,286 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
+import { LuArrowRight, LuArrowUpRight, LuGlobe, LuX } from "react-icons/lu";
+import Dual from "../system/Dual";
+import Sheet from "../system/Sheet";
+import { useToolFocus } from "../system/ToolFocusProvider";
+import { copy } from "@/content/copy";
+import { projects, projectById, type Hotspot, type Project } from "@/content/projects";
+import { ease, spring } from "@/lib/motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
-import {
-  LuArrowUpRight,
-  LuExternalLink,
-  LuGlobe,
-} from "react-icons/lu";
 
-interface MediaItem {
-  src: string;
-  type: "image" | "video";
-  alt?: string;
-}
-
+// AboutMe still passes onCardClick; case studies now open in their own Sheet.
 interface WorkSectionProps {
-  onCardClick?: (
-    title: string,
-    cardDescription: string,
-    modalDescription: string,
-    date?: string,
-    imageSrc?: string,
-    imageSize?: number,
-    media?: MediaItem[]
-  ) => void;
+  onCardClick?: unknown;
 }
 
-interface Project {
-  id: string;
-  title: string;
-  domain: string;
-  liveUrl: string;
-  category: string;
-  tagline: string;
-  summary: string;
-  modalDescription: string;
-  metrics: string;
-  tags: string[];
-  logo: string;
-  thumbnail: string;
-  invert?: boolean;
+const AUTO_ADVANCE_MS = 5000;
+const RESUME_AFTER_MS = 5000;
+
+// A clone of the first project appended after the last. Auto-advance scrolls
+// onto it like any other card, then — once it's settled — jumps instantly
+// back to the real first card. The clone is visually identical, so the loop
+// reads as one continuous forward motion instead of a rewind.
+const LOOPS = projects.length > 1;
+const CAROUSEL = LOOPS ? [...projects, projects[0]] : projects;
+
+const fmtMetres = (m: number) => `${m.toLocaleString("en-US")} m`;
+
+function Hotspots({ project }: { project: Project }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  if (project.hotspots.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0" onClick={() => setOpen(null)}>
+      {project.hotspots.map((s: Hotspot) => {
+        const isOpen = open === s.id;
+        const popId = `hs-${project.id}-${s.id}`;
+        // Keep the popover inside the image: anchor left / centre / right by x,
+        // and flip above the dot when it sits in the lower half.
+        const align = s.x < 0.34 ? "left-0" : s.x > 0.66 ? "right-0" : "left-1/2 -translate-x-1/2";
+        const above = s.y > 0.55;
+        return (
+          <div
+            key={s.id}
+            className="absolute -translate-x-1/2 -translate-y-1/2"
+            style={{ left: `${s.x * 100}%`, top: `${s.y * 100}%`, zIndex: isOpen ? 20 : 10 }}
+          >
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              aria-controls={popId}
+              aria-label={s.label}
+              onClick={(e) => {
+                e.stopPropagation();
+                soundFx.playClick(isOpen ? 700 : 1000);
+                setOpen(isOpen ? null : s.id);
+              }}
+              onKeyDown={(e) => {
+                // Close just this note — don't let Esc reach the Sheet and
+                // close the whole case study.
+                if (e.key === "Escape" && isOpen) {
+                  e.stopPropagation();
+                  setOpen(null);
+                }
+              }}
+              className="group relative grid h-8 w-8 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-void"
+            >
+              {!isOpen && !reduceMotion && (
+                <span className="absolute inset-1 rounded-full bg-summit/40 animate-ping" aria-hidden="true" />
+              )}
+              <span
+                className={`relative h-3.5 w-3.5 rounded-full ring-2 ring-void transition-transform ${
+                  isOpen ? "scale-125 bg-summit-dt" : "bg-summit group-hover:scale-110"
+                }`}
+                aria-hidden="true"
+              />
+            </button>
+
+            <div className={`absolute ${align} ${above ? "bottom-full mb-2" : "top-full mt-2"} w-64 max-w-[70vw]`}>
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    id={popId}
+                    role="note"
+                    initial={{ opacity: 0, y: reduceMotion ? 0 : above ? 6 : -6, scale: reduceMotion ? 1 : 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.97 }}
+                    transition={spring.snappy}
+                    onClick={(e) => e.stopPropagation()}
+                    className="rounded-2xl border border-line bg-raised/95 p-4 shadow-[var(--e3)] backdrop-blur-sm"
+                  >
+                    <p className="text-sm font-semibold text-ink">{s.label}</p>
+                    <div className="mt-1">
+                      <Dual value={s.body} className="text-sm leading-relaxed text-ink-2" />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
-const PROJECTS_DATA: Project[] = [
-  {
-    id: "quant",
-    title: "Prediction Market Edge Engine",
-    domain: "quant.dev-jk.me",
-    liveUrl: "https://quant.dev-jk.me",
-    category: "Quantitative Intelligence & Algorithms",
-    tagline: "Probability edge modeling & Kelly criterion sizing for prediction markets.",
-    summary:
-      "Analyzes prediction market order books, modeling implied probability and Kelly-optimal stake sizing to surface statistical mispricings.",
-    modalDescription:
-      "Prediction Market Edge Engine (quant.dev-jk.me). Analyzes live prediction market mechanics with quantitative probability metrics. Implements mathematical order book parsing, implied versus calibrated probability modeling, Brier scoring accuracy analysis, and fraction Kelly criterion bankroll management.",
-    metrics: "Kelly Sizing &bull; Order Book Analytics &bull; Polymarket Edge",
-    tags: ["Probability Modeling", "Kelly Criterion", "TypeScript", "React", "Prediction Markets"],
-    logo: "/python.png",
-    thumbnail: "/projects/quant.jpg",
-  },
-  {
-    id: "tropa",
-    title: "Tropa — Climb & Expense Coordinator",
-    domain: "tropa.dev-jk.me",
-    liveUrl: "https://tropa.dev-jk.me",
-    category: "Full-Stack Web Platform",
-    tagline: "Philippine mountain itinerary planning and shared expense splitting.",
-    summary:
-      "Groups plan trails, schedule logistics, and split multi-party climb expenses with a join code — no more spreadsheets.",
-    modalDescription:
-      "Tropa (tropa.dev-jk.me) — 'Plan the climb. Keep the Tropa together.' Engineered with Next.js App Router, React 19, and Tailwind CSS. Built to eliminate fragmented group chats and spreadsheets by managing trail logistics, headcount validation, and multi-currency expense splitting in one unified collaborative space.",
-    metrics: "Next.js App Router &bull; Real Trail Logistics &bull; Cost-Split Engine",
-    tags: ["Next.js 15", "React 19", "Tailwind CSS", "TypeScript", "Collaborative State"],
-    logo: "/next.svg",
-    thumbnail: "/projects/tropa.jpg",
-    invert: true,
-  },
-  {
-    id: "finance",
-    title: "Finance Tracker PWA",
-    domain: "finance.dev-jk.me",
-    liveUrl: "https://finance.dev-jk.me",
-    category: "Offline-First Web App / PWA",
-    tagline: "Offline-first personal finance tracking with live analytics.",
-    summary:
-      "Client-side budget tracking on Dexie.js/IndexedDB, with Recharts spending breakdowns and animated transitions.",
-    modalDescription:
-      "Finance Tracker (finance.dev-jk.me). Offline-first Progressive Web App designed for private, high-speed financial analytics. Features client-side schema migrations via Dexie.js (IndexedDB), category budgeting, cash flow forecasting, transaction ledgers, and animated Recharts data visualizations.",
-    metrics: "IndexedDB (Dexie.js) &bull; Recharts Analytics &bull; Offline PWA",
-    tags: ["React", "Dexie.js", "IndexedDB", "Recharts", "PWA", "Framer Motion"],
-    logo: "/react.png",
-    thumbnail: "/projects/finance.jpg",
-  },
-  {
-    id: "portfolio-v2",
-    title: "Developer Portfolio v2",
-    domain: "dev-jk.me",
-    liveUrl: "https://neverida-jk.github.io/portfolio",
-    category: "Creative Engineering & UI Systems",
-    tagline: "Developer showcase with an embedded Unix shell and synthesized audio.",
-    summary:
-      "Next.js 15 portfolio with an interactive CLI sandbox, Cmd+K command palette, and a Web Audio sound synthesizer.",
-    modalDescription:
-      "Personal developer portfolio engineered with Next.js 15 App Router, React 19, and Tailwind CSS v4. Features an embedded interactive Unix-like CLI sandbox, global keyboard shortcut command palette, Web Audio API sound synthesizer, and dynamic canvas particle animations.",
-    metrics: "100/100 Lighthouse &bull; Web Audio API &bull; Turbopack",
-    tags: ["Next.js 15", "React 19", "Tailwind v4", "TypeScript", "Web Audio API"],
-    logo: "/next.svg",
-    thumbnail: "/projects/portfolio-v2.jpg",
-    invert: true,
-  },
-];
+function CaseStudy({
+  project,
+  morph,
+  onClose,
+  onNext,
+}: {
+  project: Project;
+  morph: boolean;
+  onClose: () => void;
+  onNext: () => void;
+}) {
+  const reduceMotion = useReducedMotion();
+  const labels = copy.work.labels;
 
-const AUTO_ADVANCE_MS = 4000;
-const RESUME_AFTER_MS = 4500;
+  return (
+    <motion.div
+      key={project.id}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: reduceMotion ? 0.15 : 0.3, ease: ease.out }}
+      className="p-5 sm:p-8"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">
+            <span>{project.category}</span>
+            <span className="normal-case text-summit" title={copy.work.elevationTitle}>
+              {fmtMetres(project.elevation)}
+            </span>
+          </p>
+          <h3 id="case-title" className="mt-2 font-display text-h2 leading-[1.05] tracking-[-0.02em] text-ink">
+            {project.title}
+          </h3>
+          <p className="mt-2 max-w-[46ch] text-sm leading-relaxed text-ink-2">{project.tagline}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={copy.work.close}
+          className="shrink-0 rounded-lg p-2 text-ink-3 transition-colors hover:bg-raised hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
+        >
+          <LuX className="h-5 w-5" />
+        </button>
+      </div>
 
-// A clone of the first project appended after the last one. Auto-advance
-// scrolls onto this clone like any other card, then — once it's settled
-// into view — jumps instantly (no animation) back to the real first card.
-// Since the clone is visually identical, that jump is imperceptible, so
-// the loop reads as one continuous forward motion instead of a rewind.
-const CAROUSEL_ITEMS = [...PROJECTS_DATA, PROJECTS_DATA[0]];
+      {/* The artifact: the real screenshot, with the reasoning pinned onto it. */}
+      <div className="relative mt-6">
+        <motion.div
+          layoutId={morph ? `thumb-${project.id}` : undefined}
+          transition={spring.smooth}
+          className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-line bg-void"
+        >
+          <Image
+            src={project.thumbnail}
+            alt={`${project.title} — screenshot`}
+            fill
+            sizes="(max-width: 640px) 94vw, 980px"
+            className="object-cover object-top"
+          />
+        </motion.div>
+        <Hotspots key={project.id} project={project} />
+      </div>
+      {project.hotspots.length > 0 && (
+        <p className="mt-3 font-mono text-[0.6875rem] text-ink-3">{copy.work.hotspotHint}</p>
+      )}
 
-export default function WorkSection({ onCardClick }: WorkSectionProps) {
+      <div className="mt-8 grid gap-8 md:grid-cols-2">
+        <div className="space-y-6">
+          <div>
+            <h4 className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{labels.problem}</h4>
+            <div className="mt-2">
+              <Dual value={project.problem} className="text-base leading-relaxed text-ink" />
+            </div>
+          </div>
+          <div>
+            <h4 className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{labels.constraint}</h4>
+            <div className="mt-2">
+              <Dual value={project.constraint} className="text-base leading-relaxed text-ink" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{labels.decisions}</h4>
+          <ol className="mt-3 space-y-4">
+            {project.decisions.map((d, i) => (
+              <li key={d.plain} className="flex gap-3">
+                <span className="mt-0.5 font-display text-lg leading-none text-summit" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <Dual value={d} className="text-sm leading-relaxed text-ink" />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-line bg-raised/60 p-5">
+        <h4 className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{labels.outcome}</h4>
+        <div className="mt-2">
+          <Dual value={project.outcome} className="text-base leading-relaxed text-ink" />
+        </div>
+        <ul className="mt-4 flex flex-wrap gap-1.5" aria-label={labels.stack}>
+          {project.stack.map((s) => (
+            <li key={s} className="rounded-md border border-line bg-surface px-2 py-0.5 font-mono text-[0.6875rem] text-ink-2">
+              {s}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <a
+          href={project.liveUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => soundFx.playClick(950)}
+          className="inline-flex items-center gap-2 rounded-full bg-summit px-5 py-2.5 text-sm font-medium text-void transition-colors hover:bg-summit-dt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        >
+          {copy.work.visit}
+          <LuArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </a>
+        {projects.length > 1 && (
+          <button
+            type="button"
+            onClick={onNext}
+            className="group inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
+          >
+            {copy.work.next}
+            <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+export default function WorkSection(_: WorkSectionProps) {
+  const reduceMotion = useReducedMotion();
+  const { focusedTool, setFocusedProject } = useToolFocus();
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  // True only while a scroll was triggered by OUR OWN code (auto-advance or
-  // a dot click), so the scroll listener below can tell "the carousel
-  // moved" apart from "the user moved the carousel" and only pause on the
-  // latter.
   const isProgrammaticScrollRef = useRef(false);
   const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // One interaction model at every breakpoint: swipe/drag/scroll through
-  // full project cards. The active dot tracks whichever card is actually
-  // centered in view, via IntersectionObserver against the scroll container.
+  const [openId, setOpenId] = useState<string | null>(null);
+  // The project whose card thumbnail morphs into the case study. Only the
+  // one opened from a card morphs; "Next" and deep links just fade.
+  const [morphId, setMorphId] = useState<string | null>(null);
+  const [desktop, setDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const update = () => setDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Shared-element morph only on desktop: on mobile the case study is a
+  // bottom sheet sliding up, and a morph inside a translating parent distorts.
+  const morphEnabled = desktop && !reduceMotion;
+
+  // --- carousel (auto-advance + seamless loop) ---------------------------
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -152,7 +292,6 @@ export default function WorkSection({ onCardClick }: WorkSectionProps) {
       },
       { root: container, threshold: [0.6] }
     );
-
     cardRefs.current.forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
   }, []);
@@ -161,17 +300,11 @@ export default function WorkSection({ onCardClick }: WorkSectionProps) {
     const container = scrollRef.current;
     const card = cardRefs.current[idx];
     if (!container || !card) return;
-
     isProgrammaticScrollRef.current = programmatic;
-    // scrollIntoView() walks up the ancestor chain and can drag the whole
-    // PAGE down to this section — exactly the bug this caused when
-    // auto-advance fired while the user was elsewhere on the page.
-    // scrollTo() on the container itself only ever moves the carousel.
+    // scrollTo on the container, never scrollIntoView — that walks up the
+    // ancestors and can drag the whole page to this section.
     const targetLeft = card.offsetLeft - (container.clientWidth - card.offsetWidth) / 2;
     container.scrollTo({ left: targetLeft, behavior: instant ? "auto" : "smooth" });
-    // Smooth-scroll takes a moment to settle; only clear the flag once it
-    // realistically has, so the scroll events it fires along the way don't
-    // get misread as user input.
     if (programmatic) {
       setTimeout(() => {
         isProgrammaticScrollRef.current = false;
@@ -179,30 +312,21 @@ export default function WorkSection({ onCardClick }: WorkSectionProps) {
     }
   }, []);
 
-  // Once the trailing clone card settles into view, snap invisibly back to
-  // the real first card so the loop reads as continuous, not a rewind.
   useEffect(() => {
-    if (activeIndex !== PROJECTS_DATA.length) return;
-    const timeout = setTimeout(() => {
+    if (!LOOPS || activeIndex !== projects.length) return;
+    const t = setTimeout(() => {
       scrollToIndex(0, true, true);
       setActiveIndex(0);
     }, 550);
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [activeIndex, scrollToIndex]);
 
-  // Auto-advance loop, paused whenever the user has taken control. Skips a
-  // beat while sitting on the clone, mid-loop-reset above.
   useEffect(() => {
-    if (isPaused || activeIndex >= PROJECTS_DATA.length) return;
-    const interval = setInterval(() => {
-      scrollToIndex(activeIndex + 1, true);
-    }, AUTO_ADVANCE_MS);
-    return () => clearInterval(interval);
-  }, [isPaused, activeIndex, scrollToIndex]);
+    if (!LOOPS || reduceMotion || isPaused || openId || activeIndex >= projects.length) return;
+    const id = setInterval(() => scrollToIndex(activeIndex + 1, true), AUTO_ADVANCE_MS);
+    return () => clearInterval(id);
+  }, [isPaused, openId, activeIndex, scrollToIndex, reduceMotion]);
 
-  // Any real user interaction pauses auto-advance and schedules it to
-  // resume after a period of inactivity — so it never fights a mid-swipe,
-  // but always picks back up once the user stops touching it.
   const handleUserTakeover = useCallback(() => {
     setIsPaused(true);
     if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
@@ -212,176 +336,225 @@ export default function WorkSection({ onCardClick }: WorkSectionProps) {
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-
-    const handleScroll = () => {
-      if (isProgrammaticScrollRef.current) return;
-      handleUserTakeover();
+    const onScroll = () => {
+      if (!isProgrammaticScrollRef.current) handleUserTakeover();
     };
-
     container.addEventListener("pointerdown", handleUserTakeover);
     container.addEventListener("wheel", handleUserTakeover, { passive: true });
-    container.addEventListener("scroll", handleScroll, { passive: true });
+    container.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       container.removeEventListener("pointerdown", handleUserTakeover);
       container.removeEventListener("wheel", handleUserTakeover);
-      container.removeEventListener("scroll", handleScroll);
+      container.removeEventListener("scroll", onScroll);
       if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
     };
   }, [handleUserTakeover]);
 
+  // --- case studies ------------------------------------------------------
+  const setHash = (id: string | null) => {
+    const base = window.location.pathname + window.location.search;
+    window.history.replaceState(null, "", id ? `${base}#work/${id}` : base);
+  };
+
+  const openCase = useCallback(
+    (id: string, fromCard: boolean) => {
+      soundFx.playClick(900);
+      setMorphId(fromCard && morphEnabled ? id : null);
+      setOpenId(id);
+      setHash(id);
+    },
+    [morphEnabled]
+  );
+
+  const closeCase = useCallback(() => {
+    setOpenId(null);
+    setHash(null);
+  }, []);
+
+  const nextCase = useCallback(() => {
+    if (!openId) return;
+    const i = projects.findIndex((p) => p.id === openId);
+    const next = projects[(i + 1) % projects.length];
+    soundFx.playClick(950);
+    setMorphId(null);
+    setOpenId(next.id);
+    setHash(next.id);
+    scrollToIndex(projects.indexOf(next), true);
+    document.getElementById("case-title")?.closest('[role="dialog"]')?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [openId, scrollToIndex]);
+
+  // Deep link: /#work/tropa opens that case study on load.
+  useEffect(() => {
+    const m = window.location.hash.match(/^#work\/([\w-]+)$/);
+    if (m && projectById(m[1])) {
+      const section = document.getElementById("work");
+      if (section) window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY - 80 });
+      setOpenId(m[1]);
+    }
+  }, []);
+
+  const open = openId ? projectById(openId) : undefined;
+
   return (
-    <section id="work" aria-labelledby="work-heading" className="reveal-item px-4 sm:px-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between gap-3 mb-6 pb-2 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2">
-          <h2 id="work-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
-            Featured Projects & Live Systems
+    <section id="work" aria-labelledby="work-heading" className="reveal-item mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-[36rem]">
+          <p className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{copy.work.eyebrow}</p>
+          <h2 id="work-heading" className="mt-3 font-display text-h1 leading-[1.02] tracking-[-0.03em] text-ink">
+            {copy.work.title}
           </h2>
+          <div className="mt-4">
+            <Dual value={copy.work.intro} className="text-base leading-relaxed text-ink-2" />
+          </div>
         </div>
-        <span className="text-xs font-mono text-zinc-500">Live Production Apps</span>
+        <p className="flex items-center gap-2 font-mono text-xs text-ink-3">
+          <span className="h-1.5 w-1.5 rounded-full bg-moss" aria-hidden="true" />
+          {projects.length} {copy.work.live}
+        </p>
       </div>
 
-      {/* Swipeable Project Carousel — one full browser-mockup card per
-          project, peeking at the edges to invite swiping at any width. */}
-      <div
+      {/* layoutScroll: the carousel scrolls horizontally, so framer must
+          account for its scrollLeft when measuring a card for the morph. */}
+      <motion.div
+        layoutScroll
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={copy.work.carousel}
+        className="mt-10 -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-4 scrollbar-hide sm:mx-0 sm:px-0"
       >
-        {CAROUSEL_ITEMS.map((p, idx) => (
-          <div
-            key={idx < PROJECTS_DATA.length ? p.id : `${p.id}-clone`}
-            ref={(el) => {
-              cardRefs.current[idx] = el;
-            }}
-            className="shrink-0 w-[88%] sm:w-[68%] lg:w-[600px] snap-center glass-panel rounded-3xl overflow-hidden border border-white/[0.1] shadow-2xl bg-[#060608]"
-          >
-            {/* Browser Address Bar Header */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-zinc-950 border-b border-white/[0.08]">
-              <div className="flex items-center gap-2 shrink-0">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-              </div>
-
-              <a
-                href={p.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => soundFx.playClick(900)}
-                className="flex-1 px-3.5 py-1 rounded-full bg-zinc-900/90 hover:bg-zinc-850 border border-white/[0.08] text-[11px] font-mono text-zinc-300 text-center truncate flex items-center justify-center gap-2 transition-colors group cursor-pointer"
-                title={`Open ${p.domain} in new tab`}
-              >
-                <LuGlobe className="w-3 h-3 text-emerald-400" />
-                <span className="group-hover:text-white font-medium">{p.domain}</span>
-                <LuExternalLink className="w-2.5 h-2.5 text-zinc-500 group-hover:text-zinc-300" />
-              </a>
-            </div>
-
-            {/* Real landing page screenshot — actual proof it's live, not just a text card */}
-            <div className="relative w-full aspect-video bg-zinc-950 border-b border-white/[0.06]">
-              <Image
-                src={p.thumbnail}
-                alt={`${p.title} landing page`}
-                fill
-                sizes="(max-width: 1024px) 90vw, 600px"
-                className="object-cover object-top"
-                priority={idx === 0}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent" />
-            </div>
-
-            <div className="space-y-3 p-5 sm:p-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md bg-zinc-900 text-zinc-400 border border-white/[0.08] text-[11px] font-mono">
-                  {p.category}
-                </span>
-                <span className="text-zinc-600">&bull;</span>
-                <span className="text-xs font-mono text-emerald-400">{p.domain}</span>
-              </div>
-
-              <div>
-                <h3 className="text-xl sm:text-2xl font-bold font-sans text-white tracking-tight">
-                  {p.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-400 font-sans mt-1">
-                  {p.tagline}
-                </p>
-              </div>
-
-              <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed line-clamp-3">
-                {p.summary}
-              </p>
-
-              {/* Engineering Metrics Bar */}
-              <div className="py-2 px-3 rounded-xl bg-zinc-900/70 border border-white/[0.06] text-xs font-mono text-emerald-400">
-                <span dangerouslySetInnerHTML={{ __html: p.metrics }} />
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {p.tags.map((tag, tagIdx) => (
-                  <span
-                    key={tagIdx}
-                    className="px-2.5 py-0.5 text-[11px] font-mono rounded bg-zinc-900 text-zinc-300 border border-white/[0.06]"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Live Links (No source code buttons - private to user) */}
-              <div className="flex flex-wrap items-center gap-3 pt-3">
+        {CAROUSEL.map((p, idx) => {
+          const isClone = idx >= projects.length;
+          const dim = !!focusedTool && !p.tools.includes(focusedTool);
+          const lit = !!focusedTool && p.tools.includes(focusedTool);
+          // Registered before any click so framer has the card's box to morph from.
+          const layoutId = !isClone && morphEnabled ? `thumb-${p.id}` : undefined;
+          return (
+            <article
+              key={isClone ? `${p.id}-clone` : p.id}
+              ref={(el) => {
+                cardRefs.current[idx] = el;
+              }}
+              aria-hidden={isClone || undefined}
+              onPointerEnter={() => setFocusedProject(p.id)}
+              onPointerLeave={() => setFocusedProject(null)}
+              onFocus={() => setFocusedProject(p.id)}
+              onBlur={() => setFocusedProject(null)}
+              className={`group/card w-[88%] shrink-0 snap-center overflow-hidden rounded-3xl border bg-surface shadow-[var(--e2)] transition-[opacity,filter,border-color,transform] duration-300 sm:w-[70%] lg:w-[620px] ${
+                dim ? "opacity-35 grayscale-[0.5]" : "opacity-100"
+              } ${lit ? "border-summit/50 -translate-y-1" : "border-line hover:border-ink-3/60"}`}
+            >
+              {/* Browser chrome */}
+              <div className="flex items-center gap-3 border-b border-line bg-void/60 px-4 py-3">
+                <div className="flex shrink-0 items-center gap-1.5" aria-hidden="true">
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
+                </div>
                 <a
                   href={p.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  tabIndex={isClone ? -1 : undefined}
                   onClick={() => soundFx.playClick(900)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-zinc-950 font-sans text-xs font-medium hover:bg-zinc-200 transition-colors shadow-md active:scale-95 cursor-pointer"
+                  className="flex min-w-0 flex-1 items-center justify-center gap-2 truncate rounded-full border border-line bg-surface px-3 py-1 font-mono text-[0.6875rem] text-ink-2 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
+                  title={`Open ${p.domain}`}
                 >
-                  <LuExternalLink className="w-3.5 h-3.5" />
-                  <span>Launch {p.domain}</span>
+                  <LuGlobe className="h-3 w-3 shrink-0 text-moss" aria-hidden="true" />
+                  <span className="truncate">{p.domain}</span>
                 </a>
-
-                <button
-                  onClick={() => {
-                    soundFx.playClick(850);
-                    onCardClick?.(
-                      p.title,
-                      p.summary,
-                      p.modalDescription,
-                      p.domain,
-                      p.logo,
-                      72,
-                      [{ src: p.logo, type: "image", alt: p.title }]
-                    );
-                  }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-sans text-xs border border-white/[0.08] transition-colors active:scale-95 cursor-pointer"
-                >
-                  <span>Technical Specs</span>
-                  <LuArrowUpRight className="w-3.5 h-3.5" />
-                </button>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Progress Dots */}
-      <div className="flex justify-center gap-1.5 mt-4">
-        {PROJECTS_DATA.map((p, idx) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => {
-              soundFx.playClick(900);
-              scrollToIndex(idx);
-            }}
-            aria-label={`Go to ${p.title}`}
-            className={`h-1.5 rounded-full transition-all cursor-pointer ${
-              idx === activeIndex % PROJECTS_DATA.length ? "w-6 bg-emerald-400" : "w-1.5 bg-zinc-700 hover:bg-zinc-600"
-            }`}
-          />
-        ))}
-      </div>
+              <button
+                type="button"
+                onClick={() => openCase(p.id, true)}
+                tabIndex={isClone ? -1 : undefined}
+                aria-label={`${copy.work.openCase}: ${p.title}`}
+                className="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-summit"
+              >
+                <motion.div
+                  layoutId={layoutId}
+                  transition={spring.smooth}
+                  className="relative aspect-[16/10] overflow-hidden bg-void"
+                >
+                  <Image
+                    src={p.thumbnail}
+                    alt=""
+                    fill
+                    sizes="(max-width: 1024px) 88vw, 620px"
+                    priority={idx === 0}
+                    className="object-cover object-top transition-transform duration-700 ease-out group-hover/card:scale-[1.025]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" aria-hidden="true" />
+                </motion.div>
+              </button>
+
+              <div className="p-5 sm:p-6">
+                <p className="flex items-center justify-between gap-3 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">
+                  <span className="truncate">{p.category}</span>
+                  <span className="shrink-0 normal-case text-summit" title={copy.work.elevationTitle}>
+                    {fmtMetres(p.elevation)}
+                  </span>
+                </p>
+                <h3 className="mt-3 font-display text-[clamp(1.75rem,3vw,2.25rem)] leading-[1.05] tracking-[-0.02em] text-ink">
+                  {p.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-2">{p.tagline}</p>
+
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => openCase(p.id, true)}
+                    tabIndex={isClone ? -1 : undefined}
+                    className="group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-void transition-colors hover:bg-summit-dt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  >
+                    {copy.work.openCase}
+                    <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </button>
+                  <a
+                    href={p.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    tabIndex={isClone ? -1 : undefined}
+                    onClick={() => soundFx.playClick(900)}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-2.5 text-sm text-ink-2 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
+                  >
+                    {copy.work.visit}
+                    <LuArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </motion.div>
+
+      {LOOPS && (
+        <div className="mt-5 flex justify-center gap-1.5">
+          {projects.map((p, idx) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => {
+                soundFx.playClick(900);
+                handleUserTakeover();
+                scrollToIndex(idx, true);
+              }}
+              aria-label={`${copy.work.goTo} ${p.title}`}
+              aria-current={idx === activeIndex % projects.length ? "true" : undefined}
+              className={`h-1.5 cursor-pointer rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit ${
+                idx === activeIndex % projects.length ? "w-7 bg-summit" : "w-1.5 bg-ink-3/40 hover:bg-ink-3"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      <Sheet isOpen={!!open} onClose={closeCase} titleId="case-title" size="xl" desktopMotion="fade">
+        {open && (
+          <CaseStudy project={open} morph={morphEnabled && morphId === open.id} onClose={closeCase} onNext={nextCase} />
+        )}
+      </Sheet>
     </section>
   );
 }
