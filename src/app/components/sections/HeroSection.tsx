@@ -237,7 +237,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
                 onClick={() => soundFx.playClick(950)}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
-                className="group inline-flex items-center gap-2 rounded-full bg-summit px-6 py-3 text-sm font-medium text-void shadow-[0_10px_30px_-12px_rgba(255,180,84,0.65)] transition-colors hover:bg-summit-dt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+                className="group inline-flex items-center gap-2 rounded-full bg-summit px-6 py-3 text-sm font-medium text-void shadow-[0_10px_30px_-12px_rgba(255,180,84,0.65)] transition-colors hover:bg-summit-dt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
               >
                 <span>{copy.hero.cta.primary}</span>
                 <LuArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
@@ -250,7 +250,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
                 onClick={handleCopy}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
-                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-5 py-3 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-5 py-3 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
               >
                 {copied ? <LuCheck className="h-4 w-4 text-moss" /> : <LuCopy className="h-4 w-4" />}
                 <span aria-live="polite">{copied ? copy.hero.cta.copied : copy.hero.cta.copy}</span>

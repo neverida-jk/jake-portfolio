@@ -8,7 +8,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
-import { projects } from "@/content/projects";
+import { projects, projectById } from "@/content/projects";
 import { getApproachPrinciples } from "@/content/copy/approach";
 import DualText from "@/components/system/Dual";
 import { LuLayers, LuZap, LuCpu, LuShieldCheck } from "react-icons/lu";
@@ -90,7 +90,7 @@ export default function ApproachSection() {
           })}
         </div>
 
-        <div className="md:col-span-7 bg-surface border border-line rounded-3xl p-6 sm:p-7 shadow-[var(--e2)] flex flex-col justify-between">
+        <div className="md:col-span-7 bg-surface border border-line rounded-3xl p-6 sm:p-9 shadow-[var(--e2)] flex flex-col justify-center min-h-[18rem]">
           <AnimatePresence mode="wait">
             <motion.div
               key={active.id}
@@ -105,14 +105,14 @@ export default function ApproachSection() {
               <DualText
                 value={active.body}
                 note={active.body.technical ? "below" : "none"}
-                className="text-sm sm:text-base text-ink font-sans leading-relaxed"
+                className="font-display text-[clamp(1.6rem,2.8vw,2.25rem)] leading-[1.15] tracking-[-0.015em] text-ink text-balance"
               />
               {active.citesWork && (
                 <a
                   href="#work"
                   className="mt-3 inline-block text-xs font-mono text-alpine hover:underline"
                 >
-                  See it in Finance Tracker &rarr;
+                  See it in {projectById("finance")?.title} &rarr;
                 </a>
               )}
             </motion.div>

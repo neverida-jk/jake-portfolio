@@ -108,7 +108,7 @@ function Trail({
       <defs>
         <linearGradient id="journey-ridge" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="var(--color-raised)" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="var(--color-base)" stopOpacity="0" />
+          <stop offset="100%" stopColor="var(--color-canvas)" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -141,7 +141,7 @@ function Trail({
             )}
             <circle
               r={markerR}
-              fill={reached ? "var(--color-summit)" : "var(--color-base)"}
+              fill={reached ? "var(--color-summit)" : "var(--color-canvas)"}
               stroke={reached ? "var(--color-summit)" : "var(--color-ink-3)"}
               strokeWidth="2"
             />
@@ -343,10 +343,10 @@ export default function JourneySection(_: JourneySectionProps) {
           {/* Mobile: pinned beneath the nav while the milestones scroll by. */}
           {/* Solid band + a soft fade below it, so cards slide cleanly under
               the pinned trail instead of showing through it. */}
-          <div className="sticky top-0 z-10 -mx-4 bg-base px-4 pb-5 pt-[4.5rem] sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0">
+          <div className="sticky top-0 z-10 -mx-4 bg-canvas px-4 pb-5 pt-[4.5rem] sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0">
             <div className="lg:hidden">
               <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} compact />
-              <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-base to-transparent" aria-hidden="true" />
+              <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-canvas to-transparent" aria-hidden="true" />
             </div>
             <div className="hidden lg:block">
               <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} />

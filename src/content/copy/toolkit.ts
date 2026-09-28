@@ -7,10 +7,9 @@ export const toolkit: Record<"build" | "test" | "ship", Dual> = {
     plain: "I build the interfaces and systems that make an idea usable.",
     technical: "React components, Node services, and a MongoDB schema, sharing one set of TypeScript contracts end to end.",
   },
-  // Reuses the §9.2 voice example verbatim — it's the plainest, truest
-  // sentence for what a QA Analyst's day actually is.
+  // Deliberately not the hero's line — that sentence is used once, up top.
   test: {
-    plain: "I make sure software works before anyone else has to deal with it.",
+    plain: "I find what breaks before your users do.",
     technical: "Regression suites, defect lifecycle management, and release gating for enterprise applications.",
   },
   ship: {

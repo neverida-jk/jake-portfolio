@@ -1,5 +1,5 @@
 import type { Dual } from "./types";
-import { projects } from "../projects";
+import { projects, projectById } from "../projects";
 
 export type ApproachPrinciple = {
   id: "qa" | "arch" | "execution" | "rigor";
@@ -10,6 +10,7 @@ export type ApproachPrinciple = {
 };
 
 const hasFinance = projects.some((p) => p.id === "finance");
+const quant = projectById("quant");
 
 // Every principle collapses to one Dual (§6.5 owner revision): plain is the
 // claim, technical is the receipt. Execution's receipt needs the live
@@ -21,7 +22,7 @@ export function getApproachPrinciples(projectCount: number): ApproachPrinciple[]
       label: "Quality & Reliability",
       citesWork: false,
       body: {
-        plain: "I make sure software works before anyone else has to deal with it.",
+        plain: "Quality is a habit, not a final step — I test as I build.",
         technical: "Press ⌘K → Break It to run this site's own accessibility and behaviour test suite against itself.",
       },
     },
@@ -43,7 +44,7 @@ export function getApproachPrinciples(projectCount: number): ApproachPrinciple[]
       citesWork: false,
       body: {
         plain: "I finish what I start, end to end.",
-        technical: `${projectCount} project${projectCount === 1 ? "" : "s"} live in production, each shipped solo, architecture through deploy.`,
+        technical: `${projectCount} project${projectCount === 1 ? "" : "s"} live in production, from architecture through deploy.`,
       },
     },
     {
@@ -52,7 +53,10 @@ export function getApproachPrinciples(projectCount: number): ApproachPrinciple[]
       citesWork: false,
       body: {
         plain: "I like problems that have a right answer.",
-        technical: "quant.dev-jk.me models implied probability and Kelly-criterion stake sizing over live prediction-market order books.",
+        // Cites the quant project only while it is on the site.
+        technical: quant
+          ? `${quant.domain} models implied probability and Kelly-criterion stake sizing over live prediction-market order books.`
+          : "Computer Science foundations: algorithms, complexity, data structures.",
       },
     },
   ];

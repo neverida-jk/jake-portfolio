@@ -76,7 +76,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-base text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
+        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-canvas text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
       >
         <AscentSky />
         <ToolFocusProvider>{children}</ToolFocusProvider>
