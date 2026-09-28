@@ -9,7 +9,7 @@ export default function ContactPage() {
     const el = document.getElementById("contact");
     if (el) {
       setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth" });
+        window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: "smooth" });
       }, 200);
     }
   }, []);

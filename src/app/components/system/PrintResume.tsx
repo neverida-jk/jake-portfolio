@@ -20,7 +20,7 @@ export default function PrintResume() {
   return (
     <div className="print-resume" aria-hidden="true">
       <header>
-        <h1>Jake Neverida</h1>
+        <p className="pr-name">Jake Neverida</p>
         <p className="pr-role">{copy.hero.role.technical}</p>
         <p className="pr-contact">
           {EMAIL} · github.com/neverida-jk · Laguna, Philippines (GMT+8)

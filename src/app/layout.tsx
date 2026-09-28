@@ -31,7 +31,12 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+// TODO(jake): confirm the canonical domain. Set NEXT_PUBLIC_SITE_URL at build
+// time to override; share cards resolve their image URLs against this.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dev-jk.me";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Jake Neverida | Quality Assurance Analyst & Software Engineer",
   description: "Portfolio of Jake Neverida — Quality Assurance Analyst at Vertere Global Solutions Inc. & Software Engineer. Specializing in software quality testing, modern web applications, Next.js, React, TypeScript, and full-stack systems.",
   keywords: [
@@ -79,6 +84,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-canvas text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
       >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-summit focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-void"
+        >
+          Skip to content
+        </a>
         <AscentSky />
         <ToolFocusProvider>{children}</ToolFocusProvider>
         <Altimeter />

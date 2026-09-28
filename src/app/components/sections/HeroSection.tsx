@@ -32,7 +32,7 @@ const NAME_LINES = ["Jake", "Neverida"];
 
 // The intro timeline, in seconds (§5.6). The name leads — it's the LCP
 // element, so it starts almost immediately instead of waiting on the rest.
-const T = { eyebrow: 0.05, name: 0.12, role: 0.55, now: 0.68, cta: 0.82, stats: 0.95, cue: 1.3 };
+const T = { eyebrow: 0.05, name: 0.12, role: 0.2, now: 0.68, cta: 0.82, stats: 0.95, cue: 1.3 };
 
 function useManilaTime() {
   const [time, setTime] = useState("");
@@ -82,7 +82,11 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     const lateHydration = performance.now() > 3200;
     const seen = sessionStorage.getItem(INTRO_KEY) === "1";
 
-    if (reduceMotion || lateHydration) {
+    // Read the preference directly: the hook reports false on its first pass
+    // (hydration safety), which would start the intro for a frame and then
+    // snap it — a visible jump and a layout-shift for reduced-motion users.
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced || lateHydration) {
       controls.set("show");
       return;
     }
@@ -112,7 +116,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
 
     controls.start("show").then(finish);
     return finish;
-  }, [controls, reduceMotion]);
+  }, [controls]);
 
   // Leaving base camp: the hero recedes as you scroll past it.
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
@@ -141,7 +145,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       id="hero"
       ref={sectionRef}
       aria-labelledby="hero-heading"
-      className="relative isolate min-h-[100svh] flex items-center overflow-hidden px-4 sm:px-6 pt-28 pb-24"
+      className="relative isolate min-h-[100svh] flex items-start overflow-hidden px-4 sm:px-6 pt-28 pb-24 lg:pt-[max(8rem,17vh)]"
     >
       {/* Topography around the summit — draws itself in on arrival. */}
       <motion.div
@@ -185,7 +189,9 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           >
             <span>{copy.hero.eyebrow}</span>
             <span className="hidden text-ink-3/60 sm:inline" aria-hidden="true">·</span>
-            <span className="text-ink-2">{copy.hero.coords}</span>
+            {/* Own line on mobile: a fixed line count means the font swap
+                (fallback → Geist Mono) can never re-wrap it and shift the hero. */}
+            <span className="basis-full text-ink-2 sm:basis-auto">{copy.hero.coords}</span>
           </motion.p>
 
           <h1

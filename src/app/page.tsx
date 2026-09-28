@@ -31,7 +31,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative min-h-screen overflow-x-clip">
+    <main id="main" tabIndex={-1} className="relative min-h-screen overflow-x-clip outline-none">
       <AnimationController />
 
       <Navbar

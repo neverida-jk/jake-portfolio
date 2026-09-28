@@ -3,7 +3,6 @@ import { ImageResponse } from "next/og";
 // Site-level OG image (§7.10) — the name, the role, a contour/summit motif,
 // and the palette. Built with next/og; no new dependency (per-project
 // variants are out of scope for this phase).
-export const runtime = "edge";
 export const alt = "Jake Neverida — Quality Assurance Analyst & Software Engineer";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

@@ -333,7 +333,7 @@ body {
     color: #000;
     background: #fff;
   }
-  .print-resume h1 {
+  .print-resume .pr-name {
     font-family: var(--font-instrument-serif), Georgia, serif;
     font-size: 24pt;
     line-height: 1;
