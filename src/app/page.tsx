@@ -8,6 +8,7 @@ import AboutMe from "./components/sections/AboutMe";
 import AnimationController from "./components/ui/AnimationController";
 import CommandPalette from "./components/ui/CommandPalette";
 import TerminalSandbox from "./components/ui/TerminalSandbox";
+import PrintResume from "./components/system/PrintResume";
 import { spring } from "@/lib/motion";
 
 const EMAIL = "jlrneverida@gmail.com";
@@ -40,6 +41,8 @@ export default function Home() {
       />
 
       <AboutMe onOpenTerminal={() => setIsTerminalOpen(true)} onCopyEmail={handleCopyEmail} />
+
+      <PrintResume />
 
       <AnimatePresence>
         {copied && (

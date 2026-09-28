@@ -313,3 +313,47 @@ body {
     display: none !important;
   }
 }
+
+/* One-page print résumé (PrintResume.tsx). On screen it doesn't exist; on
+   paper it's the only thing that does — the scrollytelling page doesn't
+   paginate (scroll-reveals, sticky scenes, carousels). Declared last so it
+   wins over the earlier print block. */
+.print-resume { display: none; }
+
+@media print {
+  @page { margin: 14mm 16mm; }
+  body > * { display: none !important; }
+  body > main { display: block !important; }
+  main > * { display: none !important; }
+  main > .print-resume {
+    display: block !important;
+    font-family: var(--font-geist-sans), Arial, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+  }
+  .print-resume h1 {
+    font-family: var(--font-instrument-serif), Georgia, serif;
+    font-size: 24pt;
+    line-height: 1;
+    margin: 0;
+  }
+  .print-resume .pr-role { font-size: 10.5pt; margin: 3pt 0 0; }
+  .print-resume .pr-contact { font-size: 8.5pt; color: #333; margin: 2pt 0 0; }
+  .print-resume header { border-bottom: 1px solid #000; padding-bottom: 7pt; margin-bottom: 8pt; }
+  .print-resume h2 {
+    font-size: 8pt;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #333;
+    margin: 9pt 0 4pt;
+  }
+  .print-resume section { break-inside: avoid; }
+  .print-resume .pr-item { margin-bottom: 5pt; break-inside: avoid; }
+  .print-resume .pr-head { display: flex; justify-content: space-between; gap: 12pt; margin: 0; }
+  .print-resume .pr-head span { color: #333; white-space: nowrap; }
+  .print-resume p { margin: 1pt 0; }
+  .print-resume ul { margin: 2pt 0 0 12pt; padding: 0; }
+  .print-resume li { margin: 0; }
+}
