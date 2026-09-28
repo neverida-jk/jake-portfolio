@@ -44,8 +44,10 @@ Jake climbs mountains — Pulag, Apo, Ulap, Batulao — and built an app (Tropa)
 | Non-technical | An emotional, cinematic story with an obvious metaphor. "This person is interesting and I understood everything." | Sunrise, mountains, plain-language copy, smooth delightful motion |
 | Technical | Obsessive craft and real engineering. "This person can actually build." | Scroll-linked colour interpolation at 60fps, spring physics, shared-element transitions, live GitHub data, a self-testing QA HUD, perfect a11y |
 
-### 1.3 The differentiator: **The Lens**
-A global toggle — **Plain ⟷ Technical** — that rewrites copy across the entire site. Non-technical visitors read human sentences; engineers read precise ones. Almost nobody does this. It is simultaneously the most useful and the most quietly impressive feature on the site, and it is *literally* the thesis of the design: one person, two audiences, served properly. See §5.2.
+### 1.3 The differentiator: **Two voices, no switch**
+> **Revised by the owner:** the tech/non-tech split must be intuitive — *"not like a button to toggle."* There is no mode and no toggle anywhere.
+
+Every explanatory sentence carries two voices at once, separated by **hierarchy** instead of a switch. The **plain** voice is the primary text — large, first, what everyone reads. The **technical** voice sits beneath it as a small mono **field note**, like a margin annotation in a trail guide. Non-technical visitors read the story and skim past the notes; engineers' eyes go straight to them. Nobody has to decide what kind of visitor they are. See §5.2.
 
 ---
 
@@ -60,7 +62,7 @@ A global toggle — **Plain ⟷ Technical** — that rewrites copy across the en
 | `ui/TerminalSandbox.tsx` | Keep. Restyle. Add `sudo hire me` easter egg. |
 | `util/sound.ts` | Keep, extend (§5.4). **Change default to muted.** |
 | `util/confetti.ts` | Keep but demote — confetti only for the Konami easter egg, not the summit (§7.5 uses a classier moment). |
-| `layout/Navbar.tsx` | Keep the floating dock + `layoutId` active pill. Add Lens toggle. |
+| `layout/Navbar.tsx` | Keep the floating dock + `layoutId` active pill. (No lens toggle — see §1.3.) |
 
 ### 2.2 Delete outright
 | File | Why |
@@ -257,43 +259,32 @@ Structure (fixed, `inset-0`, `-z-50`, `pointer-events-none`):
 > **Perf:** this is one fixed layer. `will-change: transform` on the sun and ridges only. Do not add `will-change` to the gradient div.
 > **Reduced motion:** freeze at a fixed mid-state (progress 0.5) and skip the spring.
 
-### 5.2 The Lens — `components/system/LensProvider.tsx`
+### 5.2 Two voices — `components/system/Dual.tsx` *(revised — no toggle)*
 
-```tsx
-export type Lens = "plain" | "technical";
-// Context: { lens, setLens, toggle }
-// Persist to localStorage key "jake.lens". Default "plain".
-// Read in a useEffect (never during render — SSR mismatch), with a 1-frame
-// suppression class on <html> to avoid a visible flash.
-```
-
-Content lives in **`src/content/copy.ts`**, fully typed:
+Content lives in **`src/content/copy/<section>.ts`** (one file per section, re-exported by `copy/index.ts`), typed as:
 
 ```ts
 export type Dual = { plain: string; technical: string };
-export const copy = {
-  hero: {
-    role: {
-      plain: "I make sure software works before anyone else has to deal with it.",
-      technical: "QA Analyst — test strategy, regression automation, release gating.",
-    },
-    // ...
-  },
-} satisfies Record<string, Record<string, Dual | unknown>>;
 ```
 
-Consumer component:
+`<Dual>` is purely presentational and renders **both** voices:
 
 ```tsx
-<Dual value={copy.hero.role} />
-// Renders AnimatePresence mode="wait", key={lens}
-// initial {opacity:0, y:4} → animate {opacity:1,y:0} → exit {opacity:0,y:-4}
-// duration dur.sm, ease.out. Wrap in a min-height container to prevent CLS.
+<Dual value={copy.hero.role} />               // plain + field note beneath (default)
+<Dual value={copy.work.title} note="none" />  // plain only — headlines, labels, chips
+<Dual value={copy.x.spec} note="only" />      // field note alone
 ```
 
-**Toggle UI:** a segmented control in the nav dock — `Plain | Technical` with a `layoutId="lensPill"` sliding indicator. On desktop show both labels; on mobile collapse to an icon that cycles. First-time visitors get a one-shot tooltip: *"Prefer the technical version? Switch anytime."* (dismissed to localStorage).
+- **plain** inherits the size/colour of its context.
+- **technical** is a field note: mono, ~0.72em, `--color-ink-3`, max 60ch, 1px left rule in `--color-line`. It is a real text node, so screen readers read both.
 
-**Every section must have both variants.** Grep for hardcoded prose at the end of each phase.
+**Rules:**
+- Headlines, labels, chips and CTAs use `note="none"`. A note there is clutter.
+- **At most one field note per visual block.** Annotate the sentence where the technical detail genuinely adds something, not every line.
+- Richer technical depth lives one interaction deeper: case-study sheets, hotspot popovers, the terminal. It is always there to find, and never in the way.
+- Every copy entry still has both variants. Grep for hardcoded prose at the end of each phase.
+
+Projects are **data**: everything about a project (copy, hotspots, tools, screenshot) lives in `src/content/projects.ts`. The owner will swap projects, so no other file may name a project or hardcode a project count.
 
 ### 5.3 Altimeter rail — `components/system/Altimeter.tsx`
 
@@ -513,8 +504,8 @@ Content:
 
 Ranked by impact per unit of effort. If time runs out, ship in this order.
 
-### 7.1 The Lens toggle — §5.2
-**Why it wins:** it's the only feature here that is simultaneously a design concept, a UX kindness, and a technical flex. Build it first; everything else is content that flows through it.
+### 7.1 Two voices, no switch — §5.2
+**Why it wins:** it serves both audiences without asking either to self-identify. Every visitor reads the same page; hierarchy decides who reads what.
 
 ### 7.2 The Ascent (sky + altimeter + ridge parallax) — §5.1, §5.3
 **Why it wins:** it's the identity. A visitor knows within 400ms of scrolling that this site is not a template.
@@ -555,7 +546,7 @@ Two modules, both from one ISR fetch:
 ### 7.6 Command palette upgrade — `ui/CommandPalette.tsx`
 `⌘K` / `Ctrl K`. Make it a genuine control surface:
 - Fuzzy search (simple subsequence scorer, ~30 lines — no dependency) across: sections, projects, tools, terminal topics.
-- Actions: `Toggle lens`, `Copy email`, `Print résumé` (§7.8), `Open terminal`, `Toggle sound`, `Break It mode`, `Jump to summit`.
+- Actions: `Copy email`, `Print résumé` (§7.8), `Open terminal`, `Toggle sound`, `Break It mode`, `Jump to summit`.
 - Recent/suggested items when empty.
 - Full keyboard: `↑↓` navigate, `↵` run, `Esc` close, `Tab` cycles groups. Highlighted match characters in results.
 - Visible hint in the nav dock so non-technical visitors discover it: `⌘K`.
@@ -641,7 +632,7 @@ Apply to section wrappers only. Cap ±3.5°. Off for reduced motion. Subtle enou
 - **Link underline:** `scaleX: 0 → 1`, `transform-origin` left on enter / right on leave (0.22s, `ease.out`).
 - **Border trace:** on focus-visible for cards — an SVG rect with `pathLength` animating 0→1 in gold. Makes keyboard navigation *feel designed* rather than tolerated.
 - **Image reveal:** clip-path `inset(0 0 100% 0) → inset(0)` + inner `scale 1.08 → 1`, 0.9s `ease.out`.
-- **Tab pills:** `layoutId` shared indicator everywhere (nav, lens, approach tabs, toolkit groups). Consistency here is what makes a site feel like one system.
+- **Tab pills:** `layoutId` shared indicator everywhere (nav, approach tabs, toolkit groups). Consistency here is what makes a site feel like one system.
 - **Sticky section headers:** the section eyebrow sticks to the top of the viewport while its section is active, then releases. Cheap, orients the reader.
 
 ---
@@ -661,12 +652,12 @@ Apply to section wrappers only. Cap ±3.5°. Off for reduced motion. Subtle enou
 **Anything not on this list must be written as `TODO(jake):`.** Do not invent hobbies, metrics, testimonials, company names, or dates.
 
 ### 9.2 Voice
-- **Plain lens:** first person, warm, concrete, zero jargon. Short sentences. Explain by consequence, not by mechanism. *"I make sure software works before anyone else has to deal with it."*
-- **Technical lens:** precise, dense, no marketing adjectives. Name the actual tools and techniques. *"Regression suites, defect lifecycle management, and release gating for enterprise applications."*
+- **Plain voice:** first person, warm, concrete, zero jargon. Short sentences. Explain by consequence, not by mechanism. *"I make sure software works before anyone else has to deal with it."*
+- **Technical voice (field notes):** precise, dense, no marketing adjectives. Name the actual tools and techniques. *"Regression suites, defect lifecycle management, and release gating for enterprise applications."*
 - Banned in both: "passionate", "cutting-edge", "leverage", "synergy", "robust solutions", "detail-oriented", "results-driven". If a sentence could appear on any other portfolio, rewrite it.
 - Every section: **one sentence that only Jake could have written.**
 
-### 9.3 Copy inventory to author (both lenses)
+### 9.3 Copy inventory to author (both voices)
 `hero.role`, `hero.status`, `hero.now`, `journey.intro`, `journey.m1–m4`, `work.intro`, 4 × `work.<id>.{problem, constraint, decisions[], outcome}`, 4 × hotspot bodies, `toolkit.build/test/ship`, `approach.p1–p4.{body, receipt}`, `beyond.*` (exists), `contact.invite`, `contact.availability`.
 
 ---
@@ -707,10 +698,10 @@ Each phase is independently shippable. Commit at the end of each. Do not start t
 - Install token system in `globals.css`; create `src/lib/motion.ts`.
 - Swap fonts (Instrument Serif + Geist + Geist Mono); remove Rubik.
 - Create `src/content/copy.ts` + `registry.ts` scaffolding.
-- Build `LensProvider` + `<Dual>` + nav toggle.
+- Build `<Dual>` (two voices, §5.2) — no toggle.
 - Build motion primitives: `RevealText`, `Magnetic`, `CountUp`, `Reveal` wrapper.
 - Add `useReducedMotion` guards and the reduced-motion CSS block.
-**Accept:** site still builds and looks intentional (not broken); lens toggle switches at least the hero role line; `npm run build` clean; no console errors; Lighthouse not regressed.
+**Accept:** site still builds and looks intentional (not broken); hero role line renders both voices via `<Dual>`; `npm run build` clean; no console errors; Lighthouse not regressed.
 
 ### Phase 1 — The Ascent engine
 - `AscentSky` (gradient + sun + stars + 3 ridge layers).
@@ -759,7 +750,7 @@ Each phase is independently shippable. Commit at the end of each. Do not start t
 ```
 src/
   app/
-    layout.tsx                    # fonts, LensProvider, Sky, Cursor, metadata
+    layout.tsx                    # fonts, Sky, Altimeter, Cursor, metadata
     page.tsx                      # section composition only — no logic
     globals.css                   # tokens, reduced-motion, print styles
     opengraph-image.tsx           # NEW — dynamic OG
@@ -767,7 +758,7 @@ src/
       system/                     # NEW — global machinery
         AscentSky.tsx
         Altimeter.tsx
-        LensProvider.tsx
+        ToolFocusProvider.tsx
         Dual.tsx
         Cursor.tsx
         Intro.tsx
@@ -788,10 +779,10 @@ src/
         BeyondResumeSection.tsx   # from TechnicalExpertiseSection
         ContactSection.tsx        # from CallToActionSection
         CredentialsSection.tsx    # DELETE — merged into Journey
-      layout/Navbar.tsx           # + lens toggle, ⌘K hint
+      layout/Navbar.tsx           # + ⌘K hint
       ui/                         # CommandPalette, TerminalSandbox, ContentModal keep
   content/
-    copy.ts                       # NEW — all dual-lens strings
+    copy/                         # per-section Dual copy + index.ts
     registry.ts                   # NEW — projects + tools + hotspots, single source of truth
   lib/
     motion.ts                     # NEW — springs, eases, durations
@@ -829,8 +820,8 @@ util/
 
 **Functionality**
 - [ ] Every nav link scrolls to the right section, on desktop and mobile
-- [ ] Lens toggle switches every piece of prose site-wide (grep for hardcoded strings)
-- [ ] Lens choice persists across reload, with no flash of the wrong variant
+- [ ] Every piece of prose is a `Dual` in `src/content/copy/` (grep for hardcoded strings); field notes follow the one-per-block budget
+- [ ] Swapping a project in `projects.ts` updates every section with no other edits
 - [ ] All four case studies open, close, and deep-link correctly
 - [ ] All external links open in a new tab with `rel="noopener noreferrer"` and resolve (no 404s)
 - [ ] Contact form composes a correct `mailto:` including special characters
