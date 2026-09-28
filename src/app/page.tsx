@@ -86,7 +86,7 @@ export default function Home() {
     isSkillModalOpen || isCardModalOpen || isCommandPaletteOpen || isTerminalOpen;
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden">
+    <main className="relative min-h-screen overflow-x-clip">
       {/* Global Scroll Animation Observer */}
       <AnimationController />
 

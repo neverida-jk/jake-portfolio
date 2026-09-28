@@ -8,8 +8,8 @@ import {
   useScroll,
   useSpring,
   useTransform,
-  useReducedMotion,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 // Deterministic PRNG (mulberry32) — pure 32-bit integer ops only, so it
 // produces the exact same sequence on server and client. Math.sin-based

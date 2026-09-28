@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 interface LandingNameProps {
     className?: string;

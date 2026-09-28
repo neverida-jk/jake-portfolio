@@ -6,11 +6,11 @@ import {
   motion,
   useAnimationControls,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   useTransform,
   type Variants,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { LuArrowDown, LuCheck, LuCopy, LuMapPin } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
 import Dual from "../system/Dual";

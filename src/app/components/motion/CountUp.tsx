@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useInView, useMotionValue, useSpring, useMotionValueEvent, useReducedMotion } from "framer-motion";
+import { useInView, useMotionValue, useSpring, useMotionValueEvent } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 interface CountUpProps {
   value: number;

@@ -4,10 +4,10 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   useSpring,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
 import { SECTION_IDS, useActiveSection, type SectionId } from "@/lib/useActiveSection";
 
@@ -51,14 +51,24 @@ export default function Altimeter() {
       const next: Record<string, number> = {};
       SECTION_IDS.forEach((id) => {
         const el = document.getElementById(id);
-        if (el) next[id] = Math.min(1, Math.max(0, el.offsetTop / max));
+        // Document-relative top, not offsetTop (which is relative to the
+        // nearest positioned ancestor).
+        if (el) next[id] = Math.min(1, Math.max(0, (el.getBoundingClientRect().top + window.scrollY) / max));
       });
       setOffsets(next);
     };
 
     measure();
+    // Re-measure whenever the page's height changes (images, fonts, tall
+    // sections settling), not just on window resize — otherwise the ticks
+    // drift away from the sections they mark.
+    const ro = new ResizeObserver(measure);
+    ro.observe(document.body);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
   useMotionValueEvent(progress, "change", (latest) => {
@@ -68,7 +78,9 @@ export default function Altimeter() {
   useEffect(() => {
     if (lastWaypoint.current !== null && lastWaypoint.current !== activeId) {
       soundFx.playClick(1200, "sine", 0.05);
-      navigator.vibrate?.(8);
+      // Only after a real tap/click; browsers reject (and warn on) vibrate
+      // calls that arrive without user activation.
+      if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(8);
     }
     lastWaypoint.current = activeId;
   }, [activeId]);

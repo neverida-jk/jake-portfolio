@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { dur, ease } from "@/lib/motion";
 
 interface RevealProps {

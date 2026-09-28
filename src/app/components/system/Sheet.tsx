@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useDragControls, useReducedMotion, type PanInfo } from "framer-motion";
+import { motion, AnimatePresence, useDragControls, type PanInfo } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { spring, dur } from "@/lib/motion";
 
 interface SheetProps {
@@ -39,13 +40,15 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
 
     previouslyFocused.current = document.activeElement as HTMLElement | null;
 
-    const scrollY = window.scrollY;
-    const { style } = document.body;
-    const prev = { overflow: style.overflow, position: style.position, top: style.top, width: style.width };
-    style.overflow = "hidden";
-    style.position = "fixed";
-    style.top = `-${scrollY}px`;
-    style.width = "100%";
+    // Lock scroll with overflow:hidden on <html>, NOT position:fixed on
+    // <body>. Pinning the body collapses the document height, so every
+    // scroll-linked value (the sky, the altimeter) jumps to its end state
+    // behind the open sheet. Pad by the scrollbar width to avoid a shift.
+    const root = document.documentElement;
+    const scrollbar = window.innerWidth - root.clientWidth;
+    const prev = { overflow: root.style.overflow, paddingRight: document.body.style.paddingRight };
+    root.style.overflow = "hidden";
+    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
 
     const focusFirst = () => {
       const node = panelRef.current;
@@ -81,12 +84,10 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", handleKeyDown);
-      style.overflow = prev.overflow;
-      style.position = prev.position;
-      style.top = prev.top;
-      style.width = prev.width;
-      window.scrollTo(0, scrollY);
-      previouslyFocused.current?.focus();
+      root.style.overflow = prev.overflow;
+      document.body.style.paddingRight = prev.paddingRight;
+      // preventScroll: restoring focus must not yank the page to the trigger.
+      previouslyFocused.current?.focus({ preventScroll: true });
     };
   }, [isOpen]);
 
@@ -98,7 +99,7 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center bg-void/55 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

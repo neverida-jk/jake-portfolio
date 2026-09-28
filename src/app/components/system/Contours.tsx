@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { ease } from "@/lib/motion";
 
 // Topographic contour generator (§3.3). Produces nested closed rings around
