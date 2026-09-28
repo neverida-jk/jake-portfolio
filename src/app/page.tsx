@@ -109,18 +109,6 @@ export default function Home() {
           onOpenTerminal={() => setIsTerminalOpen(true)}
           onCopyEmail={handleCopyEmail}
         />
-
-        {/* Global Footer */}
-        <footer className="relative z-10 bg-base border-t border-line mt-16 py-6 px-4 text-center text-xs font-mono text-ink-2">
-          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div>
-              Jake Neverida &bull; <span className="text-ink">UP Los Baños</span>
-            </div>
-            <div className="text-ink-3">
-              Next.js 15 &bull; React 19 &bull; Tailwind CSS v4
-            </div>
-          </div>
-        </footer>
       </div>
 
       {/* Global Toast Notification */}
