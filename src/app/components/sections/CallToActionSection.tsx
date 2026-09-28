@@ -53,7 +53,7 @@ export default function CallToActionSection({ onCopyEmail }: CallToActionSection
               Get in Touch
             </h3>
             <p className="text-xs text-zinc-400 font-rubik leading-relaxed mt-1">
-              Currently available for software engineering roles, web development projects, or technical conversations.
+              Open to software engineering roles and web development projects.
             </p>
           </div>
 

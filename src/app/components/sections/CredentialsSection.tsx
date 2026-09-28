@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { soundFx } from "@/util/sound";
 import {
   LuShieldCheck,
@@ -38,14 +39,13 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
     current: true,
     period: "June 2026 – Present",
     summary:
-      "Executing comprehensive software testing strategies, defect lifecycle management, regression suites, and release readiness verification for enterprise applications.",
+      "Test strategy, defect lifecycle management, and release readiness for enterprise applications.",
     modalDescription:
       "Quality Assurance Analyst at Vertere Global Solutions Inc. (June 2026 – Present). Driving software quality through systematic test case authoring, manual and automated regression suites, defect isolation and root-cause analysis, and cross-functional release quality assurance.",
     icon: <LuShieldCheck className="w-5 h-5 text-emerald-400" />,
     deliverables: [
-      "Authored and executed comprehensive test plans and regression suites",
-      "Managed defect lifecycle, issue triage, and root-cause isolation",
-      "Collaborated with engineering leads to ensure production release quality",
+      "Authored test plans and regression suites",
+      "Managed defect lifecycle and root-cause isolation",
     ],
     tags: ["QA Testing", "Test Plans", "Defect Management", "Regression Suites", "Release Quality"],
   };
@@ -121,7 +121,7 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
           </div>
 
           {/* Card A: Vertere Global Solutions Inc. (Current Role) */}
-          <div
+          <motion.div
             onClick={() => {
               soundFx.playClick(850);
               onCardClick?.(
@@ -131,7 +131,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 experienceVertere.period
               );
             }}
-            className="glass-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer hover:border-emerald-500/40 hover:shadow-xl transition-all duration-300 group border border-white/[0.1] bg-gradient-to-br from-zinc-900/95 via-zinc-900/70 to-zinc-950/90"
+            whileHover={{ y: -4 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="glass-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer hover:border-emerald-500/40 hover:shadow-xl group border border-white/[0.1] bg-gradient-to-br from-zinc-900/95 via-zinc-900/70 to-zinc-950/90"
           >
             <div>
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -184,10 +187,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 </span>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Card B: Limitless Lab (Internship) */}
-          <div
+          <motion.div
             onClick={() => {
               soundFx.playClick(850);
               onCardClick?.(
@@ -200,7 +203,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 [{ src: experienceLimitless.logo, type: "image", alt: experienceLimitless.company }]
               );
             }}
-            className="glass-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between cursor-pointer hover:border-white/[0.18] transition-all duration-300 group bg-zinc-950/70 border border-white/[0.06]"
+            whileHover={{ y: -4 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="glass-card rounded-3xl p-4 sm:p-5 flex flex-col justify-between cursor-pointer hover:border-white/[0.18] group bg-zinc-950/70 border border-white/[0.06]"
           >
             <div>
               <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -253,7 +259,7 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 </span>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Column 2: Academic Foundation (6 cols) */}
@@ -268,7 +274,7 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
           </div>
 
           {/* Card C: University of the Philippines Los Baños */}
-          <div
+          <motion.div
             onClick={() => {
               soundFx.playClick(850);
               onCardClick?.(
@@ -281,7 +287,10 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 [{ src: education.logo, type: "image", alt: education.institution }]
               );
             }}
-            className="glass-card rounded-3xl p-5 sm:p-6 flex-1 flex flex-col justify-between cursor-pointer hover:border-emerald-500/30 hover:shadow-xl transition-all duration-300 group border border-white/[0.1] bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950/90"
+            whileHover={{ y: -4 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="glass-card rounded-3xl p-5 sm:p-6 flex-1 flex flex-col justify-between cursor-pointer hover:border-emerald-500/30 hover:shadow-xl group border border-white/[0.1] bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-zinc-950/90"
           >
             <div>
               {/* University Header */}
@@ -351,7 +360,7 @@ export default function CredentialsSection({ onCardClick }: CredentialsSectionPr
                 </span>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

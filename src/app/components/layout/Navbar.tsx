@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { soundFx } from "@/util/sound";
 import {
   LuTerminal,
@@ -107,11 +108,16 @@ export default function Navbar({
                 href={`#${link.id}`}
                 onClick={(e) => handleNavClick(e, link.id)}
                 className={`relative px-3 py-1 rounded-full text-xs font-medium font-rubik transition-colors duration-150 ${
-                  isActive
-                    ? "text-white bg-zinc-800/80"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850"
+                  isActive ? "text-white" : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >
+                {isActive && (
+                  <motion.span
+                    layoutId="navActivePill"
+                    className="absolute inset-0 rounded-full bg-zinc-800/80 -z-10"
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
                 {link.label}
               </a>
             );
@@ -121,46 +127,57 @@ export default function Navbar({
         {/* Right Tools */}
         <div className="flex items-center gap-1">
           {/* Terminal */}
-          <button
+          <motion.button
             onClick={() => {
               soundFx.playClick(1000);
               if (onOpenTerminal) onOpenTerminal();
             }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 500, damping: 15 }}
             title="Terminal CLI"
-            className="p-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06] transition-colors"
+            className="p-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06]"
           >
             <LuTerminal className="w-3.5 h-3.5" />
-          </button>
+          </motion.button>
 
           {/* Command Palette */}
-          <button
+          <motion.button
             onClick={() => {
               soundFx.playClick(900);
               if (onOpenCommandPalette) onOpenCommandPalette();
             }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 500, damping: 15 }}
             title="Command Palette (Cmd+K)"
-            className="p-1.5 sm:px-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06] transition-colors flex items-center gap-1 text-xs font-mono"
+            className="p-1.5 sm:px-2 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06] flex items-center gap-1 text-xs font-mono"
           >
             <LuCommand className="w-3.5 h-3.5" />
             <span className="hidden sm:inline text-[11px]">K</span>
-          </button>
+          </motion.button>
 
           {/* Sound Toggle */}
-          <button
+          <motion.button
             onClick={handleToggleSound}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9, rotate: -15 }}
+            transition={{ type: "spring", stiffness: 500, damping: 15 }}
             title={isMuted ? "Unmute audio" : "Mute audio"}
-            className="p-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06] transition-colors"
+            className="p-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-white/[0.06]"
           >
             {isMuted ? (
               <LuVolumeX className="w-3.5 h-3.5 text-zinc-500" />
             ) : (
               <LuVolume2 className="w-3.5 h-3.5 text-zinc-300" />
             )}
-          </button>
+          </motion.button>
 
           {/* Mobile Menu Toggle */}
-          <button
+          <motion.button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            whileTap={{ scale: 0.85 }}
+            transition={{ type: "spring", stiffness: 500, damping: 15 }}
             className="md:hidden p-1.5 rounded-full bg-zinc-900/80 text-zinc-300 border border-white/[0.06]"
             aria-label="Toggle Menu"
           >
@@ -169,7 +186,7 @@ export default function Navbar({
             ) : (
               <LuMenu className="w-3.5 h-3.5" />
             )}
-          </button>
+          </motion.button>
         </div>
       </nav>
 

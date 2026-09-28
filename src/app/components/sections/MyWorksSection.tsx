@@ -50,9 +50,9 @@ const PROJECTS_DATA: Project[] = [
     domain: "quant.dev-jk.me",
     liveUrl: "https://quant.dev-jk.me",
     category: "Quantitative Intelligence & Algorithms",
-    tagline: "Statistical probability edge modeling & Kelly criterion position sizing for prediction markets.",
+    tagline: "Probability edge modeling & Kelly criterion sizing for prediction markets.",
     summary:
-      "A quantitative intelligence engine analyzing prediction market order books (e.g. Polymarket). Models real-time implied probability distributions, Brier score calibration, and optimal Kelly criterion stake allocation to identify statistical mispricings.",
+      "Analyzes prediction market order books, modeling implied probability and Kelly-optimal stake sizing to surface statistical mispricings.",
     modalDescription:
       "Prediction Market Edge Engine (quant.dev-jk.me). Analyzes live prediction market mechanics with quantitative probability metrics. Implements mathematical order book parsing, implied versus calibrated probability modeling, Brier scoring accuracy analysis, and fraction Kelly criterion bankroll management.",
     metrics: "Kelly Sizing &bull; Order Book Analytics &bull; Polymarket Edge",
@@ -66,9 +66,9 @@ const PROJECTS_DATA: Project[] = [
     domain: "tropa.dev-jk.me",
     liveUrl: "https://tropa.dev-jk.me",
     category: "Full-Stack Web Platform",
-    tagline: "Philippine mountain itinerary planning, headcount logistics, and shared cost splitting.",
+    tagline: "Philippine mountain itinerary planning and shared expense splitting.",
     summary:
-      "Full-stack mountaineering coordination platform for Philippine trails (Pulag, Apo, Ulap, Batulao). Allows groups to select trails, schedule van and trailhead timetables, track gear/permits, and split multi-party shared expenses with zero-friction climb join codes.",
+      "Groups plan trails, schedule logistics, and split multi-party climb expenses with a join code — no more spreadsheets.",
     modalDescription:
       "Tropa (tropa.dev-jk.me) — 'Plan the climb. Keep the Tropa together.' Engineered with Next.js App Router, React 19, and Tailwind CSS. Built to eliminate fragmented group chats and spreadsheets by managing trail logistics, headcount validation, and multi-currency expense splitting in one unified collaborative space.",
     metrics: "Next.js App Router &bull; Real Trail Logistics &bull; Cost-Split Engine",
@@ -83,9 +83,9 @@ const PROJECTS_DATA: Project[] = [
     domain: "finance.dev-jk.me",
     liveUrl: "https://finance.dev-jk.me",
     category: "Offline-First Web App / PWA",
-    tagline: "Zero-latency offline-first personal financial management and dynamic analytics.",
+    tagline: "Offline-first personal finance tracking with live analytics.",
     summary:
-      "A Progressive Web App (PWA) delivering client-side financial analytics and budget tracking. Uses Dexie.js over IndexedDB for resilient offline-first persistence, Recharts for interactive spending breakdowns, and Framer Motion for responsive tactile transitions.",
+      "Client-side budget tracking on Dexie.js/IndexedDB, with Recharts spending breakdowns and animated transitions.",
     modalDescription:
       "Finance Tracker (finance.dev-jk.me). Offline-first Progressive Web App designed for private, high-speed financial analytics. Features client-side schema migrations via Dexie.js (IndexedDB), category budgeting, cash flow forecasting, transaction ledgers, and animated Recharts data visualizations.",
     metrics: "IndexedDB (Dexie.js) &bull; Recharts Analytics &bull; Offline PWA",
@@ -99,9 +99,9 @@ const PROJECTS_DATA: Project[] = [
     domain: "dev-jk.me",
     liveUrl: "https://neverida-jk.github.io/portfolio",
     category: "Creative Engineering & UI Systems",
-    tagline: "Modern developer showcase featuring embedded Unix shell and synthesized Web Audio.",
+    tagline: "Developer showcase with an embedded Unix shell and synthesized audio.",
     summary:
-      "Personal portfolio engineered with Next.js 15 App Router, React 19, and Tailwind CSS v4. Features an embedded interactive Unix CLI sandbox, global Cmd+K spotlight palette, Web Audio API sound synthesizer, and dynamic celebration canvas particle cannons.",
+      "Next.js 15 portfolio with an interactive CLI sandbox, Cmd+K command palette, and a Web Audio sound synthesizer.",
     modalDescription:
       "Personal developer portfolio engineered with Next.js 15 App Router, React 19, and Tailwind CSS v4. Features an embedded interactive Unix-like CLI sandbox, global keyboard shortcut command palette, Web Audio API sound synthesizer, and dynamic canvas particle animations.",
     metrics: "100/100 Lighthouse &bull; Web Audio API &bull; Turbopack",

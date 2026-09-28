@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import LandingName from "../ui/LandingName";
 import { soundFx } from "@/util/sound";
 import {
@@ -245,52 +246,73 @@ export default function HeroSection({
 
             {/* Balanced Professional Bio */}
             <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-rubik">
-              Quality Assurance Analyst at Vertere Global Solutions Inc. and Software Engineer with a BS in Computer Science from UP Los Baños (1.95 GWA).
-              Focused on software test validation, automated regression suites, and high-performance web systems using Next.js, React, and TypeScript.
+              QA Analyst & Software Engineer, BS Computer Science (UPLB, 1.95 GWA).
+              Building test suites and high-performance web systems in Next.js, React, and TypeScript.
             </p>
           </div>
 
           {/* Action Row */}
           <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/[0.04] mt-4">
-            <a
+            <motion.a
               href="#projects"
               onClick={() => soundFx.playClick(950)}
-              className="px-4 py-2 rounded-full bg-white text-zinc-950 font-rubik font-medium text-xs sm:text-sm hover:bg-zinc-200 transition-all flex items-center gap-1.5 active:scale-95 shadow-md"
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: "spring", stiffness: 500, damping: 22 }}
+              className="px-4 py-2 rounded-full bg-white text-zinc-950 font-rubik font-medium text-xs sm:text-sm hover:bg-zinc-200 shadow-md flex items-center gap-1.5"
             >
               <span>Featured Work</span>
-              <LuArrowDown className="w-3.5 h-3.5" />
-            </a>
+              <motion.span
+                animate={{ y: [0, 3, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <LuArrowDown className="w-3.5 h-3.5" />
+              </motion.span>
+            </motion.a>
 
-            <button
+            <motion.button
               onClick={handleCopy}
-              className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-rubik text-xs sm:text-sm transition-all border border-white/[0.08] active:scale-95 flex items-center gap-1.5"
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: "spring", stiffness: 500, damping: 22 }}
+              className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-rubik text-xs sm:text-sm border border-white/[0.08] flex items-center gap-1.5"
             >
-              <LuCopy className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Copy Email</span>
-            </button>
+              {copiedToast ? (
+                <LuCheck className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <LuCopy className="w-3.5 h-3.5 text-zinc-400" />
+              )}
+              <span>{copiedToast ? "Copied!" : "Copy Email"}</span>
+            </motion.button>
 
             <div className="flex items-center gap-1.5 ml-auto">
-              <a
+              <motion.a
                 href="https://github.com/neverida-jk"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => soundFx.playClick(900)}
-                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/[0.06] transition-colors"
+                whileHover={{ scale: 1.12, rotate: -6 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/[0.06]"
                 title="GitHub"
               >
                 <SiGithub className="w-3.5 h-3.5" />
-              </a>
+              </motion.a>
 
-              <a
+              <motion.a
                 href="https://linkedin.com/in/your-profile"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => soundFx.playClick(900)}
-                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/[0.06] transition-colors"
+                whileHover={{ scale: 1.12, rotate: 6 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/[0.06]"
                 title="LinkedIn"
               >
                 <SiLinkedin className="w-3.5 h-3.5 text-blue-400" />
-              </a>
+              </motion.a>
             </div>
           </div>
         </div>
