@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useReducedMotion, type PanInfo } from "framer-motion";
+import { motion, AnimatePresence, useDragControls, useReducedMotion, type PanInfo } from "framer-motion";
 import { spring, dur } from "@/lib/motion";
 
 interface SheetProps {
@@ -24,6 +24,15 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const reduceMotion = useReducedMotion();
+  const dragControls = useDragControls();
+
+  // Callers usually pass an inline arrow. With onClose as an effect
+  // dependency, every parent re-render would tear down and re-run the
+  // effect — restoring focus to the trigger and re-locking scroll mid-use.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -49,7 +58,7 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab") return;
@@ -79,14 +88,11 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
       window.scrollTo(0, scrollY);
       previouslyFocused.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
-  const handleDragEnd = useCallback(
-    (_: unknown, info: PanInfo) => {
-      if (info.offset.y > 120 || info.velocity.y > 650) onClose();
-    },
-    [onClose]
-  );
+  const handleDragEnd = useCallback((_: unknown, info: PanInfo) => {
+    if (info.offset.y > 120 || info.velocity.y > 650) onCloseRef.current();
+  }, []);
 
   return (
     <AnimatePresence>
@@ -97,7 +103,7 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: reduceMotion ? 0.2 : dur.sm }}
-          onClick={onClose}
+          onClick={() => onCloseRef.current()}
         >
           <motion.div
             ref={panelRef}
@@ -106,7 +112,12 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
             aria-labelledby={titleId}
             tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
+            // Drag starts only from the grab handle. Making the whole panel the
+            // drag target (with touch-action:none) hijacks vertical touch, so
+            // long sheet content could never scroll on a phone.
             drag={reduceMotion ? false : "y"}
+            dragListener={false}
+            dragControls={dragControls}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.55 }}
             onDragEnd={handleDragEnd}
@@ -114,10 +125,14 @@ export default function Sheet({ isOpen, onClose, titleId, children, className }:
             animate={{ y: 0 }}
             exit={{ y: reduceMotion ? 0 : "100%" }}
             transition={reduceMotion ? { duration: 0.2 } : spring.sheet}
-            style={{ touchAction: "none" }}
             className={`w-full sm:w-auto sm:min-w-[420px] max-h-[85vh] sm:max-h-[80vh] overflow-y-auto overscroll-contain bg-surface border border-line rounded-t-3xl sm:rounded-3xl shadow-2xl ${className ?? ""}`}
           >
-            <div className="flex justify-center pt-2.5 pb-1 sm:hidden" aria-hidden="true">
+            <div
+              className="sticky top-0 z-10 flex justify-center pt-3 pb-2 sm:hidden cursor-grab active:cursor-grabbing bg-surface rounded-t-3xl"
+              style={{ touchAction: "none" }}
+              onPointerDown={(e) => dragControls.start(e)}
+              aria-hidden="true"
+            >
               <span className="h-1 w-10 rounded-full bg-ink-3/40" />
             </div>
             {children}

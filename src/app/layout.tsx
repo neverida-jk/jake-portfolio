@@ -67,7 +67,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    // suppressHydrationWarning: the inline script below adds the `js` class to
+    // <html> before hydration, which is intentional.
+    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
+      <head>
+        {/* Runs before first paint. Scroll-reveal hiding is scoped to `.js`,
+            so with JavaScript unavailable every section is simply visible. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-base text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
       >

@@ -49,7 +49,7 @@ const RIDGE_NEAR =
 // the whole site — sky gradient, sun, seeded stars, three parallax ridges.
 export default function AscentSky() {
   const reduceMotion = useReducedMotion();
-  const { scrollYProgress, scrollY } = useScroll();
+  const { scrollYProgress } = useScroll();
   const spring = useSpring(scrollYProgress, { stiffness: 58, damping: 22, mass: 0.4 });
   const fixedProgress = useMotionValue(0.5);
   const p = reduceMotion ? fixedProgress : spring;
@@ -62,9 +62,13 @@ export default function AscentSky() {
   const sunO = useTransform(p, [0.55, 0.8, 1], [0, 0.5, 0.9]);
   const starO = useTransform(p, [0, 0.5], [1, 0]);
 
-  const yFar = useTransform(scrollY, (v) => -v * 0.06);
-  const yMid = useTransform(scrollY, (v) => -v * 0.12);
-  const yNear = useTransform(scrollY, (v) => -v * 0.22);
+  // Bounded, not proportional to raw scrollY: an unbounded -scrollY*k offset
+  // flings the ridges off-screen long before the summit, which is exactly
+  // where the sun needs them to crest behind. Climbing puts you above the
+  // range, so the ridges *sink* a little — nearer ones more (parallax depth).
+  const yFar = useTransform(p, [0, 1], [0, 18]);
+  const yMid = useTransform(p, [0, 1], [0, 38]);
+  const yNear = useTransform(p, [0, 1], [0, 64]);
 
   return (
     <div className="fixed inset-0 -z-50 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -99,11 +103,23 @@ export default function AscentSky() {
         viewBox="0 0 1280 320"
         preserveAspectRatio="none"
       >
-        <motion.path d={RIDGE_FAR} fill="var(--color-void)" style={{ y: reduceMotion ? 0 : yFar, willChange: "transform" }} />
-        <motion.path d={RIDGE_MID} fill="var(--color-base)" style={{ y: reduceMotion ? 0 : yMid, willChange: "transform" }} />
+        {/* Atmospheric perspective: far ridges are hazy and let the sky tint
+            through, near ridges are the darkest, most solid silhouettes. */}
+        <motion.path
+          d={RIDGE_FAR}
+          fill="var(--color-raised)"
+          fillOpacity={0.5}
+          style={{ y: reduceMotion ? 0 : yFar, willChange: "transform" }}
+        />
+        <motion.path
+          d={RIDGE_MID}
+          fill="var(--color-surface)"
+          fillOpacity={0.82}
+          style={{ y: reduceMotion ? 0 : yMid, willChange: "transform" }}
+        />
         <motion.path
           d={RIDGE_NEAR}
-          fill="var(--color-surface)"
+          fill="var(--color-void)"
           style={{ y: reduceMotion ? 0 : yNear, willChange: "transform" }}
         />
       </svg>

@@ -109,18 +109,18 @@
     animation: modal-enter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .reveal-item {
+  .js .reveal-item {
     opacity: 0;
     transform: translateY(24px);
     transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .reveal-item.visible {
+  .js .reveal-item.visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  .reveal-item.no-animation {
+  .js .reveal-item.no-animation {
     transition: none !important;
   }
 
