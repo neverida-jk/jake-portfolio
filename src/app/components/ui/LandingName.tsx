@@ -67,8 +67,8 @@ const LandingName: React.FC<LandingNameProps> = ({
     }, [text, phraseIndex, isDeleting, isWaiting, phrases, typingSpeed, deletingSpeed, delayBetweenPhrases]);
 
     return (
-        <div className={`font-rubik grid gap-15 ${className}`}>
-            <div className='flex flex-row  text-gray-500 md:text-[20px] cursor-default'>
+        <div className={`font-rubik ${className}`}>
+            <div className='text-gray-500 md:text-[20px] cursor-default break-words'>
                 {text}<span className="animate-pulse">|</span>
             </div>
         </div>

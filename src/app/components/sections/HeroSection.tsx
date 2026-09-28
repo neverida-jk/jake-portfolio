@@ -184,10 +184,10 @@ export default function HeroSection({
                   setCurrentStatusIdx((prev) => (prev + 1) % statuses.length);
                 }}
                 title="Click to cycle status"
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/90 hover:bg-zinc-850 border border-white/[0.08] text-zinc-300 text-xs font-mono transition-all active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/90 hover:bg-zinc-850 border border-white/[0.08] text-zinc-300 text-xs font-mono transition-all active:scale-95 cursor-pointer whitespace-nowrap max-w-full"
               >
-                <span className={`w-2 h-2 rounded-full ${statuses[currentStatusIdx].dot} animate-pulse`} />
-                <span>{statuses[currentStatusIdx].label}</span>
+                <span className={`w-2 h-2 rounded-full shrink-0 ${statuses[currentStatusIdx].dot} animate-pulse`} />
+                <span className="truncate min-w-0">{statuses[currentStatusIdx].label}</span>
                 <span className="text-[10px] text-zinc-500 ml-0.5">↻</span>
               </button>
 
@@ -212,7 +212,7 @@ export default function HeroSection({
                 />
               </div>
 
-              <div>
+              <div className="min-w-0 flex-1">
                 <h1 className="text-2xl sm:text-4xl font-bold tracking-tight font-rubik text-white leading-tight">
                   Jake Neverida
                 </h1>
@@ -231,14 +231,14 @@ export default function HeroSection({
 
             {/* Balanced Experience & Education Badges */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-emerald-500/25 text-xs font-mono text-zinc-300">
-                <LuShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>QA Analyst @ Vertere Global Solutions</span>
-                <span className="text-emerald-400/80 font-medium">Current</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-emerald-500/25 text-xs font-mono text-zinc-300 min-w-0 max-w-full">
+                <LuShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate min-w-0">QA Analyst @ Vertere Global Solutions</span>
+                <span className="text-emerald-400/80 font-medium shrink-0">Current</span>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-white/[0.08] text-xs font-mono text-zinc-400">
-                <LuGraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-white/[0.08] text-xs font-mono text-zinc-400 whitespace-nowrap">
+                <LuGraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>BS Computer Science, UPLB &apos;26</span>
               </div>
             </div>
