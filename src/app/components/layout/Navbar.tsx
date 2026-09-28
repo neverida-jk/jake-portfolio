@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { soundFx } from "@/util/sound";
+import { useActiveSection } from "@/lib/useActiveSection";
 import {
   LuTerminal,
   LuCommand,
@@ -24,36 +25,12 @@ export default function Navbar({
   onOpenTerminal,
   onCopyEmail,
 }: NavbarProps) {
-  const [activeSection, setActiveSection] = useState<string>("hero");
+  const activeSection = useActiveSection();
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setIsMuted(soundFx.getIsMuted());
-
-    const handleScroll = () => {
-      const sections = [
-        "hero",
-        "journey",
-        "work",
-        "toolkit",
-        "approach",
-        "beyond",
-        "contact",
-      ];
-      const scrollPosition = window.scrollY + 180;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveSection(sections[i]);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleNavClick = useCallback(

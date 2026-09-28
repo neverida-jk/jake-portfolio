@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ToolFocusProvider } from "./components/system/ToolFocusProvider";
+import AscentSky from "./components/system/AscentSky";
+import Altimeter from "./components/system/Altimeter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -69,7 +71,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} font-sans antialiased bg-base text-ink min-h-screen selection:bg-alpine/25 selection:text-ink`}
       >
+        <AscentSky />
         <ToolFocusProvider>{children}</ToolFocusProvider>
+        <Altimeter />
       </body>
     </html>
   );
