@@ -1,433 +1,360 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import LandingName from "../ui/LandingName";
+import {
+  motion,
+  useAnimationControls,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type Variants,
+} from "framer-motion";
+import { LuArrowDown, LuCheck, LuCopy, LuMapPin } from "react-icons/lu";
+import { SiGithub } from "react-icons/si";
 import Dual from "../system/Dual";
+import Contours from "../system/Contours";
+import Magnetic from "../motion/Magnetic";
 import { copy } from "@/content/copy";
+import { projects } from "@/content/projects";
+import { ease } from "@/lib/motion";
 import { soundFx } from "@/util/sound";
-import {
-  LuArrowDown,
-  LuTerminal,
-  LuCopy,
-  LuCheck,
-  LuMapPin,
-  LuClock,
-  LuShieldCheck,
-  LuGraduationCap,
-  LuBrainCircuit,
-  LuBot,
-} from "react-icons/lu";
-import {
-  SiGithub,
-  SiLinkedin,
-  SiAnthropic,
-  SiAmazonwebservices,
-  SiDocker,
-  SiGithubactions,
-} from "react-icons/si";
 
 interface HeroSectionProps {
-  onOpenTerminal?: () => void;
   onCopyEmail?: () => void;
+  // Kept for AboutMe's call signature; the hero no longer uses them.
+  onOpenTerminal?: () => void;
   onSkillClick?: (skill: string) => void;
 }
 
-interface TechLogo {
-  id: string;
-  name: string;
-  src?: string;
-  invert?: boolean;
-  icon?: React.ReactNode;
+const EMAIL = "jlrneverida@gmail.com";
+const INTRO_KEY = "jake.intro.seen";
+const NAME_LINES = ["Jake", "Neverida"];
+
+// The intro timeline, in seconds (§5.6). The name leads — it's the LCP
+// element, so it starts almost immediately instead of waiting on the rest.
+const T = { eyebrow: 0.05, name: 0.12, role: 0.55, now: 0.68, cta: 0.82, stats: 0.95, cue: 1.3 };
+
+function useManilaTime() {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Manila",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const tick = () => setTime(fmt.format(new Date()));
+    tick();
+    const id = setInterval(tick, 15000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
 }
 
-const TECH_LOGOS: TechLogo[] = [
-  { id: "react", name: "React", src: "/react.png" },
-  { id: "nextjs", name: "Next.js", src: "/next.svg", invert: true },
-  { id: "javascript", name: "JavaScript", src: "/javascript.png" },
-  { id: "python", name: "Python", src: "/python.png" },
-  { id: "nodejs", name: "Node.js", src: "/nodejs.png" },
-  { id: "tailwindcss", name: "Tailwind CSS", src: "/tailwindcss.png" },
-  { id: "mongodb", name: "MongoDB", src: "/mongodb.png" },
-  { id: "github", name: "GitHub", src: "/github.png" },
-  {
-    id: "claude",
-    name: "Claude",
-    icon: <SiAnthropic className="w-full h-full text-orange-300/90" />,
-  },
-  {
-    id: "context-engineering",
-    name: "Context Engineering",
-    icon: <LuBrainCircuit className="w-full h-full text-purple-400/90" />,
-  },
-  {
-    id: "agentic-development",
-    name: "Agentic Development",
-    icon: <LuBot className="w-full h-full text-emerald-400/90" />,
-  },
-  {
-    id: "aws",
-    name: "AWS",
-    icon: <SiAmazonwebservices className="w-full h-full text-amber-400/90" />,
-  },
-  {
-    id: "docker",
-    name: "Docker",
-    icon: <SiDocker className="w-full h-full text-sky-400/90" />,
-  },
-  {
-    id: "github-actions",
-    name: "GitHub Actions",
-    icon: <SiGithubactions className="w-full h-full text-zinc-200" />,
-  },
-];
+export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
+  const reduceMotion = useReducedMotion();
+  const controls = useAnimationControls();
+  const speed = useRef(1);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [copied, setCopied] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const time = useManilaTime();
 
-export default function HeroSection({
-  onOpenTerminal,
-  onCopyEmail,
-  onSkillClick,
-}: HeroSectionProps) {
-  const [localTime, setLocalTime] = useState<string>("");
-  const [copiedToast, setCopiedToast] = useState(false);
-  const [currentStatusIdx, setCurrentStatusIdx] = useState(0);
-
-  // Embedded Mini Console State
-  const [consoleInput, setConsoleInput] = useState("");
-  const [consoleLog, setConsoleLog] = useState<{ command: string; response: string }[]>([
-    {
-      command: "overview",
-      response: "Jake Neverida &bull; QA Analyst @ Vertere Global Solutions &bull; BS CS UP Los Baños",
-    },
-  ]);
-  const consoleEndRef = useRef<HTMLDivElement>(null);
-
-  const statuses = [
-    { label: "QA Analyst @ Vertere Global Solutions Inc.", dot: "bg-emerald-400" },
-    { label: "Software Engineer & Web Developer", dot: "bg-cyan-400" },
-    { label: "BS Computer Science (UP Los Baños '26)", dot: "bg-amber-400" },
-  ];
+  // Keyframed from 0 so the animation starts from the CSS-hidden state
+  // (.js .intro-*) regardless of what the DOM currently holds.
+  const fade: Variants = {
+    show: (d: number) => ({
+      opacity: [0, 1],
+      y: [14, 0],
+      transition: { duration: 0.7, delay: d * speed.current, ease: ease.out },
+    }),
+  };
+  const rise: Variants = {
+    show: (d: number) => ({
+      y: ["105%", "0%"],
+      transition: { duration: 0.85, delay: d * speed.current, ease: ease.out },
+    }),
+  };
 
   useEffect(() => {
-    const updateTime = () => {
-      const options: Intl.DateTimeFormatOptions = {
-        timeZone: "Asia/Manila",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      };
-      setLocalTime(new Intl.DateTimeFormat("en-US", options).format(new Date()));
-    };
+    // Hydrated after the CSS failsafe already revealed everything (slow
+    // device/network) — replaying the intro now would flash content out.
+    const lateHydration = performance.now() > 3200;
+    const seen = sessionStorage.getItem(INTRO_KEY) === "1";
 
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    if (reduceMotion || lateHydration) {
+      controls.set("show");
+      return;
+    }
+
+    // Repeat visits in the same session get a brisk version, not the full show.
+    speed.current = seen ? 0.3 : 1;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      sessionStorage.setItem(INTRO_KEY, "1");
+      window.removeEventListener("keydown", skip);
+      window.removeEventListener("pointerdown", skip);
+      window.removeEventListener("wheel", skip);
+      window.removeEventListener("touchstart", skip);
+    };
+    // Any input means the visitor wants the page, not the show.
+    const skip = () => {
+      controls.stop();
+      controls.set("show");
+      finish();
+    };
+    window.addEventListener("keydown", skip);
+    window.addEventListener("pointerdown", skip);
+    window.addEventListener("wheel", skip, { passive: true });
+    window.addEventListener("touchstart", skip, { passive: true });
+
+    controls.start("show").then(finish);
+    return finish;
+  }, [controls, reduceMotion]);
+
+  // Leaving base camp: the hero recedes as you scroll past it.
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -70]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const contentScale = useTransform(scrollYProgress, [0, 1], [1, 0.97]);
+  const contoursY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (v) => {
+    if (v > 40 && !scrolled) setScrolled(true);
+  });
 
   const handleCopy = useCallback(() => {
     soundFx.playSuccess();
-    navigator.clipboard.writeText("jlrneverida@gmail.com");
-    setCopiedToast(true);
-    if (onCopyEmail) onCopyEmail();
-    setTimeout(() => setCopiedToast(false), 2200);
+    navigator.clipboard.writeText(EMAIL);
+    setCopied(true);
+    onCopyEmail?.();
+    setTimeout(() => setCopied(false), 2200);
   }, [onCopyEmail]);
 
-  const runMiniCommand = (cmd: string) => {
-    soundFx.playKey();
-    const cleanCmd = cmd.trim().toLowerCase();
-    let response = "";
-
-    if (cleanCmd === "role") {
-      response = "Quality Assurance Analyst @ Vertere Global Solutions Inc. (June 2026 - Present)";
-    } else if (cleanCmd === "whoami") {
-      response = "Jake Neverida &bull; QA Analyst & Software Engineer. BS CS Graduate from UP Los Baños (GWA 1.95).";
-    } else if (cleanCmd === "education") {
-      response = "BS Computer Science, University of the Philippines Los Baños (2022 - 2026, GWA 1.95).";
-    } else if (cleanCmd === "skills") {
-      response = "QA Testing, Test Automation, React 19, Next.js 15, TypeScript, Python, Node.js, Tailwind, Claude &amp; agentic development, AWS, Docker.";
-    } else if (cleanCmd === "hire") {
-      soundFx.playSuccess();
-      response = "Let's connect! Email: jlrneverida@gmail.com";
-      const el = document.getElementById("contact");
-      if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth" }), 300);
-    } else if (cleanCmd === "clear") {
-      setConsoleLog([]);
-      setConsoleInput("");
-      return;
-    } else {
-      response = `Command "${cmd}" executed. Try: role, whoami, education, skills, hire, clear.`;
-    }
-
-    setConsoleLog((prev) => [...prev, { command: cmd, response }]);
-    setConsoleInput("");
-    setTimeout(() => consoleEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-  };
+  let charIndex = 0;
 
   return (
-    <section id="hero" className="reveal-item relative px-4 sm:px-6 max-w-5xl mx-auto pt-4 pb-2">
-      {/* Toast Alert */}
-      {copiedToast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[160] px-3.5 py-1.5 bg-zinc-900 text-zinc-100 text-xs font-mono rounded-full shadow-2xl backdrop-blur-md animate-modal-enter flex items-center gap-2 border border-white/10">
-          <LuCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Copied jlrneverida@gmail.com</span>
-        </div>
-      )}
+    <section
+      id="hero"
+      ref={sectionRef}
+      aria-labelledby="hero-heading"
+      className="relative isolate min-h-[100svh] flex items-center overflow-hidden px-4 sm:px-6 pt-28 pb-24"
+    >
+      {/* Topography around the summit — draws itself in on arrival. */}
+      <motion.div
+        className="absolute inset-0 -z-10"
+        style={reduceMotion ? undefined : { y: contoursY }}
+        aria-hidden="true"
+      >
+        {/* Mobile: the peak sits in the open space top-right, clear of the name. */}
+        <Contours
+          className="absolute right-0 top-0 h-[62svh] w-full sm:hidden opacity-80"
+          seed={2954}
+          rings={9}
+          cx={800}
+          cy={400}
+          r0={40}
+          dr={40}
+          draw
+          drawDelay={0.05}
+        />
+        {/* Desktop: a wide landform behind the Now panel. */}
+        <Contours
+          className="absolute -right-[10%] top-[-8%] hidden h-[118%] w-[78%] sm:block lg:w-[64%] opacity-90"
+          seed={2954}
+          rings={10}
+          draw
+          drawDelay={0.05}
+        />
+      </motion.div>
 
-      {/* Asymmetric Dual Element Container: Personal Anchor (Left) vs Interactive Console (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Left Element: Personal Identity & Balanced Focus (7 cols) */}
-        <div className="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden border border-white/[0.08]">
-          <div className="space-y-4">
-            {/* Live Status & Manila Clock */}
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => {
-                  soundFx.playKey();
-                  setCurrentStatusIdx((prev) => (prev + 1) % statuses.length);
-                }}
-                title="Click to cycle status"
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/90 hover:bg-zinc-850 border border-white/[0.08] text-zinc-300 text-xs font-mono transition-all active:scale-95 cursor-pointer whitespace-nowrap max-w-full"
-              >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${statuses[currentStatusIdx].dot} animate-pulse`} />
-                <span className="truncate min-w-0">{statuses[currentStatusIdx].label}</span>
-                <span className="text-[10px] text-zinc-500 ml-0.5">↻</span>
-              </button>
+      <motion.div
+        className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-end"
+        style={reduceMotion ? undefined : { y: contentY, opacity: contentOpacity, scale: contentScale }}
+      >
+        {/* ---------- Identity ---------- */}
+        <div className="lg:col-span-7">
+          <motion.p
+            className="intro-fade font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3 flex flex-wrap items-center gap-x-3 gap-y-1"
+            custom={T.eyebrow}
+            variants={fade}
+            animate={controls}
+          >
+            <span>{copy.hero.eyebrow}</span>
+            <span className="hidden text-ink-3/60 sm:inline" aria-hidden="true">·</span>
+            <span className="text-ink-2">{copy.hero.coords}</span>
+          </motion.p>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-900/60 border border-white/[0.06] text-zinc-400 text-xs font-mono">
-                <LuMapPin className="w-3 h-3 text-zinc-500" />
-                <span>Laguna, PH</span>
-                <span className="text-zinc-600">&bull;</span>
-                <LuClock className="w-3 h-3 text-zinc-500" />
-                <span>{localTime || "GMT+8"}</span>
-              </div>
-            </div>
+          <h1
+            id="hero-heading"
+            aria-label={NAME_LINES.join(" ")}
+            className="mt-5 font-display text-display leading-[0.9] tracking-[-0.035em] text-ink"
+          >
+            {NAME_LINES.map((line, li) => (
+              <span key={line} className="block" aria-hidden="true">
+                {Array.from(line).map((ch) => {
+                  const i = charIndex++;
+                  return (
+                    <span key={i} className="inline-block overflow-hidden align-bottom pb-[0.22em] -mb-[0.22em]">
+                      <motion.span
+                        className={`intro-char inline-block ${li === 1 ? "italic" : ""}`}
+                        custom={T.name + i * 0.032}
+                        variants={rise}
+                        animate={controls}
+                      >
+                        {ch}
+                      </motion.span>
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
+          </h1>
 
-            {/* Profile Avatar & Name Header */}
-            <div className="flex items-center gap-4 pt-1">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-white/[0.12] shadow-xl bg-zinc-900 relative shrink-0">
-                <Image
-                  src="/jake.jpg"
-                  alt="Jake Neverida"
-                  fill
-                  priority
-                  className="object-cover"
-                />
-              </div>
+          <motion.div
+            className="intro-fade mt-7 max-w-[34rem]"
+            custom={T.role}
+            variants={fade}
+            animate={controls}
+          >
+            <Dual value={copy.hero.role} className="text-h3 leading-snug text-ink-2 text-balance" />
+          </motion.div>
 
-              <div className="min-w-0 flex-1">
-                <h1 className="text-2xl sm:text-4xl font-bold tracking-tight font-sans text-white leading-tight">
-                  Jake Neverida
-                </h1>
-                <div className="min-h-[24px] mt-0.5 flex items-center">
-                  <LandingName
-                    phrases={[
-                      "Quality Assurance Analyst",
-                      "Software Engineer",
-                      "BS Computer Science • UP Los Baños",
-                    ]}
-                    className="text-xs sm:text-sm text-zinc-400 font-mono"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Balanced Experience & Education Badges */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-emerald-500/25 text-xs font-mono text-zinc-300 min-w-0 max-w-full">
-                <LuShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <Dual value={copy.hero.status} as="span" note="none" className="truncate min-w-0" />
-                <span className="text-emerald-400/80 font-medium shrink-0">Current</span>
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900/80 border border-white/[0.08] text-xs font-mono text-zinc-400 whitespace-nowrap">
-                <LuGraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>BS Computer Science, UPLB &apos;26</span>
-              </div>
-            </div>
-
-            {/* Balanced Professional Bio */}
-            <Dual
-              value={copy.hero.role}
-              as="p"
-              className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-sans"
-            />
-          </div>
-
-          {/* Action Row */}
-          <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/[0.04] mt-4">
-            <motion.a
-              href="#work"
-              onClick={() => soundFx.playClick(950)}
-              whileHover={{ scale: 1.04, y: -1 }}
-              whileTap={{ scale: 0.94 }}
-              transition={{ type: "spring", stiffness: 500, damping: 22 }}
-              className="px-4 py-2 rounded-full bg-white text-zinc-950 font-sans font-medium text-xs sm:text-sm hover:bg-zinc-200 shadow-md flex items-center gap-1.5"
-            >
-              <span>Featured Work</span>
-              <motion.span
-                animate={{ y: [0, 3, 0] }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <LuArrowDown className="w-3.5 h-3.5" />
-              </motion.span>
-            </motion.a>
-
-            <motion.button
-              onClick={handleCopy}
-              whileHover={{ scale: 1.04, y: -1 }}
-              whileTap={{ scale: 0.94 }}
-              transition={{ type: "spring", stiffness: 500, damping: 22 }}
-              className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-sans text-xs sm:text-sm border border-white/[0.08] flex items-center gap-1.5"
-            >
-              {copiedToast ? (
-                <LuCheck className="w-3.5 h-3.5 text-emerald-400" />
-              ) : (
-                <LuCopy className="w-3.5 h-3.5 text-zinc-400" />
-              )}
-              <span>{copiedToast ? "Copied!" : "Copy Email"}</span>
-            </motion.button>
-
-            <div className="flex items-center gap-1.5 ml-auto">
+          <motion.div
+            className="intro-fade mt-9 flex flex-wrap items-center gap-3"
+            custom={T.cta}
+            variants={fade}
+            animate={controls}
+          >
+            <Magnetic>
               <motion.a
+                href="#work"
+                onClick={() => soundFx.playClick(950)}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                className="group inline-flex items-center gap-2 rounded-full bg-summit px-6 py-3 text-sm font-medium text-void shadow-[0_10px_30px_-12px_rgba(255,180,84,0.65)] transition-colors hover:bg-summit-dt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+              >
+                <span>{copy.hero.cta.primary}</span>
+                <LuArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
+              </motion.a>
+            </Magnetic>
+
+            <Magnetic>
+              <motion.button
+                type="button"
+                onClick={handleCopy}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-5 py-3 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-base"
+              >
+                {copied ? <LuCheck className="h-4 w-4 text-moss" /> : <LuCopy className="h-4 w-4" />}
+                <span aria-live="polite">{copied ? copy.hero.cta.copied : copy.hero.cta.copy}</span>
+              </motion.button>
+            </Magnetic>
+          </motion.div>
+
+          <motion.dl
+            className="intro-fade mt-12 grid max-w-[34rem] grid-cols-3 gap-4 border-t border-line pt-5"
+            custom={T.stats}
+            variants={fade}
+            animate={controls}
+          >
+            {[
+              { value: copy.hero.stats.gwa.value, label: copy.hero.stats.gwa.label },
+              { value: String(projects.length), label: copy.hero.stats.live.label },
+              { value: copy.hero.stats.grad.value, label: copy.hero.stats.grad.label },
+            ].map((s) => (
+              <div key={s.label} className="min-w-0">
+                <dt className="sr-only">{s.label}</dt>
+                <dd className="font-display text-[clamp(1.75rem,3.2vw,2.5rem)] leading-none text-ink">{s.value}</dd>
+                <dd className="mt-2 font-mono text-[0.6875rem] leading-snug text-ink-3">{s.label}</dd>
+              </div>
+            ))}
+          </motion.dl>
+        </div>
+
+        {/* ---------- Now ---------- */}
+        <motion.aside
+          aria-label="What I'm doing now"
+          className="intro-fade lg:col-span-5 lg:mb-2"
+          custom={T.now}
+          variants={fade}
+          animate={controls}
+        >
+          <div className="rounded-3xl border border-line bg-surface/85 p-6 shadow-[var(--e2)] backdrop-blur-[2px]">
+            <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.14em]">
+              <span className="flex items-center gap-2 text-ink-2">
+                <span className="relative flex h-2 w-2" aria-hidden="true">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-moss opacity-60 motion-reduce:hidden" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-moss" />
+                </span>
+                Now
+              </span>
+              <span className="text-ink-3 tabular-nums">{time ? `${time} · GMT+8` : "GMT+8"}</span>
+            </div>
+
+            <div className="mt-5 flex items-center gap-4">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-line">
+                <Image src="/jake.jpg" alt="Jake Neverida" fill sizes="56px" priority className="object-cover" />
+              </div>
+              <div className="min-w-0">
+                <Dual value={copy.hero.status} note="none" className="text-sm font-medium text-ink" />
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">
+                  <LuMapPin className="h-3 w-3" aria-hidden="true" />
+                  Laguna, Philippines
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 border-t border-line pt-5">
+              <Dual value={copy.hero.now} className="text-sm leading-relaxed text-ink-2" />
+            </div>
+
+            <div className="mt-5 flex items-center gap-2">
+              <a
                 href="https://github.com/neverida-jk"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => soundFx.playClick(900)}
-                whileHover={{ scale: 1.12, rotate: -6 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/[0.06]"
-                title="GitHub"
+                className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-mono text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
               >
-                <SiGithub className="w-3.5 h-3.5" />
-              </motion.a>
-
-              <motion.a
-                href="https://linkedin.com/in/your-profile"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => soundFx.playClick(900)}
-                whileHover={{ scale: 1.12, rotate: 6 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/[0.06]"
-                title="LinkedIn"
-              >
-                <SiLinkedin className="w-3.5 h-3.5 text-blue-400" />
-              </motion.a>
+                <SiGithub className="h-3.5 w-3.5" aria-hidden="true" />
+                github.com/neverida-jk
+              </a>
             </div>
           </div>
-        </div>
+        </motion.aside>
+      </motion.div>
 
-        {/* Right Element: Live Interactive Mini Console Widget (5 cols) */}
-        <div className="lg:col-span-5 glass-card rounded-3xl p-5 flex flex-col justify-between border border-white/[0.08] font-mono text-xs bg-[#08080a]/90 relative overflow-hidden">
-          {/* Console Header */}
-          <div>
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.06]">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-zinc-600" />
-                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                <span className="ml-2 text-[11px] text-zinc-400">interactive shell</span>
-              </div>
-
-              <button
-                onClick={() => {
-                  soundFx.playClick(850);
-                  if (onOpenTerminal) onOpenTerminal();
-                }}
-                className="text-[10px] text-zinc-500 hover:text-zinc-300 font-mono transition-colors"
-                title="Open full terminal window"
-              >
-                expand &gt;_
-              </button>
-            </div>
-
-            {/* Quick Interactive Command Buttons */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide mb-3 pb-1">
-              {["role", "whoami", "education", "skills", "hire"].map((cmd) => (
-                <button
-                  key={cmd}
-                  onClick={() => runMiniCommand(cmd)}
-                  className="px-2 py-0.5 rounded-md bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-white border border-white/[0.06] text-[10px] font-mono transition-all shrink-0 cursor-pointer"
-                >
-                  {cmd}
-                </button>
-              ))}
-            </div>
-
-            {/* Live Console Output Stream */}
-            <div className="space-y-2 max-h-[160px] overflow-y-auto scrollbar-hide text-[11px]">
-              {consoleLog.map((log, idx) => (
-                <div key={idx} className="space-y-0.5">
-                  <div className="text-zinc-500">
-                    <span className="text-emerald-400">&gt;</span> {log.command}
-                  </div>
-                  <div
-                    className="text-zinc-300 pl-3 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: log.response }}
-                  />
-                </div>
-              ))}
-              <div ref={consoleEndRef} />
-            </div>
-          </div>
-
-          {/* Live Prompt Input */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (consoleInput.trim()) runMiniCommand(consoleInput);
-            }}
-            className="pt-3 mt-3 border-t border-white/[0.06] flex items-center gap-2"
-          >
-            <span className="text-emerald-400 font-bold text-xs">&gt;</span>
-            <input
-              type="text"
-              value={consoleInput}
-              onChange={(e) => setConsoleInput(e.target.value)}
-              placeholder="try 'role' or 'education'..."
-              className="w-full bg-transparent text-white text-xs outline-none font-mono caret-white placeholder-zinc-600"
+      {/* Scroll cue — tells non-technical visitors what to do, and sets up
+          the climb metaphor. Gone as soon as they start. */}
+      <motion.div
+        className="intro-fade pointer-events-none absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        custom={T.cue}
+        variants={fade}
+        animate={controls}
+        aria-hidden="true"
+      >
+        <motion.div
+          animate={{ opacity: scrolled ? 0 : 1 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col items-center gap-2"
+        >
+          <span className="font-mono text-[0.625rem] uppercase tracking-[0.2em] text-ink-3">{copy.hero.scrollCue}</span>
+          <span className="relative block h-7 w-px overflow-hidden bg-line">
+            <motion.span
+              className="absolute inset-x-0 top-0 block h-3 bg-ink-2"
+              animate={reduceMotion ? undefined : { y: ["-100%", "240%"] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: ease.inOut }}
             />
-          </form>
-        </div>
-      </div>
-
-      {/* Playful Interactive Tech Logo Ribbon */}
-      <div className="mt-4 glass-card rounded-2xl px-4 py-3 border border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3">
-        <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 shrink-0">
-          Core Technologies:
-        </span>
-
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide py-0.5 px-1">
-          {TECH_LOGOS.map((tech) => (
-            <button
-              key={tech.id}
-              onClick={() => {
-                soundFx.playClick(900);
-                onSkillClick?.(tech.id);
-              }}
-              className="relative w-8 h-8 rounded-lg bg-zinc-900/90 border border-white/[0.06] hover:border-white/[0.25] p-1.5 flex items-center justify-center transition-all duration-200 hover:scale-125 hover:-translate-y-0.5 shrink-0 group cursor-pointer shadow-sm"
-              title={`View ${tech.name} details`}
-            >
-              {tech.icon ? (
-                tech.icon
-              ) : (
-                <Image
-                  src={tech.src!}
-                  alt={tech.name}
-                  width={20}
-                  height={20}
-                  className={`object-contain transition-all ${
-                    tech.invert ? "invert opacity-80 group-hover:opacity-100" : ""
-                  }`}
-                />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+          </span>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

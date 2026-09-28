@@ -38,13 +38,11 @@ const AboutMe: React.FC<AboutMeProps> = ({
 }) => {
   return (
     <div className="font-sans space-y-12 sm:space-y-16 md:space-y-20">
-      <div className="pt-20 sm:pt-24">
-        <HeroSection
-          onOpenTerminal={onOpenTerminal}
-          onCopyEmail={onCopyEmail}
-          onSkillClick={onSkillClick}
-        />
-      </div>
+      <HeroSection
+        onOpenTerminal={onOpenTerminal}
+        onCopyEmail={onCopyEmail}
+        onSkillClick={onSkillClick}
+      />
       <JourneySection onCardClick={onCardClick} />
       <WorkSection onCardClick={onCardClick} />
       <ToolkitSection />

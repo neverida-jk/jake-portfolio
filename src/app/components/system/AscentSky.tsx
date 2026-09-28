@@ -33,7 +33,7 @@ const randStar = mulberry32(20260601);
 const STARS = Array.from({ length: STAR_COUNT }, () => ({
   x: randStar() * 100,
   y: randStar() * 55,
-  size: 1 + randStar() * 1.4,
+  size: 1 + randStar() * 0.9,
 }));
 
 // Hand-authored mountain silhouettes, three depths. Plain static paths —
@@ -60,7 +60,9 @@ export default function AscentSky() {
 
   const sunY = useTransform(p, [0.55, 1], ["115vh", "38vh"]);
   const sunO = useTransform(p, [0.55, 0.8, 1], [0, 0.5, 0.9]);
-  const starO = useTransform(p, [0, 0.5], [1, 0]);
+  // Capped well below full brightness: at full opacity, a star landing in a
+  // gap between words reads as stray punctuation.
+  const starO = useTransform(p, [0, 0.5], [0.55, 0]);
 
   // Bounded, not proportional to raw scrollY: an unbounded -scrollY*k offset
   // flings the ridges off-screen long before the summit, which is exactly

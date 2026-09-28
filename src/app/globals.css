@@ -182,3 +182,27 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Hero intro choreography (§5.6). These start hidden only when JS is
+   running (html.js), so a no-JS visitor still sees the whole hero. A
+   failsafe animation reveals everything at 3.5s in case hydration never
+   arrives; the hero component skips its own intro if it hydrates later
+   than that, so the two can never fight. */
+.js .intro-fade {
+  opacity: 0;
+  animation: intro-failsafe-fade 0.4s ease-out 3.5s forwards;
+}
+.js .intro-char {
+  transform: translateY(105%);
+  animation: intro-failsafe-char 0.4s ease-out 3.5s forwards;
+}
+@keyframes intro-failsafe-fade {
+  to { opacity: 1; }
+}
+@keyframes intro-failsafe-char {
+  to { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .intro-fade { opacity: 1; animation: none; }
+  .js .intro-char { transform: none; animation: none; }
+}
