@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ToolFocusProvider } from "./components/system/ToolFocusProvider";
 import AscentSky from "./components/system/AscentSky";
 import Altimeter from "./components/system/Altimeter";
+import SystemOverlays from "./components/system/SystemOverlays";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -81,6 +82,7 @@ export default function RootLayout({
         <AscentSky />
         <ToolFocusProvider>{children}</ToolFocusProvider>
         <Altimeter />
+        <SystemOverlays />
       </body>
     </html>
   );

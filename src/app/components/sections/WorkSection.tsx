@@ -13,11 +13,6 @@ import { ease, spring } from "@/lib/motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
 
-// AboutMe still passes onCardClick; case studies now open in their own Sheet.
-interface WorkSectionProps {
-  onCardClick?: unknown;
-}
-
 const AUTO_ADVANCE_MS = 5000;
 const RESUME_AFTER_MS = 5000;
 
@@ -249,7 +244,7 @@ function CaseStudy({
   );
 }
 
-export default function WorkSection(_: WorkSectionProps) {
+export default function WorkSection() {
   const reduceMotion = useReducedMotion();
   const { focusedTool, setFocusedProject } = useToolFocus();
   const scrollRef = useRef<HTMLDivElement | null>(null);

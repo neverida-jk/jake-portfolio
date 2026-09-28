@@ -1,125 +1,63 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { LuCheck } from "react-icons/lu";
 import Navbar from "./components/layout/Navbar";
 import AboutMe from "./components/sections/AboutMe";
 import AnimationController from "./components/ui/AnimationController";
-import SkillModal from "./components/ui/SkillModal";
-import ContentModal from "./components/ui/ContentModal";
 import CommandPalette from "./components/ui/CommandPalette";
 import TerminalSandbox from "./components/ui/TerminalSandbox";
-import { LuCheck } from "react-icons/lu";
+import { spring } from "@/lib/motion";
 
-interface MediaItem {
-  src: string;
-  type: "image" | "video";
-  alt?: string;
-}
+const EMAIL = "jlrneverida@gmail.com";
 
 export default function Home() {
-  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
-  const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
-
-  const [selectedCard, setSelectedCard] = useState<{
-    title: string;
-    description?: string;
-    date?: string;
-    imageSrc?: string;
-    media?: MediaItem[];
-  } | null>(null);
-  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
-
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [copiedGlobalToast, setCopiedGlobalToast] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const handleOpenCmd = () => setIsCommandPaletteOpen(true);
-    window.addEventListener("open-command-palette", handleOpenCmd);
-    return () => window.removeEventListener("open-command-palette", handleOpenCmd);
-  }, []);
-
-  const handleSkillClick = useCallback((skill: string) => {
-    setSelectedSkill(skill);
-    setIsSkillModalOpen(true);
-  }, []);
-
-  const handleCloseSkillModal = useCallback(() => {
-    setIsSkillModalOpen(false);
-    setTimeout(() => setSelectedSkill(null), 300);
-  }, []);
-
-  const handleCardClick = useCallback(
-    (
-      title: string,
-      cardDescription: string,
-      modalDescription: string,
-      date?: string,
-      imageSrc?: string,
-      imageSize?: number,
-      media?: MediaItem[]
-    ) => {
-      setSelectedCard({
-        title,
-        description: modalDescription,
-        date,
-        imageSrc,
-        media,
-      });
-      setIsCardModalOpen(true);
-    },
-    []
-  );
-
-  const handleCloseCardModal = useCallback(() => {
-    setIsCardModalOpen(false);
-    setTimeout(() => setSelectedCard(null), 300);
+    const open = () => setIsCommandPaletteOpen(true);
+    window.addEventListener("open-command-palette", open);
+    return () => window.removeEventListener("open-command-palette", open);
   }, []);
 
   const handleCopyEmail = useCallback(() => {
-    navigator.clipboard.writeText("jlrneverida@gmail.com");
-    setCopiedGlobalToast(true);
-    setTimeout(() => setCopiedGlobalToast(false), 2200);
+    navigator.clipboard.writeText(EMAIL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
   }, []);
-
-  const isModalActive =
-    isSkillModalOpen || isCardModalOpen || isCommandPaletteOpen || isTerminalOpen;
 
   return (
     <main className="relative min-h-screen overflow-x-clip">
-      {/* Global Scroll Animation Observer */}
       <AnimationController />
 
-      {/* Floating Navigation Dock */}
       <Navbar
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenTerminal={() => setIsTerminalOpen(true)}
         onCopyEmail={handleCopyEmail}
       />
 
-      {/* Main Content Sections */}
-      <div
-        className={`transition-opacity duration-200 ${
-          isModalActive ? "opacity-40 pointer-events-none sm:pointer-events-auto" : ""
-        }`}
-      >
-        <AboutMe
-          onSkillClick={handleSkillClick}
-          onCardClick={handleCardClick}
-          onOpenTerminal={() => setIsTerminalOpen(true)}
-          onCopyEmail={handleCopyEmail}
-        />
-      </div>
+      <AboutMe onOpenTerminal={() => setIsTerminalOpen(true)} onCopyEmail={handleCopyEmail} />
 
-      {/* Global Toast Notification */}
-      {copiedGlobalToast && (
-        <div className="fixed bottom-6 right-6 z-[170] px-3.5 py-2 bg-zinc-900 text-zinc-100 text-xs font-mono rounded-xl shadow-2xl backdrop-blur-md animate-modal-enter flex items-center gap-2 border border-white/[0.1]">
-          <LuCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Copied jlrneverida@gmail.com</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {copied && (
+          <motion.div
+            role="status"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={spring.snappy}
+            className="fixed bottom-6 right-6 z-[170] flex items-center gap-2 rounded-xl border border-line bg-raised/95 px-3.5 py-2 font-mono text-xs text-ink shadow-[var(--e3)] backdrop-blur-sm"
+            data-print-hide
+          >
+            <LuCheck className="h-3.5 w-3.5 text-moss" aria-hidden="true" />
+            <span>Copied {EMAIL}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Command Palette (Cmd+K) */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
@@ -130,32 +68,14 @@ export default function Home() {
         onCopyEmail={handleCopyEmail}
       />
 
-      {/* Interactive Developer Terminal Sandbox */}
       <TerminalSandbox
         isOpen={isTerminalOpen}
         onClose={() => setIsTerminalOpen(false)}
         onNavigateToSection={(sectionId) => {
+          // scrollTo, not scrollIntoView (which walks every scrollable ancestor).
           const el = document.getElementById(sectionId);
-          if (el) el.scrollIntoView({ behavior: "smooth" });
+          if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: "smooth" });
         }}
-      />
-
-      {/* Skill Modal */}
-      <SkillModal
-        skill={selectedSkill || ""}
-        isOpen={isSkillModalOpen}
-        onClose={handleCloseSkillModal}
-      />
-
-      {/* Content / Project / Credential Modal */}
-      <ContentModal
-        title={selectedCard?.title || ""}
-        description={selectedCard?.description}
-        date={selectedCard?.date}
-        media={selectedCard?.media}
-        imageSrc={selectedCard?.imageSrc}
-        isOpen={isCardModalOpen}
-        onClose={handleCloseCardModal}
       />
     </main>
   );

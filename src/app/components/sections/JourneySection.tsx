@@ -19,11 +19,6 @@ import { copy } from "@/content/copy";
 import type { Milestone } from "@/content/copy/journey";
 import { ease } from "@/lib/motion";
 
-// AboutMe still passes onCardClick; the journey opens its own detail sheet.
-interface JourneySectionProps {
-  onCardClick?: unknown;
-}
-
 const MILESTONES: Milestone[] = copy.journey.milestones;
 
 // Trail geometry lives in a fixed 1200x600 viewBox, so every coordinate
@@ -200,7 +195,7 @@ function DetailsButton({ m, onOpen }: { m: Milestone; onOpen: (m: Milestone) => 
   );
 }
 
-export default function JourneySection(_: JourneySectionProps) {
+export default function JourneySection() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLOListElement>(null);

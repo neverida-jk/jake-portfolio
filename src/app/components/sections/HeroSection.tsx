@@ -24,9 +24,6 @@ import { soundFx } from "@/util/sound";
 
 interface HeroSectionProps {
   onCopyEmail?: () => void;
-  // Kept for AboutMe's call signature; the hero no longer uses them.
-  onOpenTerminal?: () => void;
-  onSkillClick?: (skill: string) => void;
 }
 
 const EMAIL = "jlrneverida@gmail.com";
