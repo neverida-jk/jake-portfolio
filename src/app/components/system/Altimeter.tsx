@@ -77,7 +77,7 @@ export default function Altimeter() {
 
   useEffect(() => {
     if (lastWaypoint.current !== null && lastWaypoint.current !== activeId) {
-      soundFx.playClick(1200, "sine", 0.05);
+      soundFx.tick();
       // Only after a real tap/click; browsers reject (and warn on) vibrate
       // calls that arrive without user activation.
       if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(8);
@@ -88,7 +88,7 @@ export default function Altimeter() {
   return (
     <>
       {/* Mobile: slim top progress bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-[2px] bg-line" aria-hidden="true">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-[2px] bg-line" aria-hidden="true" data-print-hide>
         <motion.div
           className="h-full bg-summit origin-left"
           style={{ scaleX: progress }}
@@ -99,6 +99,7 @@ export default function Altimeter() {
       <div
         className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-3"
         aria-hidden="true"
+        data-print-hide
       >
         <span className="font-mono text-[11px] text-ink-2 tabular-nums">
           {metres.toLocaleString("en-US")} m

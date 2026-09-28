@@ -345,7 +345,12 @@ export default function BeyondResumeSection() {
   const closeLayer = useCallback(() => setActiveLayer(null), []);
 
   return (
-    <section id="beyond" aria-labelledby="beyond-heading" className="reveal-item px-4 sm:px-6 max-w-3xl mx-auto">
+    <section
+      id="beyond"
+      aria-labelledby="beyond-heading"
+      className="reveal-item px-4 sm:px-6 max-w-3xl mx-auto"
+      data-print-hide
+    >
       <div className="flex items-center justify-between gap-3 mb-6 pb-2 border-b border-line">
         <h2 id="beyond-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
           Beyond the Resume

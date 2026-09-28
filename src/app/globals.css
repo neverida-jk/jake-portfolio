@@ -206,3 +206,110 @@ body {
   .js .intro-fade { opacity: 1; animation: none; }
   .js .intro-char { transform: none; animation: none; }
 }
+
+/* Custom cursor (§5.5). This class is only ever added by Cursor.tsx after it
+   has confirmed (pointer: fine) + no reduced-motion and mounted — never a
+   default, so a failed mount always leaves the native cursor in place.
+   Text fields keep the native caret regardless. */
+.cursor-ready,
+.cursor-ready * {
+  cursor: none;
+}
+.cursor-ready input,
+.cursor-ready textarea {
+  cursor: text;
+}
+
+/* Print résumé (§7.8). Re-pointing the design tokens to ink-on-paper values
+   turns every existing `text-ink`/`bg-surface`/etc. utility into a print-safe
+   style for free, instead of writing a parallel set of print overrides. Only
+   the chrome that has no place on paper is hidden explicitly, via
+   [data-print-hide] (added to AscentSky, Altimeter, Navbar, Cursor,
+   Contours, Sheet/CommandPalette/TerminalSandbox overlays, the Beyond
+   terminal, and Journey's desktop-only story view). */
+@media print {
+  @page {
+    margin: 18mm;
+  }
+
+  :root {
+    --color-void: #ffffff;
+    --color-canvas: #ffffff;
+    --color-surface: #ffffff;
+    --color-raised: #f4f4f4;
+    --color-line: #cccccc;
+    --color-ink: #000000;
+    --color-ink-2: #222222;
+    --color-ink-3: #444444;
+    --color-summit: #000000;
+    --color-summit-dt: #000000;
+    --color-alpine: #000000;
+    --color-moss: #000000;
+    --color-alert: #000000;
+    --e0: none;
+    --e1: none;
+    --e2: none;
+    --e3: none;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 10.5pt;
+  }
+
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  [data-print-show] {
+    display: block !important;
+  }
+
+  /* Linearise: no sticky/fixed positioning, no multi-column grids. */
+  .sticky,
+  .fixed {
+    position: static !important;
+  }
+  [class*="grid-cols-"] {
+    display: block !important;
+  }
+  [class*="lg:col-span-"] {
+    width: 100% !important;
+  }
+
+  /* Full URLs after real links — the point of a printed page. */
+  a[href]:not([href^="#"])::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #000;
+  }
+
+  .rounded-3xl,
+  .rounded-2xl,
+  .rounded-xl {
+    break-inside: avoid;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  section {
+    break-inside: avoid-page;
+  }
+
+  /* The Work carousel scrolls horizontally on screen — on paper it reads
+     top-to-bottom instead. Selected by its existing ARIA role, not a class,
+     so this needs no change to WorkSection.tsx itself. */
+  [aria-roledescription="carousel"] {
+    display: block !important;
+    overflow: visible !important;
+  }
+  [aria-roledescription="carousel"] > * {
+    width: 100% !important;
+    margin-bottom: 10mm;
+  }
+  [aria-roledescription="carousel"] [aria-hidden="true"] {
+    display: none !important;
+  }
+}

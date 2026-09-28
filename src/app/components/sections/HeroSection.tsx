@@ -16,6 +16,7 @@ import { SiGithub } from "react-icons/si";
 import Dual from "../system/Dual";
 import Contours from "../system/Contours";
 import Magnetic from "../motion/Magnetic";
+import GitHubActivity from "../system/GitHubActivity";
 import { copy } from "@/content/copy";
 import { projects } from "@/content/projects";
 import { ease } from "@/lib/motion";
@@ -23,9 +24,6 @@ import { soundFx } from "@/util/sound";
 
 interface HeroSectionProps {
   onCopyEmail?: () => void;
-  // Kept for AboutMe's call signature; the hero no longer uses them.
-  onOpenTerminal?: () => void;
-  onSkillClick?: (skill: string) => void;
 }
 
 const EMAIL = "jlrneverida@gmail.com";
@@ -234,6 +232,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
             <Magnetic>
               <motion.a
                 href="#work"
+                data-cursor="magnet"
                 onClick={() => soundFx.playClick(950)}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
@@ -247,6 +246,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
             <Magnetic>
               <motion.button
                 type="button"
+                data-cursor="magnet"
                 onClick={handleCopy}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
@@ -314,6 +314,8 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
             <div className="mt-5 border-t border-line pt-5">
               <Dual value={copy.hero.now} className="text-sm leading-relaxed text-ink-2" />
             </div>
+
+            <GitHubActivity />
 
             <div className="mt-5 flex items-center gap-2">
               <a

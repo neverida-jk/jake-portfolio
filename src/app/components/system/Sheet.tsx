@@ -140,6 +140,7 @@ export default function Sheet({
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-[150] flex items-end justify-center sm:items-center bg-void/55 backdrop-blur-sm"
+          data-print-hide
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

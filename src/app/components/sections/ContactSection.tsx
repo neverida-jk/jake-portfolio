@@ -96,7 +96,11 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
         <h2 id="contact-heading" className="text-h1 font-display text-ink tracking-tight">
           You made it to <span className="italic text-summit">the top.</span>
         </h2>
-        <Dual value={copy.contact.invite} className="mt-3 text-sm sm:text-base text-ink-2 font-sans max-w-[52ch] mx-auto" />
+        <Dual
+          value={copy.contact.invite}
+          note="none"
+          className="mt-3 text-sm sm:text-[1.0625rem] text-ink-2 font-sans max-w-[52ch] mx-auto"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
@@ -140,9 +144,10 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
         {/* Right Column: Form */}
         <div className="md:col-span-7 bg-surface border border-line rounded-2xl p-5">
           <h3 className="font-sans font-semibold text-base text-ink mb-1">Send a Message</h3>
-          <p className="text-xs text-ink-2 font-sans mb-4">
+          <p className="text-xs text-ink-2 font-sans mb-2">
             Opens your default email client with your message pre-filled.
           </p>
+          <Dual value={copy.contact.invite} note="only" className="mb-4" />
 
           <form onSubmit={handleSubmit} noValidate className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -238,6 +243,13 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
           <span className="hidden sm:inline text-ink-3">&bull;</span>
           <span className="text-ink-3">Built with Next.js 15, React 19, and Tailwind CSS v4.</span>
         </div>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent("open-break-it"))}
+          className="mt-4 text-ink-3 underline decoration-dotted underline-offset-4 transition-colors hover:text-alpine focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit rounded cursor-pointer"
+        >
+          {copy.common.breakIt}
+        </button>
       </footer>
     </section>
   );
