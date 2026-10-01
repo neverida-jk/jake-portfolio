@@ -131,11 +131,18 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     window.addEventListener("wheel", skip, { passive: true });
     window.addEventListener("touchstart", skip, { passive: true });
 
+    let begun = false;
+    let fallback: ReturnType<typeof setTimeout> | undefined;
     const begin = () => {
+      // The event and the fallback timer both call this — only the first
+      // should count, or the rise replays mid-page (and the stale timer
+      // was never cleared, since `once: true` only drops the listener).
+      if (begun) return;
+      begun = true;
+      if (fallback) clearTimeout(fallback);
       setContours(layout);
       controls.start("show").then(finish);
     };
-    let fallback: ReturnType<typeof setTimeout> | undefined;
     if (introPlaying) {
       window.addEventListener(INTRO_REVEAL_EVENT, begin, { once: true });
       fallback = setTimeout(begin, 3000); // in case the opening never reports
