@@ -1,12 +1,12 @@
 import type { Dual } from "./types";
 
 export const hero = {
-  eyebrow: "Base camp — Laguna, Philippines",
+  eyebrow: "Base camp — Makati, Philippines",
   coords: "14°N 121°E",
 
   role: {
-    plain: "I make sure software works before anyone else has to deal with it.",
-    technical: "QA Analyst — test strategy, regression suites, release gating.",
+    plain: "I'm a software engineer first — testing just taught me how things actually break.",
+    technical: "Software Engineer — full-stack delivery end to end, QA Analyst by trade.",
   } satisfies Dual,
 
   status: {
@@ -16,7 +16,7 @@ export const hero = {
 
   now: {
     plain: "Testing enterprise software by day, building my own products on the side.",
-    technical: "Release QA at Vertere; side projects on Next.js 15 + TypeScript.",
+    technical: "Release gating at Vertere; side projects on Next.js 15 + TypeScript.",
   } satisfies Dual,
 
   cta: {

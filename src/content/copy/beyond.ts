@@ -6,7 +6,7 @@ import type { Dual } from "./types";
 export const beyond = {
   whyQa: {
     plain: "I like being the person who finds the problem before a user does.",
-    technical: "QA Analyst, Vertere Global Solutions Inc., since June 2026 — test plans, regression suites, defect lifecycle and triage, release quality gating.",
+    technical: "QA Analyst, Vertere Global Solutions Inc., since June 2026 — test plans, regression suites, defect lifecycle and triage, release gating.",
   } as Dual,
   // No verified facts in ASCENT_MASTERPLAN.md §9.1 for this one yet.
   whatsNext: {

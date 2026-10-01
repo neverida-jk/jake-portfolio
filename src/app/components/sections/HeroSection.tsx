@@ -350,7 +350,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
                 <Dual value={copy.hero.status} note="none" className="text-sm font-medium text-ink" />
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">
                   <LuMapPin className="h-3 w-3" aria-hidden="true" />
-                  Laguna, Philippines
+                  Makati, Philippines
                 </p>
               </div>
             </div>

@@ -349,7 +349,7 @@ Max **2.0s**, first visit per session only (`sessionStorage`), skippable by any 
 **Layout:** full-viewport, asymmetric. Left 7 cols: identity. Right 5 cols: the Now panel. Mobile: stacked, Now panel collapses to a single status strip.
 
 **Left column**
-- Eyebrow (mono, label size): `BASE CAMP · 14.17°N 121.24°E` — real Laguna coordinates. Small, precise, confident.
+- Eyebrow (mono, label size): `BASE CAMP · 14.55°N 121.02°E` — real Makati coordinates. Small, precise, confident.
 - `<h1>` **Jake Neverida** at `--text-display`, Instrument Serif, per-char mask reveal.
 - Role line — `<Dual value={copy.hero.role} />`, `--text-h3`, `--color-ink-2`, max 48ch.
 - Status chip: pulsing `--color-moss` dot + `<Dual value={copy.hero.status} />` + live Manila clock (keep existing logic).
@@ -640,7 +640,7 @@ Apply to section wrappers only. Cap ±3.5°. Off for reduced motion. Subtle enou
 ## 9. Content Guide
 
 ### 9.1 Verified facts — the ONLY biography you may use
-- Jake Neverida. Based in **Laguna, Philippines** (GMT+8).
+- Jake Neverida. Based in **Makati, Philippines** (GMT+8).
 - **QA Analyst, Vertere Global Solutions Inc.** — June 2026 → present. Test plans, regression suites, defect lifecycle/triage, release quality.
 - **Software Engineer Intern, Limitless Lab** — May 2025 → July 2025. React/Next.js features, REST integration, agile team.
 - **BS Computer Science, University of the Philippines Los Baños**, 2022 → 2026. **GWA 1.95. Iskolar ng Bayan.**
@@ -652,6 +652,7 @@ Apply to section wrappers only. Cap ±3.5°. Off for reduced motion. Subtle enou
 **Anything not on this list must be written as `TODO(jake):`.** Do not invent hobbies, metrics, testimonials, company names, or dates.
 
 ### 9.2 Voice
+- **Positioning (2026-10):** Jake is a software engineer first. QA is one of his strengths, not his whole identity — he builds with quality, he isn't only the person who checks other people's work. Copy should read "engineer who builds with quality," never "QA Analyst who also codes." Keep the QA Analyst job itself (it's real, current work), but don't let it eclipse the engineering identity across the site.
 - **Plain voice:** first person, warm, concrete, zero jargon. Short sentences. Explain by consequence, not by mechanism. *"I make sure software works before anyone else has to deal with it."*
 - **Technical voice (field notes):** precise, dense, no marketing adjectives. Name the actual tools and techniques. *"Regression suites, defect lifecycle management, and release gating for enterprise applications."*
 - Banned in both: "passionate", "cutting-edge", "leverage", "synergy", "robust solutions", "detail-oriented", "results-driven". If a sentence could appear on any other portfolio, rewrite it.

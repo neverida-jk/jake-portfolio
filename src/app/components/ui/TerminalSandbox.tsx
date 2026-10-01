@@ -98,7 +98,7 @@ export default function TerminalSandbox({
                 <div><span className="text-ink">whoami</span> - Developer overview</div>
                 <div><span className="text-ink">skills</span> - Technical stack &amp; tools</div>
                 <div><span className="text-ink">projects</span> - Selected projects</div>
-                <div><span className="text-ink">experience</span> - QA Analyst &amp; SWE background</div>
+                <div><span className="text-ink">experience</span> - Engineering &amp; QA background</div>
                 <div><span className="text-ink">education</span> - UPLB degree</div>
                 <div><span className="text-ink">resume</span> - Plain-text resume</div>
                 <div><span className="text-ink">sudo hire me</span> - You know what to do</div>
@@ -113,9 +113,9 @@ export default function TerminalSandbox({
           output = (
             <div className="space-y-1 text-xs text-ink-2 font-mono">
               <p className="text-ink font-semibold">Jake Neverida</p>
-              <p className="text-moss">Quality Assurance Analyst @ Vertere Global Solutions Inc.</p>
-              <p>Software Engineer &bull; Full-Stack Web Developer</p>
-              <p className="text-ink-2">Building production web systems with Next.js, React, TypeScript, and rigorous QA test suites.</p>
+              <p className="text-moss">Software Engineer, full-stack.</p>
+              <p>QA Analyst @ Vertere Global Solutions Inc.</p>
+              <p className="text-ink-2">Ships production web systems in Next.js, React, and TypeScript — and tests them properly.</p>
             </div>
           );
           break;
@@ -124,10 +124,10 @@ export default function TerminalSandbox({
           output = (
             <div className="space-y-1 text-xs text-ink-2 font-mono">
               <p className="text-ink-2 font-semibold mb-1">Skills:</p>
-              <p><span className="text-ink">QA &amp; Testing:</span> Test Case Authoring, Regression Suites, Defect Management, Release QA</p>
               <p><span className="text-ink">Frontend:</span> React 19, Next.js 15, Tailwind CSS v4, TypeScript, Framer Motion</p>
               <p><span className="text-ink">Backend &amp; DB:</span> Node.js, Express, MongoDB, IndexedDB, RESTful APIs</p>
               <p><span className="text-ink">Cloud &amp; DevOps:</span> AWS, Docker, GitHub Actions (CI/CD)</p>
+              <p><span className="text-ink">QA &amp; Testing:</span> Test Case Authoring, Regression Suites, Defect Management, Release Gating</p>
               <p><span className="text-ink">Languages &amp; Tools:</span> TypeScript, JavaScript, Python, C/C++, Git, Vercel</p>
             </div>
           );
@@ -172,12 +172,12 @@ export default function TerminalSandbox({
               <div>
                 <p className="text-ink font-semibold">1. Vertere Global Solutions Inc.</p>
                 <p className="text-moss font-semibold">Quality Assurance Analyst (June 2026 - Present)</p>
-                <p className="text-ink-2">Software testing, test execution, regression suites, defect tracking, and release quality verification.</p>
+                <p className="text-ink-2">Software testing, test execution, regression suites, defect tracking, and release gating.</p>
               </div>
               <div>
                 <p className="text-ink font-semibold">2. Limitless Lab</p>
                 <p className="text-ink-2">Software Engineer Intern (May 2025 - July 2025)</p>
-                <p className="text-ink-2">Developed frontend features with React and Next.js; collaborated on agile sprints.</p>
+                <p className="text-ink-2">Built accessible React/Next.js components and shipped features on an agile team.</p>
               </div>
             </div>
           );

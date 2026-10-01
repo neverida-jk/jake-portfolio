@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 // Site-level OG image (§7.10) — the name, the role, a contour/summit motif,
 // and the palette. Built with next/og; no new dependency (per-project
 // variants are out of scope for this phase).
-export const alt = "Jake Neverida — Quality Assurance Analyst & Software Engineer";
+export const alt = "Jake Neverida — Software Engineer & QA Analyst";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -49,7 +49,7 @@ export default async function Image() {
           </div>
           <div style={{ display: "flex", fontSize: 96, marginTop: 20, color: "#E9EEF7" }}>Jake Neverida</div>
           <div style={{ display: "flex", fontSize: 34, marginTop: 16, color: "#9FAEC4", maxWidth: 820 }}>
-            Quality Assurance Analyst &amp; Software Engineer
+            Software Engineer &amp; QA Analyst
           </div>
         </div>
 

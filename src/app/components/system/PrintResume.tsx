@@ -23,7 +23,7 @@ export default function PrintResume() {
         <p className="pr-name">Jake Neverida</p>
         <p className="pr-role">{copy.hero.role.technical}</p>
         <p className="pr-contact">
-          {EMAIL} · github.com/neverida-jk · Laguna, Philippines (GMT+8)
+          {EMAIL} · github.com/neverida-jk · Makati, Philippines (GMT+8)
         </p>
       </header>
 

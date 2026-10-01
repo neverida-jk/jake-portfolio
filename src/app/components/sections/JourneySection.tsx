@@ -355,10 +355,13 @@ export default function JourneySection() {
 
           {/* ---------- Trail ---------- */}
           {/* Mobile: pinned beneath the nav while the milestones scroll by. */}
-          {/* Solid band + a soft fade below it, so cards slide cleanly under
-              the pinned trail instead of showing through it. */}
+          {/* A blurred, translucent band (not a flat fill) so cards slide
+              cleanly under the pinned trail without showing through it —
+              a flat color here always drifted from the sky gradient
+              scrolling behind it and read as a hard seam; the blur just
+              samples whatever's actually back there, sky included. */}
           <div
-            className="sticky top-0 z-10 -mx-4 bg-canvas px-4 pb-5 pt-[4.5rem] sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0"
+            className="sticky top-0 z-10 -mx-4 bg-canvas/60 px-4 pb-5 pt-[4.5rem] backdrop-blur-md sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
             data-print-hide
           >
             <div className="lg:hidden">
@@ -367,7 +370,7 @@ export default function JourneySection() {
               ) : (
                 <div className="aspect-[2/1]" aria-hidden="true" />
               )}
-              <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-canvas to-transparent" aria-hidden="true" />
+              <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-canvas/60 to-transparent" aria-hidden="true" />
             </div>
             <div className="hidden lg:block">
               {layout === "desktop" ? (

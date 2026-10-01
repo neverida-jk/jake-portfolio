@@ -107,7 +107,7 @@ export const journey = {
       current: true,
       body: {
         plain: "Now I make sure enterprise software works before it reaches the people who depend on it.",
-        technical: "Test planning, regression suites, defect lifecycle & root-cause isolation, release readiness.",
+        technical: "Test planning, regression suites, defect lifecycle & root-cause isolation, release gating.",
       },
       detail: {
         heading: "QA Analyst · Vertere Global Solutions Inc.",
@@ -115,14 +115,14 @@ export const journey = {
         summary: {
           plain: "I test enterprise software so problems are caught before release, not after.",
           technical:
-            "Test case authoring, manual and automated regression suites, defect isolation & root-cause analysis, release QA.",
+            "Test case authoring, manual and automated regression suites, defect isolation & root-cause analysis, release gating.",
         },
         points: [
           "Author test plans and regression suites",
           "Manage the defect lifecycle and isolate root causes",
-          "Verify release readiness with engineering leads",
+          "Confirm release gating with engineering leads",
         ],
-        tags: ["Test plans", "Regression suites", "Defect management", "Release quality"],
+        tags: ["Test plans", "Regression suites", "Defect management", "Release gating"],
       },
     },
   ] satisfies Milestone[],

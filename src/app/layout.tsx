@@ -38,15 +38,15 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dev-jk.me";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Jake Neverida | Quality Assurance Analyst & Software Engineer",
-  description: "Jake Neverida's portfolio. QA Analyst at Vertere Global Solutions Inc. by day, building and shipping his own Next.js and React products on the side.",
+  title: "Jake Neverida | Software Engineer & QA Analyst",
+  description: "Jake Neverida's portfolio. Software engineer shipping his own Next.js and React products, and a QA Analyst at Vertere Global Solutions Inc. by day.",
   keywords: [
     "Jake Neverida",
     "neverida-jk",
-    "Quality Assurance Analyst",
-    "QA Analyst",
     "Software Engineer",
     "Web Developer",
+    "QA Analyst",
+    "Quality Assurance Analyst",
     "Vertere Global Solutions",
     "Next.js",
     "React",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   creator: "Jake Neverida",
   openGraph: {
     title: "Jake Neverida | Software Engineer & Web Developer",
-    description: "QA Analyst at Vertere Global Solutions Inc., building and shipping his own Next.js and React products on the side.",
+    description: "Software engineer shipping his own Next.js and React products, and a QA Analyst at Vertere Global Solutions Inc. by day.",
     url: SITE_URL,
     siteName: "Jake Neverida Portfolio",
     locale: "en_US",
