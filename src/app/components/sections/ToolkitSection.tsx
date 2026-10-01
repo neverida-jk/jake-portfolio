@@ -1,12 +1,11 @@
 "use client";
 
-// The Toolkit (§6.4 / Phase 5). Verb-grouped chips, cross-highlighted
-// against whichever project the Work section has focused, plus one shared
-// evidence line driven by the active tool. No logo grid, no per-chip badge.
+// The Toolkit (§6.4 / Phase 5). Verb-grouped chips that light themselves up
+// on hover (siblings dim), plus one shared evidence line driven by the
+// active tool. No logo grid, no per-chip badge.
 import React, { useEffect, useMemo, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { tools, projectsUsingTool, type ToolGroup } from "@/content/tools";
-import { projects } from "@/content/projects";
 import { copy } from "@/content/copy";
 import Dual from "@/components/system/Dual";
 import { useToolFocus } from "@/components/system/ToolFocusProvider";
@@ -15,7 +14,7 @@ const GROUP_ORDER: ToolGroup[] = ["build", "test", "ship"];
 const GROUP_LABEL: Record<ToolGroup, string> = { build: "Build", test: "Test", ship: "Ship" };
 
 export default function ToolkitSection() {
-  const { focusedTool, focusedProject, setFocusedTool } = useToolFocus();
+  const { focusedTool, setFocusedTool } = useToolFocus();
   const reduceMotion = useReducedMotion();
   // Dimming is a hover-driven affordance; touch devices get the same
   // context value via tap, but never the dim/glow treatment (spec: "no
@@ -25,12 +24,6 @@ export default function ToolkitSection() {
     setCanHover(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
   }, []);
   const dimEnabled = canHover && !reduceMotion;
-
-  const focusedProjectTools = useMemo(() => {
-    if (!focusedProject) return null;
-    const project = projects.find((p) => p.id === focusedProject);
-    return project ? new Set(project.tools) : null;
-  }, [focusedProject]);
 
   const activeTool = useMemo(() => tools.find((t) => t.id === focusedTool) ?? null, [focusedTool]);
 
@@ -63,8 +56,8 @@ export default function ToolkitSection() {
               {tools
                 .filter((t) => t.group === group)
                 .map((t) => {
-                  const isLit = dimEnabled && !!focusedProjectTools?.has(t.id);
-                  const isDimmed = dimEnabled && !!focusedProjectTools && !focusedProjectTools.has(t.id);
+                  const isLit = dimEnabled && focusedTool === t.id;
+                  const isDimmed = dimEnabled && !!focusedTool && focusedTool !== t.id;
                   return (
                     <button
                       key={t.id}

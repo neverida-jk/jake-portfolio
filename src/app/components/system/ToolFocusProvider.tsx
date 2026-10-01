@@ -2,16 +2,19 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 
-// Shared cross-highlight state for the Toolkit <-> Work sections (§6.4).
-// Hovering a tool chip focuses it (and dims everything else); hovering a
-// project card does the same for that project. Debounced per spec: 60ms to
-// register a hover, 120ms to clear it, so a quick mouse pass between
-// adjacent chips doesn't strobe the dim/undim transition.
+// Shared focus state for the Toolkit's tool chips (§6.4): hovering a chip
+// lights it and dims its siblings, and the command palette's "jump to a
+// tool" flashes the same state after scrolling there. Debounced per spec:
+// 60ms to register a hover, 120ms to clear it, so a quick mouse pass
+// between adjacent chips doesn't strobe the dim/undim transition.
+//
+// This used to also drive a cross-section highlight into the Work section
+// (hovering a chip dimmed/lit project cards, and vice versa) — removed
+// because the two sections are never visible together, so the effect was
+// invisible when it fired and confusing when it lingered.
 type ToolFocusContextValue = {
   focusedTool: string | null;
-  focusedProject: string | null;
   setFocusedTool: (id: string | null) => void;
-  setFocusedProject: (id: string | null) => void;
 };
 
 const ENTER_DELAY = 60;
@@ -34,12 +37,8 @@ function useDebouncedSetter(): [string | null, (id: string | null) => void] {
 
 export function ToolFocusProvider({ children }: { children: React.ReactNode }) {
   const [focusedTool, setFocusedTool] = useDebouncedSetter();
-  const [focusedProject, setFocusedProject] = useDebouncedSetter();
 
-  const value = useMemo(
-    () => ({ focusedTool, focusedProject, setFocusedTool, setFocusedProject }),
-    [focusedTool, focusedProject, setFocusedTool, setFocusedProject]
-  );
+  const value = useMemo(() => ({ focusedTool, setFocusedTool }), [focusedTool, setFocusedTool]);
 
   return <ToolFocusContext.Provider value={value}>{children}</ToolFocusContext.Provider>;
 }

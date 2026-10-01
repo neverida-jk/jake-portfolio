@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { LuArrowRight, LuArrowUpRight, LuGlobe, LuX } from "react-icons/lu";
 import Dual from "../system/Dual";
 import Sheet from "../system/Sheet";
-import { useToolFocus } from "../system/ToolFocusProvider";
 import { copy } from "@/content/copy";
 import { projects, projectById, type Hotspot, type Project } from "@/content/projects";
 import { ease, spring } from "@/lib/motion";
@@ -246,7 +245,10 @@ function CaseStudy({
 
 export default function WorkSection() {
   const reduceMotion = useReducedMotion();
-  const { focusedTool, setFocusedProject } = useToolFocus();
+  // Hovering a card dims its siblings in the same carousel — a same-viewport
+  // effect, unlike the old cross-section highlight into the (invisible,
+  // off-screen) Toolkit section.
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -435,8 +437,8 @@ export default function WorkSection() {
       >
         {CAROUSEL.map((p, idx) => {
           const isClone = idx >= projects.length;
-          const dim = !!focusedTool && !p.tools.includes(focusedTool);
-          const lit = !!focusedTool && p.tools.includes(focusedTool);
+          const dim = !!hoveredId && hoveredId !== p.id;
+          const lit = hoveredId === p.id;
           // Registered before any click so framer has the card's box to morph from.
           const layoutId = !isClone && morphEnabled ? `thumb-${p.id}` : undefined;
           return (
@@ -446,10 +448,10 @@ export default function WorkSection() {
                 cardRefs.current[idx] = el;
               }}
               aria-hidden={isClone || undefined}
-              onPointerEnter={() => setFocusedProject(p.id)}
-              onPointerLeave={() => setFocusedProject(null)}
-              onFocus={() => setFocusedProject(p.id)}
-              onBlur={() => setFocusedProject(null)}
+              onPointerEnter={() => setHoveredId(p.id)}
+              onPointerLeave={() => setHoveredId(null)}
+              onFocus={() => setHoveredId(p.id)}
+              onBlur={() => setHoveredId(null)}
               className={`group/card w-[88%] shrink-0 snap-center overflow-hidden rounded-3xl border bg-surface shadow-[var(--e2)] transition-[opacity,filter,border-color,transform] duration-300 sm:w-[70%] lg:w-[620px] ${
                 dim ? "opacity-35 grayscale-[0.5]" : "opacity-100"
               } ${lit ? "border-summit/50 -translate-y-1" : "border-line hover:border-ink-3/60"}`}
