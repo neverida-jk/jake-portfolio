@@ -80,7 +80,7 @@ export const journey = {
       logo: "/uplb.png",
       body: {
         plain: "Graduated with a 1.95 GWA — on UP's scale, 1.00 is the top mark.",
-        technical: "BS Computer Science, 2022–2026 · GWA 1.95 (UP grading scale, 1.00 highest).",
+        technical: "BS Computer Science, 2022 – 2026 · GWA 1.95 (UP grading scale, 1.00 highest).",
       },
       detail: {
         heading: "BS Computer Science · UP Los Baños",
@@ -92,7 +92,7 @@ export const journey = {
         points: [
           "Algorithms & complexity — asymptotic analysis, graph algorithms",
           "Data structures & object-oriented design",
-          "Database design, query optimisation & system design",
+          "Database design, query optimization & system design",
           "Operating systems, memory models & concurrency",
         ],
         tags: ["Algorithms", "Data structures", "Databases", "Operating systems"],

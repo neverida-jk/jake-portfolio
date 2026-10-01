@@ -59,7 +59,7 @@ export const projects: Project[] = [
     elevation: 2410,
     tagline: "Spotting when prediction-market odds are wrong — and sizing bets sensibly.",
     tools: ["typescript", "react"],
-    stack: ["TypeScript", "React", "Probability modelling", "Kelly criterion"],
+    stack: ["TypeScript", "React", "Probability modeling", "Kelly criterion"],
     problem: {
       plain: "Prediction markets price real events like odds. Sometimes the odds are wrong — I wanted to know if you could reliably spot when.",
       technical: "Detect mispricing between market-implied probabilities and independent forecasts, and size positions rationally.",
@@ -256,7 +256,7 @@ export const projects: Project[] = [
     elevation: 2954,
     tagline: "The site you're on — built to work for recruiters and engineers alike.",
     tools: ["nextjs", "react", "typescript", "tailwind"],
-    stack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS v4", "framer-motion", "Web Audio"],
+    stack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS v4", "Framer Motion", "Web Audio"],
     problem: {
       plain: "A portfolio has to work for recruiters, engineers, and everyone in between.",
       technical: "Serve non-technical and technical audiences from one site without diluting either.",
@@ -272,7 +272,7 @@ export const projects: Project[] = [
     ],
     outcome: {
       plain: "You're looking at it.",
-      technical: "Next.js 15 · React 19 · Tailwind v4 · framer-motion — no extra dependencies.",
+      technical: "Next.js 15 · React 19 · Tailwind v4 · Framer Motion — no extra dependencies.",
     },
     hotspots: [],
   },

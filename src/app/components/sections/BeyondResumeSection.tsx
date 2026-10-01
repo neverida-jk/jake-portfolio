@@ -251,7 +251,7 @@ function SayHiLayer({ onClose }: { onClose: () => void }) {
           className="px-4 py-2 rounded-full bg-raised hover:bg-void text-ink-2 border border-line text-xs font-mono flex items-center gap-1.5 cursor-pointer"
         >
           {copied ? <LuCheck className="w-3.5 h-3.5 text-moss" /> : <LuCopy className="w-3.5 h-3.5" />}
-          <span>{copied ? "Copied!" : "Copy Email"}</span>
+          <span>{copied ? "Copied" : "Copy email"}</span>
         </motion.button>
 
         <motion.button

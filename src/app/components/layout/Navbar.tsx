@@ -240,7 +240,7 @@ export default function Navbar({
               className="py-1.5 px-2 text-ink-2 hover:text-ink font-sans flex items-center gap-1.5 cursor-pointer"
             >
               <LuCopy className="w-3 h-3 text-moss" />
-              <span>Copy Email</span>
+              <span>Copy email</span>
             </button>
           </div>
         </div>

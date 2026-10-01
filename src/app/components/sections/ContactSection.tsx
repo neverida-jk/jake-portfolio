@@ -163,7 +163,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
                   aria-invalid={!!errors.name}
                   aria-describedby={errors.name ? "contact-name-error" : undefined}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Your Name"
+                  placeholder="Your name"
                   className="w-full px-3 py-2 rounded-xl bg-raised border border-line text-ink placeholder-ink-3 text-xs focus:border-alpine outline-none transition-colors font-sans"
                 />
                 <p id="contact-name-error" aria-live="polite" className="min-h-[1rem] text-[11px] text-alert mt-1">
