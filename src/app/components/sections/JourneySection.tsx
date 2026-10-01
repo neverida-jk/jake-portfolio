@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   AnimatePresence,
   motion,
+  useInView,
   useMotionValue,
   useMotionValueEvent,
   useScroll,
@@ -206,17 +207,62 @@ function DetailsButton({ m, onOpen, disabled }: { m: Milestone; onOpen: (m: Mile
   );
 }
 
+function MobileMilestoneCard({
+  m,
+  isActive,
+  reduceMotion,
+  onOpen,
+}: {
+  m: Milestone;
+  isActive: boolean;
+  reduceMotion: boolean;
+  onOpen: (m: Milestone) => void;
+}) {
+  const ref = useRef<HTMLLIElement>(null);
+  // Reveals on this card's own real position in the viewport, not a shared
+  // scroll-fraction guess — that heuristic could fire after the card had
+  // already scrolled past, under the pinned trail header, so it "appeared"
+  // already covered. The top margin excludes roughly the header's zone;
+  // the bottom margin reveals a touch before the card is fully in view.
+  const inView = useInView(ref, { once: true, margin: "-30% 0px -5% 0px" });
+  const reached = reduceMotion || inView;
+
+  return (
+    <motion.li
+      ref={ref}
+      id={`milestone-${m.id}`}
+      initial={false}
+      animate={{ opacity: reached ? 1 : 0, y: reached ? 0 : 10, scale: reached ? 1 : 0.97 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: ease.out }}
+      aria-hidden={!reached}
+      className={`rounded-3xl border bg-surface/90 p-5 transition-colors duration-300 ${
+        isActive ? "border-summit/50" : "border-line"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <MilestoneBadge m={m} size={36} />
+        <p className="min-w-0 truncate text-sm text-ink-2">{m.org}</p>
+      </div>
+      <p className="mt-4 font-display text-[2.25rem] leading-none text-summit">{m.year}</p>
+      <h3 className="mt-1.5 text-lg font-semibold text-ink">
+        {m.title}
+        {m.current && (
+          <span className="ml-2 align-middle font-mono text-[0.625rem] uppercase tracking-[0.12em] text-moss">Current</span>
+        )}
+      </h3>
+      <div className="mt-2">
+        <Dual value={m.body} className="text-sm leading-relaxed text-ink-2" />
+      </div>
+      <DetailsButton m={m} onOpen={onOpen} disabled={!reached} />
+    </motion.li>
+  );
+}
+
 export default function JourneySection() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLOListElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  // activeIndex defaults to 0 (desktop's crossfade card and the trail
-  // markers both need a milestone to show from the first paint) — but that
-  // default would also make the mobile list's first card count as
-  // "reached" before any real scrolling. This gates just that card reveal
-  // on a genuine hike having started.
-  const [hasStarted, setHasStarted] = useState(false);
   const [detail, setDetail] = useState<Milestone | null>(null);
   const isDesktop = useRef(false);
   // Only the trail for the current breakpoint is mounted — the CSS-hidden
@@ -253,7 +299,6 @@ export default function JourneySection() {
   const drawn = reduceMotion ? raw : smooth;
 
   useMotionValueEvent(drawn, "change", (v) => {
-    if (v > 0.001) setHasStarted(true);
     let idx = 0;
     FRACTIONS.forEach((f, i) => {
       if (v >= f - 0.02) idx = i;
@@ -389,45 +434,25 @@ export default function JourneySection() {
             </div>
           </div>
 
-          {/* Mobile: a milestone's card opens only once the hiker actually
-              reaches it — not the whole route dumped up front. Each still
-              reserves its layout height (opacity/transform only), so the
-              list's own scroll distance (which drives the hike above)
-              never shifts under the reveal. Print forces every card
-              visible regardless — it's the flat résumé view there. */}
+          {/* Mobile: a milestone's card opens as it actually scrolls into
+              view — not the whole route dumped up front, and not on a
+              scroll-fraction guess shared with the hiker above (that could
+              fire once the card had already passed, under the pinned
+              header). Each still reserves its layout height (opacity/
+              transform only), so the list's own scroll distance — which
+              drives the hike above — never shifts under the reveal. Print
+              forces every card visible regardless — it's the flat résumé
+              view there. */}
           <ol ref={listRef} className="relative mt-2 space-y-5 pb-10 lg:hidden" data-print-show>
-            {MILESTONES.map((m, i) => {
-              const reached = hasStarted && i <= activeIndex;
-              return (
-                <motion.li
-                  id={`milestone-${m.id}`}
-                  key={m.id}
-                  initial={false}
-                  animate={{ opacity: reached ? 1 : 0, y: reached ? 0 : 10, scale: reached ? 1 : 0.97 }}
-                  transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: ease.out }}
-                  aria-hidden={!reached}
-                  className={`rounded-3xl border bg-surface/90 p-5 transition-colors duration-300 ${
-                    i === activeIndex ? "border-summit/50" : "border-line"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <MilestoneBadge m={m} size={36} />
-                    <p className="min-w-0 truncate text-sm text-ink-2">{m.org}</p>
-                  </div>
-                  <p className="mt-4 font-display text-[2.25rem] leading-none text-summit">{m.year}</p>
-                  <h3 className="mt-1.5 text-lg font-semibold text-ink">
-                    {m.title}
-                    {m.current && (
-                      <span className="ml-2 align-middle font-mono text-[0.625rem] uppercase tracking-[0.12em] text-moss">Current</span>
-                    )}
-                  </h3>
-                  <div className="mt-2">
-                    <Dual value={m.body} className="text-sm leading-relaxed text-ink-2" />
-                  </div>
-                  <DetailsButton m={m} onOpen={setDetail} disabled={!reached} />
-                </motion.li>
-              );
-            })}
+            {MILESTONES.map((m, i) => (
+              <MobileMilestoneCard
+                key={m.id}
+                m={m}
+                isActive={i === activeIndex}
+                reduceMotion={reduceMotion}
+                onOpen={setDetail}
+              />
+            ))}
           </ol>
         </div>
       </div>
