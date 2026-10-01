@@ -190,11 +190,12 @@ function MilestoneBadge({ m, size = 40 }: { m: Milestone; size?: number }) {
   );
 }
 
-function DetailsButton({ m, onOpen }: { m: Milestone; onOpen: (m: Milestone) => void }) {
+function DetailsButton({ m, onOpen, disabled }: { m: Milestone; onOpen: (m: Milestone) => void; disabled?: boolean }) {
   if (!m.detail) return null;
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onOpen(m)}
       className="group mt-5 inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 font-mono text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
       aria-label={`${copy.journey.detailsLabel}: ${m.title}`}
@@ -210,6 +211,12 @@ export default function JourneySection() {
   const sectionRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLOListElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  // activeIndex defaults to 0 (desktop's crossfade card and the trail
+  // markers both need a milestone to show from the first paint) — but that
+  // default would also make the mobile list's first card count as
+  // "reached" before any real scrolling. This gates just that card reveal
+  // on a genuine hike having started.
+  const [hasStarted, setHasStarted] = useState(false);
   const [detail, setDetail] = useState<Milestone | null>(null);
   const isDesktop = useRef(false);
   // Only the trail for the current breakpoint is mounted — the CSS-hidden
@@ -246,6 +253,7 @@ export default function JourneySection() {
   const drawn = reduceMotion ? raw : smooth;
 
   useMotionValueEvent(drawn, "change", (v) => {
+    if (v > 0.001) setHasStarted(true);
     let idx = 0;
     FRACTIONS.forEach((f, i) => {
       if (v >= f - 0.02) idx = i;
@@ -381,18 +389,26 @@ export default function JourneySection() {
             </div>
           </div>
 
-          {/* Mobile: every milestone as a card, the reached ones lit. Print
-              forces this list visible too — it's the flat résumé view. */}
+          {/* Mobile: a milestone's card opens only once the hiker actually
+              reaches it — not the whole route dumped up front. Each still
+              reserves its layout height (opacity/transform only), so the
+              list's own scroll distance (which drives the hike above)
+              never shifts under the reveal. Print forces every card
+              visible regardless — it's the flat résumé view there. */}
           <ol ref={listRef} className="relative mt-2 space-y-5 pb-10 lg:hidden" data-print-show>
             {MILESTONES.map((m, i) => {
-              const reached = i <= activeIndex;
+              const reached = hasStarted && i <= activeIndex;
               return (
-                <li
+                <motion.li
                   id={`milestone-${m.id}`}
                   key={m.id}
+                  initial={false}
+                  animate={{ opacity: reached ? 1 : 0, y: reached ? 0 : 10, scale: reached ? 1 : 0.97 }}
+                  transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: ease.out }}
+                  aria-hidden={!reached}
                   className={`rounded-3xl border bg-surface/90 p-5 transition-colors duration-300 ${
                     i === activeIndex ? "border-summit/50" : "border-line"
-                  } ${reached ? "" : "opacity-60"}`}
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <MilestoneBadge m={m} size={36} />
@@ -408,8 +424,8 @@ export default function JourneySection() {
                   <div className="mt-2">
                     <Dual value={m.body} className="text-sm leading-relaxed text-ink-2" />
                   </div>
-                  <DetailsButton m={m} onOpen={setDetail} />
-                </li>
+                  <DetailsButton m={m} onOpen={setDetail} disabled={!reached} />
+                </motion.li>
               );
             })}
           </ol>

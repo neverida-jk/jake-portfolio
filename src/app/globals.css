@@ -270,6 +270,14 @@ body {
     display: block !important;
   }
 
+  /* Journey's mobile cards stay invisible (opacity/transform, set inline by
+     framer-motion) until their station is reached on screen — print always
+     wants the full flat list, so force every card open here. */
+  [data-print-show] > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   /* Linearise: no sticky/fixed positioning, no multi-column grids. */
   .sticky,
   .fixed {
