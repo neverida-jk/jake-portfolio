@@ -2,7 +2,7 @@ import type { Dual } from "./types";
 
 export const contact = {
   invite: {
-    plain: "Got something worth building? Tell me about it.",
+    plain: "You bring the idea. I'll bring it to life.",
     technical: "The form opens your email app with the message filled in. Nothing is stored.",
   } as Dual,
   availability: {
