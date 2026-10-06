@@ -23,5 +23,11 @@ export const testimonials = {
       role: "Project Manager",
       org: "UPLB Computer Science project",
     },
+    {
+      quote:
+        "Jake is a reliable and proactive teammate who learns quickly and takes ownership of his work. Great to work with and someone I’d recommend.",
+      role: "Teammate",
+      org: "Vertere Global Solutions",
+    },
   ] as Testimonial[],
 };

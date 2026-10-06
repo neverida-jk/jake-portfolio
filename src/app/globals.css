@@ -186,6 +186,16 @@ body {
   }
 }
 
+/* Closing time watermark (TimeGhost.tsx): blinking colon, minute-long line. */
+@keyframes colon-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+@keyframes sec-sweep {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 /* Dial ticks fan in (opacity only, so JS can still resize ticks on hover). */
 @keyframes dial-tick {
   from { opacity: 0; }

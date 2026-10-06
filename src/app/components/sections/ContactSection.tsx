@@ -1,14 +1,14 @@
 "use client";
 
-// Next / Contact (§6.7 / Phase 7). The page ends where it began: a small live
-// dial, the headline, and the local time in Makati. No glow, no sweep.
+// Next / Contact (§6.7 / Phase 7). The page ends on the live time in Makati,
+// large and outlined, over the headline. No glow, no sweep, no second dial.
 import React, { useCallback, useState } from "react";
 import { soundFx } from "@/util/sound";
 import { copy } from "@/content/copy";
 import Dual from "@/components/system/Dual";
 import { LuCopy, LuCheck, LuMail, LuArrowUpRight, LuPrinter } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
-import Dial from "../system/Dial";
+import TimeGhost from "../system/TimeGhost";
 import LoadTime from "../system/LoadTime";
 import MakatiTime from "../system/MakatiTime";
 
@@ -70,9 +70,9 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
       aria-labelledby="contact-heading"
       className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-16"
     >
-      <div className="mb-8 text-center">
-        {/* The page ends where it began: the same dial, small, still live. */}
-        <Dial className="mx-auto mb-6 h-36 w-36 sm:h-44 sm:w-44" fan />
+      <div className="mb-10 text-center">
+        {/* The time in Makati, large and outlined, above the headline. */}
+        <TimeGhost className="mb-6" />
         <h2 id="contact-heading" className="text-h1 font-display text-ink tracking-tight">
           Time to <span className="italic text-summit">talk.</span>
         </h2>
