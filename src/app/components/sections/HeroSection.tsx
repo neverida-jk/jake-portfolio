@@ -154,12 +154,11 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     };
   }, [controls]);
 
-  // Scrolling on: the hero recedes while the dial drifts slower than the page.
+  // Scrolling on: the hero (dial included) recedes.
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -70]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const contentScale = useTransform(scrollYProgress, [0, 1], [1, 0.97]);
-  const dialY = useTransform(scrollYProgress, [0, 1], [0, 120]);
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (v) => {
@@ -183,22 +182,6 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       aria-labelledby="hero-heading"
       className="relative isolate flex min-h-[100svh] items-center overflow-hidden px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24"
     >
-      {/* The dial, huge and cropped, running on live Manila time. Its centre
-          sits in the open space top-right so the name stays clear; the Now
-          panel passes in front of the hands. Mounts when the hero starts so
-          the ticks fan in as part of the arrival. */}
-      <motion.div
-        className="absolute inset-0 -z-10"
-        style={reduceMotion ? undefined : { y: dialY }}
-        aria-hidden="true"
-      >
-        {dialOn && (
-          <div className="absolute -right-[46%] -top-[2%] aspect-square w-[140%] opacity-70 sm:-right-[18%] sm:-top-[33%] sm:h-[122%] sm:w-auto sm:opacity-90">
-            <Dial className="h-full w-full" reactive fan />
-          </div>
-        )}
-      </motion.div>
-
       <motion.div
         className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end"
         style={reduceMotion ? undefined : { y: contentY, opacity: contentOpacity, scale: contentScale }}
@@ -309,9 +292,19 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
         </div>
 
         {/* ---------- Now ---------- */}
+        <div className="relative lg:col-span-5 lg:mb-2">
+        {/* The dial, concentric with the Now card like a watch face around
+            it, running on live Manila time. Mounts when the hero starts so
+            the ticks fan in as part of the arrival. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-[min(150vw,720px)] -translate-x-1/2 -translate-y-1/2 opacity-40 sm:opacity-70 lg:w-[min(118svh,1050px)] lg:opacity-90"
+        >
+          {dialOn && <Dial className="h-full w-full" reactive fan />}
+        </div>
         <motion.aside
           aria-label="What I'm doing now"
-          className="intro-fade lg:col-span-5 lg:mb-2"
+          className="intro-fade"
           custom={T.now}
           variants={fade}
           animate={controls}
@@ -365,6 +358,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
             </div>
           </div>
         </motion.aside>
+        </div>
       </motion.div>
 
       {/* Scroll cue — tells non-technical visitors what to do, and hints that

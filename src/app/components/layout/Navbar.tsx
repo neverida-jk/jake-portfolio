@@ -4,11 +4,11 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { soundFx } from "@/util/sound";
 import { useActiveSection } from "@/lib/useActiveSection";
-import { LuTerminal, LuCommand, LuVolume2, LuVolumeX, LuCopy, LuMenu, LuX } from "react-icons/lu";
+import { LuVolume2, LuVolumeX, LuCopy, LuMenu, LuX } from "react-icons/lu";
 
+// The command palette (Cmd+K) and the terminal are still reachable from the
+// keyboard and from Beyond the Resume — they just aren't in the bar anymore.
 interface NavbarProps {
-  onOpenCommandPalette?: () => void;
-  onOpenTerminal?: () => void;
   onCopyEmail?: () => void;
 }
 
@@ -28,7 +28,7 @@ const NAV_LINKS = [
 // solid backing once you scroll. Numbered links (like hours on a dial) with
 // a gold underline that slides to the section you're in; unframed utilities
 // on the right. On phones the links drop down as a numbered list.
-export default function Navbar({ onOpenCommandPalette, onOpenTerminal, onCopyEmail }: NavbarProps) {
+export default function Navbar({ onCopyEmail }: NavbarProps) {
   const activeSection = useActiveSection();
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -148,31 +148,6 @@ export default function Navbar({ onOpenCommandPalette, onOpenTerminal, onCopyEma
         <div className="flex items-center">
           <button
             type="button"
-            onClick={() => {
-              soundFx.playClick(900);
-              onOpenCommandPalette?.();
-            }}
-            title="Search (Cmd+K)"
-            aria-label="Open command palette"
-            className="hidden h-9 items-center gap-1.5 rounded-full px-3 font-mono text-[11px] text-ink-3 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit cursor-pointer sm:flex"
-          >
-            <LuCommand className="h-3.5 w-3.5" />
-            <span>K</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              soundFx.playClick(1000);
-              onOpenTerminal?.();
-            }}
-            title="Terminal"
-            aria-label="Open terminal"
-            className={tool}
-          >
-            <LuTerminal className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
             onClick={() => soundFx.toggleMute()}
             title={isMuted ? "Unmute audio" : "Mute audio"}
             aria-label={isMuted ? "Unmute audio" : "Mute audio"}
@@ -215,18 +190,7 @@ export default function Navbar({ onOpenCommandPalette, onOpenTerminal, onCopyEma
               );
             })}
           </ol>
-          <div className="mx-auto flex max-w-6xl items-center justify-between border-t border-line px-4 py-3 font-mono text-xs sm:px-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                onOpenTerminal?.();
-              }}
-              className="flex items-center gap-1.5 text-ink-2 hover:text-ink cursor-pointer"
-            >
-              <LuTerminal className="h-3.5 w-3.5 text-moss" />
-              Terminal
-            </button>
+          <div className="mx-auto flex max-w-6xl items-center border-t border-line px-4 py-3 font-mono text-xs sm:px-6">
             <button
               type="button"
               onClick={() => {

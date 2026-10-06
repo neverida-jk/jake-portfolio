@@ -34,11 +34,7 @@ export default function Home() {
     <main id="main" tabIndex={-1} className="relative min-h-screen overflow-x-clip outline-none">
       <AnimationController />
 
-      <Navbar
-        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-        onOpenTerminal={() => setIsTerminalOpen(true)}
-        onCopyEmail={handleCopyEmail}
-      />
+      <Navbar onCopyEmail={handleCopyEmail} />
 
       <AboutMe onOpenTerminal={() => setIsTerminalOpen(true)} onCopyEmail={handleCopyEmail} />
 

@@ -1,7 +1,7 @@
 "use client";
 
-// Next / Contact (§6.7 / Phase 7). The page ends on the live time in Makati,
-// large and outlined, over the headline. No glow, no sweep, no second dial.
+// Next / Contact (§6.7 / Phase 7). The headline sits over the live time in
+// Makati, huge and outlined. No glow, no sweep, no second dial.
 import React, { useCallback, useState } from "react";
 import { soundFx } from "@/util/sound";
 import { copy } from "@/content/copy";
@@ -69,16 +69,16 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
       aria-labelledby="contact-heading"
       className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-16"
     >
-      <div className="mb-10 text-center">
-        {/* The time in Makati, large and outlined, above the headline. */}
-        <TimeGhost className="mb-6" />
-        <h2 id="contact-heading" className="text-h1 font-display text-ink tracking-tight">
+      <div className="relative mb-8 py-24 text-center sm:py-32">
+        {/* The time in Makati, huge and outlined, behind the headline. */}
+        <TimeGhost className="absolute inset-x-0 top-1/2 -translate-y-1/2" />
+        <h2 id="contact-heading" className="relative text-h1 font-display text-ink tracking-tight">
           Time to <span className="italic text-summit">talk.</span>
         </h2>
         <Dual
           value={copy.contact.invite}
           note="none"
-          className="mt-3 text-sm sm:text-[1.0625rem] text-ink-2 font-sans max-w-[52ch] mx-auto"
+          className="relative mt-3 text-sm sm:text-[1.0625rem] text-ink-2 font-sans max-w-[52ch] mx-auto"
         />
       </div>
 
