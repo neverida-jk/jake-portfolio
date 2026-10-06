@@ -24,6 +24,8 @@ export default function ToolkitSection() {
     setCanHover(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
   }, []);
   const dimEnabled = canHover && !reduceMotion;
+  // Phones show one group at a time, switched by tabs.
+  const [tab, setTab] = useState<ToolGroup>("build");
 
   const activeTool = useMemo(() => tools.find((t) => t.id === focusedTool) ?? null, [focusedTool]);
 
@@ -42,11 +44,26 @@ export default function ToolkitSection() {
         </h2>
       </div>
 
+      <div role="tablist" aria-label="Toolkit groups" className="mb-4 grid grid-cols-3 gap-1 rounded-full border border-line bg-surface p-1 sm:hidden">
+        {GROUP_ORDER.map((g) => (
+          <button
+            key={g}
+            type="button"
+            role="tab"
+            aria-selected={tab === g}
+            onClick={() => setTab(g)}
+            className={`rounded-full py-2 font-mono text-xs transition-colors cursor-pointer ${tab === g ? "bg-summit text-void" : "text-ink-2"}`}
+          >
+            {GROUP_LABEL[g]}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {GROUP_ORDER.map((group) => (
-          <div key={group} className="bg-surface border border-line rounded-2xl p-5 space-y-3">
+          <div key={group} className={`bg-surface border border-line rounded-2xl p-5 space-y-3 ${tab === group ? "" : "hidden"} sm:block`}>
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-summit block">
+              <span className="hidden text-[10px] font-mono uppercase tracking-wider text-summit sm:block">
                 {GROUP_LABEL[group]}
               </span>
               <Dual value={copy.toolkit[group]} className="text-xs text-ink-2 mt-0.5" />
@@ -84,7 +101,7 @@ export default function ToolkitSection() {
       </div>
 
       <div aria-live="polite" className="mt-6 min-h-[1.5rem] text-center text-xs font-mono text-ink-3">
-        {activeTool ? evidence : "Hover or tap a tool to see where it's used."}
+        {activeTool ? evidence : "Tap a tool to see where it's used."}
       </div>
     </section>
   );

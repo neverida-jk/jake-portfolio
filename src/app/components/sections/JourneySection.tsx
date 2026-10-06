@@ -5,7 +5,6 @@ import Image from "next/image";
 import {
   AnimatePresence,
   motion,
-  useInView,
   useMotionValue,
   useMotionValueEvent,
   useScroll,
@@ -202,35 +201,11 @@ function DetailsButton({ m, onOpen, disabled }: { m: Milestone; onOpen: (m: Mile
   );
 }
 
-function MobileMilestoneCard({
-  m,
-  isActive,
-  reduceMotion,
-  onOpen,
-}: {
-  m: Milestone;
-  isActive: boolean;
-  reduceMotion: boolean;
-  onOpen: (m: Milestone) => void;
-}) {
-  const ref = useRef<HTMLLIElement>(null);
-  // Reveals on this card's own real position in the viewport, not a shared
-  // scroll-fraction guess — that heuristic could fire after the card had
-  // already scrolled past, under the pinned trail header, so it "appeared"
-  // already covered. The top margin excludes roughly the header's zone;
-  // the bottom margin reveals a touch before the card is fully in view.
-  const inView = useInView(ref, { once: true, margin: "-30% 0px -5% 0px" });
-  const reached = reduceMotion || inView;
-
+function MobileMilestoneCard({ m, isActive, onOpen }: { m: Milestone; isActive: boolean; onOpen: (m: Milestone) => void }) {
   return (
-    <motion.li
-      ref={ref}
+    <li
       id={`milestone-${m.id}`}
-      initial={false}
-      animate={{ opacity: reached ? 1 : 0, y: reached ? 0 : 10, scale: reached ? 1 : 0.97 }}
-      transition={reduceMotion ? { duration: 0 } : { duration: 0.4, ease: ease.out }}
-      aria-hidden={!reached}
-      className={`rounded-3xl border bg-surface/90 p-5 transition-colors duration-300 ${
+      className={`w-[84%] shrink-0 snap-center rounded-3xl border bg-surface/90 p-5 transition-colors duration-300 print:w-full ${
         isActive ? "border-summit/50" : "border-line"
       }`}
     >
@@ -248,8 +223,8 @@ function MobileMilestoneCard({
       <div className="mt-2">
         <Dual value={m.body} className="text-sm leading-relaxed text-ink-2" />
       </div>
-      <DetailsButton m={m} onOpen={onOpen} disabled={!reached} />
-    </motion.li>
+      <DetailsButton m={m} onOpen={onOpen} />
+    </li>
   );
 }
 
@@ -278,15 +253,19 @@ export default function JourneySection() {
   // Desktop: the whole tall section is the scroll track. Mobile: the list
   // of milestones is, while the compact trail stays pinned above it.
   const { scrollYProgress: sectionProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
-  const { scrollYProgress: listProgress } = useScroll({ target: listRef, offset: ["start 0.6", "end 0.7"] });
 
   const raw = useMotionValue(0);
   useMotionValueEvent(sectionProgress, "change", (p) => {
     if (isDesktop.current) raw.set(Math.min(1, p / DRAW_END));
   });
-  useMotionValueEvent(listProgress, "change", (p) => {
-    if (!isDesktop.current) raw.set(p);
-  });
+  // Mobile: the swipe position of the card strip turns the hand.
+  const onStripScroll = useCallback(() => {
+    const el = listRef.current;
+    if (!el || isDesktop.current) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const p = max > 0 ? el.scrollLeft / max : 0;
+    raw.set(FRACTIONS[0] + p * (FRACTIONS[FRACTIONS.length - 1] - FRACTIONS[0]));
+  }, [raw]);
 
   // Stiff: the arc and the hand should track the scroll almost directly —
   // a soft spring here read as the page lagging behind the finger.
@@ -309,7 +288,7 @@ export default function JourneySection() {
       const top = el.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({ top: top + target * DRAW_END * (el.offsetHeight - window.innerHeight), behavior: "smooth" });
     } else {
-      document.getElementById(`milestone-${MILESTONES[i].id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById(`milestone-${MILESTONES[i].id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     }
   }, []);
 
@@ -372,23 +351,15 @@ export default function JourneySection() {
           </div>
 
           {/* ---------- Trail ---------- */}
-          {/* Mobile: pinned beneath the nav while the milestones scroll by. */}
-          {/* A blurred, translucent band (not a flat fill) so cards slide
-              cleanly under the pinned trail without showing through it —
-              a flat color here always drifted from the sky gradient
-              scrolling behind it and read as a hard seam; the blur just
-              samples whatever's actually back there, sky included. */}
-          <div
-            className="sticky top-0 z-10 -mx-4 bg-canvas/60 px-4 pb-5 pt-[4.5rem] backdrop-blur-md sm:-mx-6 sm:px-6 lg:static lg:col-span-7 lg:mx-0 lg:mt-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
-            data-print-hide
-          >
+          {/* Mobile: the dial sits above a strip of cards you swipe through;
+              the hand follows the swipe. */}
+          <div className="relative mt-6 lg:static lg:col-span-7 lg:mt-0" data-print-hide>
             <div className="lg:hidden">
               {layout === "mobile" ? (
                 <Trail drawn={drawn} activeIndex={activeIndex} onPick={pick} compact />
               ) : (
                 <div className="aspect-[2/1]" aria-hidden="true" />
               )}
-              <div className="pointer-events-none absolute inset-x-0 top-full h-8 bg-gradient-to-b from-canvas/60 to-transparent" aria-hidden="true" />
             </div>
             <div className="hidden lg:block">
               {layout === "desktop" ? (
@@ -399,26 +370,19 @@ export default function JourneySection() {
             </div>
           </div>
 
-          {/* Mobile: a milestone's card opens as it actually scrolls into
-              view — not the whole timeline dumped up front, and not on a
-              scroll-fraction guess shared with the hand above (that could
-              fire once the card had already passed, under the pinned
-              header). Each still reserves its layout height (opacity/
-              transform only), so the list's own scroll distance — which
-              drives the hike above — never shifts under the reveal. Print
-              forces every card visible regardless — it's the flat résumé
-              view there. */}
-          <ol ref={listRef} className="relative mt-2 space-y-5 pb-10 lg:hidden" data-print-show>
+          <ol
+            ref={listRef}
+            onScroll={onStripScroll}
+            className="-mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:hidden print:flex-col [&::-webkit-scrollbar]:hidden"
+            data-print-show
+          >
             {MILESTONES.map((m, i) => (
-              <MobileMilestoneCard
-                key={m.id}
-                m={m}
-                isActive={i === activeIndex}
-                reduceMotion={reduceMotion}
-                onOpen={setDetail}
-              />
+              <MobileMilestoneCard key={m.id} m={m} isActive={i === activeIndex} onOpen={setDetail} />
             ))}
           </ol>
+          <p className="mt-1 text-center font-mono text-[0.6875rem] text-ink-3 lg:hidden" data-print-hide>
+            Swipe
+          </p>
         </div>
       </div>
 

@@ -72,7 +72,7 @@ export default function SystemOverlays() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={spring.snappy}
-            className="fixed bottom-6 left-1/2 z-[160] -translate-x-1/2"
+            className="fixed bottom-20 left-1/2 z-[160] md:bottom-6 -translate-x-1/2"
             data-print-hide
           >
             <button

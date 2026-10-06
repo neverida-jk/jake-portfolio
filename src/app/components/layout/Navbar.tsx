@@ -4,34 +4,32 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { soundFx } from "@/util/sound";
 import { useActiveSection } from "@/lib/useActiveSection";
-import { LuVolume2, LuVolumeX, LuCopy, LuMenu, LuX } from "react-icons/lu";
+import { LuVolume2, LuVolumeX, LuUser, LuRoute, LuFolder, LuWrench, LuMail } from "react-icons/lu";
 
 // The command palette (Cmd+K) and the terminal are still reachable from the
 // keyboard and from Beyond the Resume — they just aren't in the bar anymore.
-interface NavbarProps {
-  onCopyEmail?: () => void;
-}
-
 const TRIPLE_CLICK_WINDOW_MS = 500;
 
 // §4: Beyond the Resume is deliberately absent — it's a reward for
 // scrolling, not a nav destination.
 const NAV_LINKS = [
-  { id: "hero", label: "About" },
-  { id: "journey", label: "Journey" },
-  { id: "work", label: "Work" },
-  { id: "toolkit", label: "Skills" },
-  { id: "contact", label: "Contact" },
+  { id: "hero", label: "About", Icon: LuUser },
+  { id: "journey", label: "Journey", Icon: LuRoute },
+  { id: "work", label: "Work", Icon: LuFolder },
+  { id: "toolkit", label: "Skills", Icon: LuWrench },
+  { id: "contact", label: "Contact", Icon: LuMail },
 ];
+
+// Sections without their own nav entry highlight their neighbour.
+const DOCK_ALIAS: Record<string, string> = { testimonials: "toolkit", beyond: "contact" };
 
 // A full-width bar: invisible at the top of the page, a hairline and a
 // solid backing once you scroll. Numbered links (like hours on a dial) with
 // a gold underline that slides to the section you're in; unframed utilities
-// on the right. On phones the links drop down as a numbered list.
-export default function Navbar({ onCopyEmail }: NavbarProps) {
+// on the right. On phones the links live in a thumb-reach dock at the bottom.
+export default function Navbar() {
   const activeSection = useActiveSection();
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
   const logoClicks = useRef<number[]>([]);
 
@@ -47,17 +45,9 @@ export default function Navbar({ onCopyEmail }: NavbarProps) {
     return () => window.removeEventListener("sound-changed", onSoundChanged);
   }, []);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
-
   const handleNavClick = useCallback((e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
     soundFx.playClick(900);
-    setMenuOpen(false);
     const el = document.getElementById(sectionId);
     if (el) {
       const top = el.getBoundingClientRect().top + window.scrollY - 72;
@@ -88,11 +78,7 @@ export default function Navbar({ onCopyEmail }: NavbarProps) {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        menuOpen
-          ? "border-b border-line bg-canvas"
-          : scrolled
-            ? "border-b border-line bg-canvas/90"
-            : "border-b border-transparent bg-transparent"
+        scrolled ? "border-b border-line bg-canvas/90" : "border-b border-transparent bg-transparent"
       }`}
       data-print-hide
     >
@@ -156,55 +142,35 @@ export default function Navbar({ onCopyEmail }: NavbarProps) {
           >
             {isMuted ? <LuVolumeX className="h-4 w-4" /> : <LuVolume2 className="h-4 w-4 text-moss" />}
           </button>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            className={`${tool} md:hidden`}
-          >
-            {menuOpen ? <LuX className="h-4 w-4" /> : <LuMenu className="h-4 w-4" />}
-          </button>
         </div>
       </nav>
 
-      {/* Phones: a numbered list under the bar */}
-      {menuOpen && (
-        <div className="animate-fade-in-fast border-t border-line md:hidden">
-          <ol className="mx-auto max-w-6xl px-4 py-2 sm:px-6">
-            {NAV_LINKS.map((link, i) => {
-              const on = activeSection === link.id;
-              return (
-                <li key={link.id} className="border-b border-line last:border-b-0">
-                  <a
-                    href={`#${link.id}`}
-                    onClick={(e) => handleNavClick(e, link.id)}
-                    className="flex items-baseline gap-4 py-3.5"
-                  >
-                    <span className={`font-mono text-xs tabular-nums ${on ? "text-summit" : "text-ink-3"}`}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className={`font-display text-3xl leading-none ${on ? "text-ink" : "text-ink-2"}`}>{link.label}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ol>
-          <div className="mx-auto flex max-w-6xl items-center border-t border-line px-4 py-3 font-mono text-xs sm:px-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                onCopyEmail?.();
-              }}
-              className="flex items-center gap-1.5 text-ink-2 hover:text-ink cursor-pointer"
-            >
-              <LuCopy className="h-3.5 w-3.5 text-moss" />
-              Copy email
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Phones: a dock at the bottom, where the thumb already is. */}
+      <nav
+        aria-label="Sections"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-canvas/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+        data-print-hide
+      >
+        <ol className="grid grid-cols-5">
+          {NAV_LINKS.map(({ id, label, Icon }) => {
+            const on = (DOCK_ALIAS[activeSection] ?? activeSection) === id;
+            return (
+              <li key={id}>
+                <a
+                  href={`#${id}`}
+                  onClick={(e) => handleNavClick(e, id)}
+                  aria-current={on ? "true" : undefined}
+                  className={`relative flex flex-col items-center gap-1 pb-2 pt-2.5 font-mono text-[10px] transition-colors ${on ? "text-summit" : "text-ink-3"}`}
+                >
+                  {on && <span className="absolute inset-x-5 top-0 h-px bg-summit" aria-hidden="true" />}
+                  <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+                  {label}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
     </header>
   );
 }

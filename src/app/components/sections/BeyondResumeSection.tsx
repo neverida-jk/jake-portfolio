@@ -19,13 +19,19 @@ export default function BeyondResumeSection() {
       </div>
 
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
-        <Image
-          src="/jake.jpg"
-          alt="Jake Neverida"
-          width={600}
-          height={600}
-          className="h-28 w-28 shrink-0 rounded-2xl border border-line object-cover object-top sm:h-36 sm:w-36"
-        />
+        <div className="flex items-center gap-4 sm:block">
+          <Image
+            src="/jake.jpg"
+            alt="Jake Neverida"
+            width={600}
+            height={600}
+            className="h-16 w-16 shrink-0 rounded-full border border-line object-cover object-top sm:h-36 sm:w-36 sm:rounded-2xl"
+          />
+          <p className="font-mono text-xs leading-relaxed text-ink-2 sm:hidden">
+            <span className="block font-display text-lg not-italic text-ink">Jake Neverida</span>
+            Makati, Philippines
+          </p>
+        </div>
         <ul className="w-full divide-y divide-line border-y border-line">
           {items.map((it) => (
             <li key={it.label} className="grid gap-1 py-3 sm:grid-cols-[7rem_1fr] sm:items-baseline sm:gap-6">

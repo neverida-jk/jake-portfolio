@@ -329,7 +329,40 @@ export default function WorkSection() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-14">
+      {/* Phones: swipe through the projects, one card at a time. */}
+      <ul
+        className="-mx-4 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:hidden [&::-webkit-scrollbar]:hidden"
+        aria-label="Projects"
+      >
+        {projects.map((p, i) => (
+          <li key={p.id} className="w-[82%] shrink-0 snap-center">
+            <button
+              type="button"
+              onClick={() => openCase(p.id, false)}
+              aria-label={`${copy.work.openCase}: ${p.title}`}
+              className="block w-full overflow-hidden rounded-3xl border border-line bg-surface text-left shadow-[var(--e2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
+            >
+              <span className="relative block aspect-[16/10] bg-void">
+                <Image src={p.thumbnail} alt="" fill sizes="82vw" priority={i === 0} className="object-cover object-top" />
+              </span>
+              <span className="block p-4">
+                <span className="block font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">
+                  {String(i + 1).padStart(2, "0")} · {p.category}
+                </span>
+                <span className="mt-1.5 block font-display text-[1.75rem] leading-[1.05] tracking-[-0.02em] text-ink">{p.title}</span>
+                <span className="mt-2 block text-sm leading-relaxed text-ink-2">{p.tagline}</span>
+                <span className="mt-3 inline-flex items-center gap-1.5 font-mono text-xs text-summit">
+                  {copy.work.openCase}
+                  <LuArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 text-center font-mono text-[0.6875rem] text-ink-3 lg:hidden">Swipe</p>
+
+      <div className="mt-10 hidden gap-10 lg:grid lg:grid-cols-12 lg:gap-14">
         {/* The index: one big row per project. */}
         <ol className="lg:col-span-6 border-t border-line">
           {projects.map((p, i) => {

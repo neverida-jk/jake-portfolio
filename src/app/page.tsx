@@ -32,7 +32,7 @@ export default function Home() {
     <main id="main" tabIndex={-1} className="relative min-h-screen overflow-x-clip outline-none">
       <AnimationController />
 
-      <Navbar onCopyEmail={handleCopyEmail} />
+      <Navbar />
 
       <AboutMe onCopyEmail={handleCopyEmail} />
 
@@ -46,7 +46,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={spring.snappy}
-            className="fixed bottom-6 right-6 z-[170] flex items-center gap-2 rounded-xl border border-line bg-raised/95 px-3.5 py-2 font-mono text-xs text-ink shadow-[var(--e3)] backdrop-blur-sm"
+            className="fixed bottom-20 right-4 z-[170] md:bottom-6 md:right-6 flex items-center gap-2 rounded-xl border border-line bg-raised/95 px-3.5 py-2 font-mono text-xs text-ink shadow-[var(--e3)] backdrop-blur-sm"
             data-print-hide
           >
             <LuCheck className="h-3.5 w-3.5 text-moss" aria-hidden="true" />

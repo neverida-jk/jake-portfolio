@@ -67,9 +67,9 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
     <section
       id="contact"
       aria-labelledby="contact-heading"
-      className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-16"
+      className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-24 md:pb-16"
     >
-      <div className="relative mb-8 py-16 text-center sm:py-20">
+      <div className="relative mb-6 py-12 text-center sm:mb-8 sm:py-20">
         {/* The time in Makati, huge and outlined, behind the headline. */}
         <TimeGhost className="absolute inset-x-0 top-1/2 -translate-y-1/2" />
         <h2 id="contact-heading" className="relative text-h1 font-display text-ink tracking-tight">
@@ -89,6 +89,15 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
             <span className="text-[11px] font-mono text-moss block mb-1">&bull; Open for Opportunities</span>
             <h3 className="font-sans font-semibold text-base text-ink">Get in Touch</h3>
           </div>
+
+          <a
+            href={`mailto:${EMAIL}`}
+            onClick={() => soundFx.playSuccess()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-summit py-3.5 font-sans text-sm font-medium text-void active:scale-95 md:hidden"
+          >
+            <LuMail className="h-4 w-4" aria-hidden="true" />
+            Email me
+          </a>
 
           <div className="p-3 rounded-xl bg-raised border border-line">
             <div className="flex items-center justify-between gap-2">
@@ -123,7 +132,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
               soundFx.playClick(900);
               window.print();
             }}
-            className="flex w-full items-center justify-between p-2.5 rounded-xl bg-raised/40 hover:bg-raised text-ink-2 hover:text-ink border border-line transition-colors text-xs font-mono cursor-pointer"
+            className="hidden w-full items-center justify-between p-2.5 rounded-xl bg-raised/40 hover:bg-raised text-ink-2 hover:text-ink border border-line transition-colors text-xs font-mono cursor-pointer md:flex"
           >
             <div className="flex items-center gap-2">
               <LuPrinter className="w-3.5 h-3.5" />
@@ -136,7 +145,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
         </div>
 
         {/* Right Column: Form */}
-        <div className="md:col-span-7 bg-surface border border-line rounded-2xl p-5">
+        <div className="hidden md:col-span-7 md:block bg-surface border border-line rounded-2xl p-5">
           <h3 className="font-sans font-semibold text-base text-ink mb-1">Send a Message</h3>
           <p className="text-xs text-ink-2 font-sans mb-2">
             Opens your default email client with your message pre-filled.
@@ -222,7 +231,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
             Jake Neverida &bull; <span className="text-ink">UP Los Baños</span>
           </span>
           <span className="hidden sm:inline text-ink-3">&bull;</span>
-          <span className="text-ink-3">Built with Next.js 15, React 19, and Tailwind CSS v4.</span>
+          <span className="hidden text-ink-3 sm:inline">Built with Next.js 15, React 19, and Tailwind CSS v4.</span>
         </div>
         <LoadTime template={copy.common.loadTime} />
       </footer>
