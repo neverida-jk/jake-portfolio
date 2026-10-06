@@ -9,16 +9,6 @@ export const hero = {
     technical: "Software Engineer. QA Analyst at Vertere.",
   } satisfies Dual,
 
-  status: {
-    plain: "QA Analyst at Vertere Global Solutions",
-    technical: "QA Analyst · June 2026 to now",
-  } satisfies Dual,
-
-  now: {
-    plain: "Testing enterprise software by day. Building my own products on the side.",
-    technical: "Side projects in Next.js 15 and TypeScript.",
-  } satisfies Dual,
-
   cta: {
     primary: "See the work",
     copy: "Copy email",

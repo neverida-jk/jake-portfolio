@@ -7,7 +7,6 @@ import Navbar from "./components/layout/Navbar";
 import AboutMe from "./components/sections/AboutMe";
 import AnimationController from "./components/ui/AnimationController";
 import CommandPalette from "./components/ui/CommandPalette";
-import TerminalSandbox from "./components/ui/TerminalSandbox";
 import PrintResume from "./components/system/PrintResume";
 import { spring } from "@/lib/motion";
 
@@ -15,7 +14,6 @@ const EMAIL = "jlrneverida@gmail.com";
 
 export default function Home() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -36,7 +34,7 @@ export default function Home() {
 
       <Navbar onCopyEmail={handleCopyEmail} />
 
-      <AboutMe onOpenTerminal={() => setIsTerminalOpen(true)} onCopyEmail={handleCopyEmail} />
+      <AboutMe onCopyEmail={handleCopyEmail} />
 
       <PrintResume />
 
@@ -60,21 +58,7 @@ export default function Home() {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        onOpenTerminal={() => {
-          setIsCommandPaletteOpen(false);
-          setIsTerminalOpen(true);
-        }}
         onCopyEmail={handleCopyEmail}
-      />
-
-      <TerminalSandbox
-        isOpen={isTerminalOpen}
-        onClose={() => setIsTerminalOpen(false)}
-        onNavigateToSection={(sectionId) => {
-          // scrollTo, not scrollIntoView (which walks every scrollable ancestor).
-          const el = document.getElementById(sectionId);
-          if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: "smooth" });
-        }}
       />
     </main>
   );

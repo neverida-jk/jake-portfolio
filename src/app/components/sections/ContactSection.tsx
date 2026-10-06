@@ -69,7 +69,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
       aria-labelledby="contact-heading"
       className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-16"
     >
-      <div className="relative mb-8 py-24 text-center sm:py-32">
+      <div className="relative mb-8 py-16 text-center sm:py-20">
         {/* The time in Makati, huge and outlined, behind the headline. */}
         <TimeGhost className="absolute inset-x-0 top-1/2 -translate-y-1/2" />
         <h2 id="contact-heading" className="relative text-h1 font-display text-ink tracking-tight">

@@ -9,7 +9,6 @@ import BeyondResumeSection from "./BeyondResumeSection";
 import ContactSection from "./ContactSection";
 
 interface AboutMeProps {
-  onOpenTerminal?: () => void;
   onCopyEmail?: () => void;
 }
 

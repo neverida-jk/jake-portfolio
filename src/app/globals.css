@@ -186,11 +186,6 @@ body {
   }
 }
 
-/* Cursor ring turns slowly, like a dial (Cursor.tsx). */
-@keyframes cursor-spin {
-  to { transform: rotate(360deg); }
-}
-
 /* Closing time watermark (TimeGhost.tsx): blinking colon, minute-long line. */
 @keyframes colon-blink {
   0%, 100% { opacity: 1; }
@@ -231,16 +226,14 @@ body {
   .js .intro-char { transform: none; animation: none; }
 }
 
-/* Custom cursor (§5.5). This class is only ever added by Cursor.tsx after it
-   has confirmed (pointer: fine) + no reduced-motion and mounted — never a
-   default, so a failed mount always leaves the native cursor in place.
-   Text fields keep the native caret regardless. */
-.cursor-ready,
-.cursor-ready * {
-  cursor: none;
+/* Cursor: a plain static graphic, no JS and no animation. */
+html {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='6' fill='%23ffb454' stroke='%230a0f1e' stroke-width='2'/%3E%3C/svg%3E") 14 14, auto;
 }
-.cursor-ready input,
-.cursor-ready textarea {
+a[href], button, summary, [role="button"], [role="tab"], label[for] {
+  cursor: pointer;
+}
+input, textarea {
   cursor: text;
 }
 

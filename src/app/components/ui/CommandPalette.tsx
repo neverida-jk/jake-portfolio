@@ -11,7 +11,7 @@ import {
   LuRoute,
   LuFolder,
   LuWrench,
-  LuTerminal as LuTerminalIcon,
+  LuMountainSnow,
   LuMail,
   LuCopy,
   LuVolume2,
@@ -36,7 +36,6 @@ interface CommandItem {
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenTerminal?: () => void;
   onCopyEmail?: () => void;
 }
 
@@ -89,7 +88,6 @@ function HighlightedTitle({ title, indices }: { title: string; indices: number[]
 export default function CommandPalette({
   isOpen,
   onClose,
-  onOpenTerminal,
   onCopyEmail,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
@@ -151,7 +149,7 @@ export default function CommandPalette({
       { id: "nav-journey", title: "Journey — Then", category: "Jump to", icon: <LuRoute className="h-4 w-4" />, action: () => scrollToSection("journey") },
       { id: "nav-work", title: "Work — Shipped", category: "Jump to", icon: <LuFolder className="h-4 w-4" />, action: () => scrollToSection("work") },
       { id: "nav-toolkit", title: "The Toolkit — Skills", category: "Jump to", icon: <LuWrench className="h-4 w-4" />, action: () => scrollToSection("toolkit") },
-      { id: "nav-beyond", title: "Beyond the Resume", category: "Jump to", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
+      { id: "nav-beyond", title: "Beyond the Resume", category: "Jump to", icon: <LuMountainSnow className="h-4 w-4" />, action: () => scrollToSection("beyond") },
       { id: "nav-contact", title: "Contact — Next", category: "Jump to", icon: <LuMail className="h-4 w-4" />, action: () => scrollToSection("contact") },
     ];
 
@@ -176,13 +174,6 @@ export default function CommandPalette({
       },
     }));
 
-    const beyondCmds: CommandItem[] = [
-      { id: "beyond-story", title: "Beyond: My Story", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-      { id: "beyond-hobbies", title: "Beyond: Hobbies", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-      { id: "beyond-motto", title: "Beyond: Motto", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-      { id: "beyond-whyqa", title: "Beyond: Why QA?", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-    ];
-
     const actionCmds: CommandItem[] = [
       {
         id: "act-copy-email",
@@ -195,7 +186,6 @@ export default function CommandPalette({
         },
       },
       { id: "act-github", title: "Open GitHub profile", category: "Actions", icon: <SiGithub className="h-4 w-4" />, action: () => window.open("https://github.com/neverida-jk", "_blank", "noopener,noreferrer") },
-      { id: "act-terminal", title: "Open terminal", category: "Actions", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => onOpenTerminal?.() },
       { id: "act-print", title: "Print résumé", category: "Actions", icon: <LuPrinter className="h-4 w-4" />, action: () => window.print() },
       { id: "act-end", title: "Jump to the end", category: "Actions", icon: <LuFlag className="h-4 w-4" />, action: () => scrollToSection("contact") },
       {
@@ -207,8 +197,8 @@ export default function CommandPalette({
       },
     ];
 
-    return [...sectionCmds, ...projectCmds, ...toolCmds, ...beyondCmds, ...actionCmds];
-  }, [onCopyEmail, onOpenTerminal, scrollToSection, openCaseStudy, setFocusedTool, isMuted]);
+    return [...sectionCmds, ...projectCmds, ...toolCmds, ...actionCmds];
+  }, [onCopyEmail, scrollToSection, openCaseStudy, setFocusedTool, isMuted]);
 
   const results = useMemo(() => {
     if (!query.trim()) {

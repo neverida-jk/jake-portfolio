@@ -22,7 +22,7 @@ const ERA: Record<SectionId, string> = {
   work: "Shipped",
   toolkit: "Tools",
   testimonials: "Said",
-  beyond: "Off the clock",
+  beyond: "Beyond",
   contact: "Next",
 };
 
@@ -89,7 +89,7 @@ export default function Chronometer() {
 
       {/* Desktop: dial + vertical rail */}
       <div
-        className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2"
+        className="hidden lg:flex fixed right-4 top-1/2 -translate-y-1/2 z-40 w-20 flex-col items-center gap-2"
         aria-hidden="true"
         data-print-hide
       >
@@ -99,7 +99,10 @@ export default function Chronometer() {
           <line ref={handRef} x1={22} y1={22} x2={22} y2={7} stroke="var(--color-summit)" strokeWidth={2} strokeLinecap="round" transform="rotate(0 22 22)" />
           <circle cx={22} cy={22} r={2.4} fill="var(--color-summit)" />
         </svg>
-        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2">{ERA[activeId]}</span>
+        {/* Fixed box: the label's length can't move the rail sideways. */}
+        <span className="h-3 w-full whitespace-nowrap text-center font-mono text-[10px] uppercase leading-3 tracking-[0.14em] text-ink-2">
+          {ERA[activeId]}
+        </span>
 
         <div className="relative mt-1 h-52 w-px bg-line">
           <motion.div

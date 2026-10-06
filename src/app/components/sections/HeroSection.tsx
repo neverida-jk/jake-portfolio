@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import {
   motion,
   useAnimationControls,
@@ -11,13 +10,11 @@ import {
   type Variants,
 } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { LuArrowDown, LuCheck, LuCopy, LuMapPin } from "react-icons/lu";
-import { SiGithub } from "react-icons/si";
+import { LuArrowDown, LuCheck, LuCopy } from "react-icons/lu";
 import Dual from "../system/Dual";
 import Dial from "../system/Dial";
 import { INTRO_REVEAL_EVENT } from "../system/IntroSequence";
 import Magnetic from "../motion/Magnetic";
-import GitHubActivity from "../system/GitHubActivity";
 import { copy } from "@/content/copy";
 import { projects } from "@/content/projects";
 import { ease } from "@/lib/motion";
@@ -32,24 +29,7 @@ const NAME_LINES = ["Jake", "Neverida"];
 
 // The intro timeline, in seconds (§5.6). The name leads — it's the LCP
 // element, so it starts almost immediately instead of waiting on the rest.
-const T = { eyebrow: 0.05, name: 0.12, role: 0.2, now: 0.68, cta: 0.82, stats: 0.95, cue: 1.3 };
-
-function useManilaTime() {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const fmt = new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Manila",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-    const tick = () => setTime(fmt.format(new Date()));
-    tick();
-    const id = setInterval(tick, 15000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
+const T = { eyebrow: 0.05, name: 0.12, role: 0.2, cta: 0.82, stats: 0.95, cue: 1.3 };
 
 export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
   const reduceMotion = useReducedMotion();
@@ -61,7 +41,6 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
   // The dial mounts when the hero starts (not behind the intro overlay), so
   // its ticks fan in as part of the arrival rather than unseen under it.
   const [dialOn, setDialOn] = useState(false);
-  const time = useManilaTime();
 
   // Keyframed from 0 so the animation starts from the CSS-hidden state
   // (.js .intro-*) regardless of what the DOM currently holds.
@@ -180,14 +159,14 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       id="hero"
       ref={sectionRef}
       aria-labelledby="hero-heading"
-      className="relative isolate flex min-h-[100svh] items-center overflow-hidden px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24"
+      className="relative isolate flex min-h-[100svh] items-center overflow-hidden px-4 pb-12 pt-20 sm:px-6 sm:pb-14 sm:pt-20"
     >
       <motion.div
-        className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end"
+        className="relative mx-auto w-full max-w-6xl"
         style={reduceMotion ? undefined : { y: contentY, opacity: contentOpacity, scale: contentScale }}
       >
         {/* ---------- Identity ---------- */}
-        <div className="lg:col-span-7">
+        <div className="lg:max-w-[58%]">
           <motion.p
             className="intro-fade font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3 flex flex-wrap items-center gap-x-3 gap-y-1"
             custom={T.eyebrow}
@@ -204,7 +183,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           <h1
             id="hero-heading"
             aria-label={NAME_LINES.join(" ")}
-            className="mt-[clamp(0.75rem,2svh,1.25rem)] font-display text-[clamp(2.75rem,min(11vw,15svh),8.5rem)] leading-[0.9] tracking-[-0.035em] text-ink"
+            className="mt-[clamp(0.75rem,2svh,1.25rem)] font-display text-[clamp(2.75rem,min(11vw,14svh),8.5rem)] leading-[0.9] tracking-[-0.035em] text-ink"
           >
             {NAME_LINES.map((line, li) => (
               <span key={line} className="block" aria-hidden="true">
@@ -291,73 +270,14 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           </motion.dl>
         </div>
 
-        {/* ---------- Now ---------- */}
-        <div className="relative lg:col-span-5 lg:mb-2">
-        {/* The dial, concentric with the Now card like a watch face around
-            it, running on live Manila time. Mounts when the hero starts so
-            the ticks fan in as part of the arrival. */}
+        {/* The dial, behind the right half, running on live Manila time.
+            Mounts when the hero starts so the ticks fan in as part of the
+            arrival. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-[min(150vw,720px)] -translate-x-1/2 -translate-y-1/2 opacity-40 sm:opacity-70 lg:w-[min(118svh,1050px)] lg:opacity-90"
+          className="pointer-events-none absolute left-1/2 top-[44%] -z-10 aspect-square w-[min(150vw,640px)] -translate-x-1/2 -translate-y-1/2 opacity-30 sm:opacity-60 lg:left-[79%] lg:top-1/2 lg:w-[min(112svh,980px)] lg:opacity-90"
         >
           {dialOn && <Dial className="h-full w-full" reactive fan />}
-        </div>
-        <motion.aside
-          aria-label="What I'm doing now"
-          className="intro-fade"
-          custom={T.now}
-          variants={fade}
-          animate={controls}
-        >
-          <div className="rounded-3xl border border-line bg-surface/90 p-4 shadow-[var(--e2)] sm:p-6">
-            <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.14em]">
-              <span className="flex items-center gap-2 text-ink-2">
-                <span className="relative flex h-2 w-2" aria-hidden="true">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-moss opacity-60 motion-reduce:hidden" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-moss" />
-                </span>
-                Now
-              </span>
-              <span className="text-ink-3 tabular-nums">{time ? `${time} · GMT+8` : "GMT+8"}</span>
-            </div>
-
-            <div className="mt-4 flex items-center gap-4 sm:mt-5">
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-line">
-                <Image src="/jake.jpg" alt="Jake Neverida" fill sizes="56px" priority className="object-cover" />
-              </div>
-              <div className="min-w-0">
-                <Dual value={copy.hero.status} note="none" className="text-sm font-medium text-ink" />
-                <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-3">
-                  <LuMapPin className="h-3 w-3" aria-hidden="true" />
-                  Makati, Philippines
-                </p>
-              </div>
-            </div>
-
-            {/* Phones keep just the status strip above so the whole hero fits
-                one screen; the rest returns from the sm breakpoint up. */}
-            <div className="hidden sm:block">
-              <div className="mt-5 border-t border-line pt-5">
-                <Dual value={copy.hero.now} className="text-sm leading-relaxed text-ink-2" />
-              </div>
-
-              <GitHubActivity />
-
-              <div className="mt-5 flex items-center gap-2">
-                <a
-                  href="https://github.com/neverida-jk"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => soundFx.playClick(900)}
-                  className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-mono text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
-                >
-                  <SiGithub className="h-3.5 w-3.5" aria-hidden="true" />
-                  github.com/neverida-jk
-                </a>
-              </div>
-            </div>
-          </div>
-        </motion.aside>
         </div>
       </motion.div>
 

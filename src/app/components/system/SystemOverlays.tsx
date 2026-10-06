@@ -7,7 +7,6 @@ import { copy } from "@/content/copy";
 import { spring } from "@/lib/motion";
 import { soundFx } from "@/util/sound";
 import { fireConfetti } from "@/util/confetti";
-import Cursor from "./Cursor";
 
 
 const INVITE_KEY = "jake.soundInvite.shown";
@@ -64,7 +63,6 @@ export default function SystemOverlays() {
 
   return (
     <>
-      <Cursor />
 
       <AnimatePresence>
         {invite && (

@@ -27,12 +27,12 @@ export default function TimeGhost({ className = "" }: { className?: string }) {
     <div aria-hidden="true" data-print-hide className={`pointer-events-none flex select-none flex-col items-center ${className}`}>
       {time && (
         <>
-          <div className="font-display text-[clamp(8rem,34vw,21rem)] leading-[0.8] tabular-nums tracking-[-0.04em] text-transparent [-webkit-text-stroke:1px_rgba(159,174,196,0.3)]">
+          <div className="font-display text-[clamp(5rem,19vw,10.5rem)] leading-[0.8] tabular-nums tracking-[-0.04em] text-transparent [-webkit-text-stroke:1px_rgba(159,174,196,0.3)]">
             {h}
             <span style={{ animation: "colon-blink 1s steps(1) infinite" }}>:</span>
             {m}
           </div>
-          <div className="mt-4 h-px w-48 bg-line sm:w-72">
+          <div className="mt-3 h-px w-36 bg-line sm:w-48">
             <div
               key={time.hm}
               className="h-full origin-left bg-summit"
