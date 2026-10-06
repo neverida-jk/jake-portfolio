@@ -1,15 +1,14 @@
 "use client";
 
-// Next / Contact (§6.7 / Phase 7). A gold wash sweeps once as the section
-// arrives, the headline lands, and the page ends on the live time in Makati.
+// Next / Contact (§6.7 / Phase 7). The page ends where it began: a small live
+// dial, the headline, and the local time in Makati. No glow, no sweep.
 import React, { useCallback, useState } from "react";
-import { motion } from "framer-motion";
-import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
 import { copy } from "@/content/copy";
 import Dual from "@/components/system/Dual";
 import { LuCopy, LuCheck, LuMail, LuArrowUpRight, LuPrinter } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
+import Dial from "../system/Dial";
 import LoadTime from "../system/LoadTime";
 import MakatiTime from "../system/MakatiTime";
 
@@ -36,7 +35,6 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<SubmitStatus>("idle");
-  const reduceMotion = useReducedMotion();
 
   const handleCopy = useCallback(() => {
     soundFx.playSuccess();
@@ -72,17 +70,9 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
       aria-labelledby="contact-heading"
       className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-16"
     >
-      {/* Gold light wash, once, on arriving */}
-      <motion.div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(120deg,transparent,color-mix(in_srgb,var(--color-summit)_20%,transparent),transparent)] bg-[length:220%_100%]"
-        initial={{ backgroundPosition: "220% 0%", opacity: 0 }}
-        whileInView={reduceMotion ? { opacity: 0 } : { backgroundPosition: "-40% 0%", opacity: [0, 1, 0] }}
-        viewport={{ once: true, margin: "-20% 0px" }}
-        transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-      />
-
       <div className="mb-8 text-center">
+        {/* The page ends where it began: the same dial, small, still live. */}
+        <Dial className="mx-auto mb-6 h-36 w-36 sm:h-44 sm:w-44" fan />
         <h2 id="contact-heading" className="text-h1 font-display text-ink tracking-tight">
           Time to <span className="italic text-summit">talk.</span>
         </h2>

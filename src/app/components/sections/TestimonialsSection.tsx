@@ -23,24 +23,24 @@ export default function TestimonialsSection() {
       <ul className={`grid gap-4 ${items.length > 1 ? "md:grid-cols-2" : ""}`}>
         {items.map((t, i) => (
           <motion.li
-            key={`${t.name}-${t.when}`}
+            key={`${t.role}-${t.org}-${i}`}
             initial={reduceMotion ? false : { opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-8% 0px" }}
             transition={{ duration: 0.45, delay: i * 0.06, ease: ease.out }}
-            className="flex flex-col justify-between rounded-3xl border border-line bg-surface p-6 sm:p-8 shadow-[var(--e2)]"
+            className="rounded-3xl border border-line bg-surface p-6 sm:p-9 shadow-[var(--e2)]"
           >
-            <blockquote className="font-display text-[clamp(1.35rem,2.4vw,1.9rem)] leading-[1.2] tracking-[-0.01em] text-ink text-balance">
-              &ldquo;{t.quote}&rdquo;
-            </blockquote>
-            <figcaption className="mt-5 text-sm text-ink-2">
-              <span className="font-semibold text-ink">{t.name}</span>
-              <span className="text-ink-3">
-                {" "}
-                · {t.role}, {t.org}
-              </span>
-              <span className="mt-0.5 block font-mono text-[11px] text-ink-3">{t.when}</span>
-            </figcaption>
+            <figure className="flex h-full flex-col justify-between">
+              <blockquote className="max-w-[40ch] font-display text-[clamp(1.5rem,2.8vw,2.25rem)] leading-[1.18] tracking-[-0.015em] text-ink text-balance">
+                &ldquo;{t.quote}&rdquo;
+              </blockquote>
+              <figcaption className="mt-6 text-sm text-ink-2">
+                {t.name && <span className="font-semibold text-ink">{t.name} · </span>}
+                <span className={t.name ? "text-ink-3" : "font-semibold text-ink"}>{t.role}</span>
+                <span className="text-ink-3">, {t.org}</span>
+                {t.when && <span className="mt-0.5 block font-mono text-[11px] text-ink-3">{t.when}</span>}
+              </figcaption>
+            </figure>
           </motion.li>
         ))}
       </ul>

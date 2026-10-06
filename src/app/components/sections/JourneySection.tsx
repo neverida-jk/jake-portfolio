@@ -330,10 +330,6 @@ export default function JourneySection() {
             <h2 id="journey-heading" className="mt-3 font-display text-h1 leading-[1.02] tracking-[-0.03em] text-ink">
               {copy.journey.title}
             </h2>
-            <div className="mt-4 max-w-[30rem]">
-              <Dual value={copy.journey.intro} className="text-base leading-relaxed text-ink-2" />
-            </div>
-
             {/* Desktop: one milestone at a time, in step with the hand.
                 Print shows every milestone as a flat list instead (below). */}
             <div className="hidden lg:block" data-print-hide>

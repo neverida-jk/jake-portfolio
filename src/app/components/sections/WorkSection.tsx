@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuArrowRight, LuArrowUpRight, LuGlobe, LuX } from "react-icons/lu";
@@ -11,16 +11,6 @@ import { projects, projectById, type Hotspot, type Project } from "@/content/pro
 import { ease, spring } from "@/lib/motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
-
-const AUTO_ADVANCE_MS = 5000;
-const RESUME_AFTER_MS = 5000;
-
-// A clone of the first project appended after the last. Auto-advance scrolls
-// onto it like any other card, then — once it's settled — jumps instantly
-// back to the real first card. The clone is visually identical, so the loop
-// reads as one continuous forward motion instead of a rewind.
-const LOOPS = projects.length > 1;
-const CAROUSEL = LOOPS ? [...projects, projects[0]] : projects;
 
 function Hotspots({ project }: { project: Project }) {
   const [open, setOpen] = useState<string | null>(null);
@@ -238,107 +228,27 @@ function CaseStudy({
 
 export default function WorkSection() {
   const reduceMotion = useReducedMotion();
-  // Hovering a card dims its siblings in the same carousel — a same-viewport
-  // effect, unlike the old cross-section highlight into the (invisible,
-  // off-screen) Toolkit section.
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<(HTMLElement | null)[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const isProgrammaticScrollRef = useRef(false);
-  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // The project shown in the live preview (desktop). Hover or focus a row to
+  // change it; on narrow screens every row carries its own screenshot.
+  const [activeId, setActiveId] = useState(projects[0].id);
   const [openId, setOpenId] = useState<string | null>(null);
-  // The project whose card thumbnail morphs into the case study. Only the
-  // one opened from a card morphs; "Next" and deep links just fade.
+  // The project whose preview image morphs into the case study. Only the
+  // one opened from the list morphs; "Next" and deep links just fade.
   const [morphId, setMorphId] = useState<string | null>(null);
-  const [desktop, setDesktop] = useState(false);
+  const [wide, setWide] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 640px)");
-    const update = () => setDesktop(mq.matches);
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setWide(mq.matches);
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Shared-element morph only on desktop: on mobile the case study is a
-  // bottom sheet sliding up, and a morph inside a translating parent distorts.
-  const morphEnabled = desktop && !reduceMotion;
-
-  // --- carousel (auto-advance + seamless loop) ---------------------------
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-            const idx = cardRefs.current.findIndex((el) => el === entry.target);
-            if (idx !== -1) setActiveIndex(idx);
-          }
-        });
-      },
-      { root: container, threshold: [0.6] }
-    );
-    cardRefs.current.forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToIndex = useCallback((idx: number, programmatic = false, instant = false) => {
-    const container = scrollRef.current;
-    const card = cardRefs.current[idx];
-    if (!container || !card) return;
-    isProgrammaticScrollRef.current = programmatic;
-    // scrollTo on the container, never scrollIntoView — that walks up the
-    // ancestors and can drag the whole page to this section.
-    const targetLeft = card.offsetLeft - (container.clientWidth - card.offsetWidth) / 2;
-    container.scrollTo({ left: targetLeft, behavior: instant ? "auto" : "smooth" });
-    if (programmatic) {
-      setTimeout(() => {
-        isProgrammaticScrollRef.current = false;
-      }, instant ? 50 : 700);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!LOOPS || activeIndex !== projects.length) return;
-    const t = setTimeout(() => {
-      scrollToIndex(0, true, true);
-      setActiveIndex(0);
-    }, 550);
-    return () => clearTimeout(t);
-  }, [activeIndex, scrollToIndex]);
-
-  useEffect(() => {
-    if (!LOOPS || reduceMotion || isPaused || openId || activeIndex >= projects.length) return;
-    const id = setInterval(() => scrollToIndex(activeIndex + 1, true), AUTO_ADVANCE_MS);
-    return () => clearInterval(id);
-  }, [isPaused, openId, activeIndex, scrollToIndex, reduceMotion]);
-
-  const handleUserTakeover = useCallback(() => {
-    setIsPaused(true);
-    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-    resumeTimeoutRef.current = setTimeout(() => setIsPaused(false), RESUME_AFTER_MS);
-  }, []);
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const onScroll = () => {
-      if (!isProgrammaticScrollRef.current) handleUserTakeover();
-    };
-    container.addEventListener("pointerdown", handleUserTakeover);
-    container.addEventListener("wheel", handleUserTakeover, { passive: true });
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      container.removeEventListener("pointerdown", handleUserTakeover);
-      container.removeEventListener("wheel", handleUserTakeover);
-      container.removeEventListener("scroll", onScroll);
-      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-    };
-  }, [handleUserTakeover]);
+  // Shared-element morph only where the preview panel exists (wide screens):
+  // on narrow ones the case study is a bottom sheet sliding up, and a morph
+  // inside a translating parent distorts.
+  const morphEnabled = wide && !reduceMotion;
 
   // --- case studies ------------------------------------------------------
   const setHash = (id: string | null) => {
@@ -347,9 +257,10 @@ export default function WorkSection() {
   };
 
   const openCase = useCallback(
-    (id: string, fromCard: boolean) => {
+    (id: string, fromList: boolean) => {
       soundFx.playClick(900);
-      setMorphId(fromCard && morphEnabled ? id : null);
+      setActiveId(id);
+      setMorphId(fromList && morphEnabled ? id : null);
       setOpenId(id);
       setHash(id);
     },
@@ -367,11 +278,11 @@ export default function WorkSection() {
     const next = projects[(i + 1) % projects.length];
     soundFx.playClick(950);
     setMorphId(null);
+    setActiveId(next.id);
     setOpenId(next.id);
     setHash(next.id);
-    scrollToIndex(projects.indexOf(next), true);
     document.getElementById("case-title")?.closest('[role="dialog"]')?.scrollTo({ top: 0, behavior: "smooth" });
-  }, [openId, scrollToIndex]);
+  }, [openId]);
 
   // Deep link: /#work/tropa opens that case study on load.
   useEffect(() => {
@@ -379,6 +290,7 @@ export default function WorkSection() {
     if (m && projectById(m[1])) {
       const section = document.getElementById("work");
       if (section) window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY - 80 });
+      setActiveId(m[1]);
       setOpenId(m[1]);
     }
   }, []);
@@ -391,6 +303,7 @@ export default function WorkSection() {
       const m = window.location.hash.match(/^#work\/([\w-]+)$/);
       if (m && projectById(m[1])) {
         setMorphId(null);
+        setActiveId(m[1]);
         setOpenId(m[1]);
       }
     };
@@ -399,6 +312,7 @@ export default function WorkSection() {
   }, []);
 
   const open = openId ? projectById(openId) : undefined;
+  const active = projectById(activeId) ?? projects[0];
 
   return (
     <section id="work" aria-labelledby="work-heading" className="reveal-item mx-auto max-w-6xl px-4 sm:px-6">
@@ -408,9 +322,6 @@ export default function WorkSection() {
           <h2 id="work-heading" className="mt-3 font-display text-h1 leading-[1.02] tracking-[-0.03em] text-ink">
             {copy.work.title}
           </h2>
-          <div className="mt-4">
-            <Dual value={copy.work.intro} className="text-base leading-relaxed text-ink-2" />
-          </div>
         </div>
         <p className="flex items-center gap-2 font-mono text-xs text-ink-3">
           <span className="h-1.5 w-1.5 rounded-full bg-moss" aria-hidden="true" />
@@ -418,137 +329,115 @@ export default function WorkSection() {
         </p>
       </div>
 
-      {/* layoutScroll: the carousel scrolls horizontally, so framer must
-          account for its scrollLeft when measuring a card for the morph. */}
-      <motion.div
-        layoutScroll
-        ref={scrollRef}
-        role="region"
-        aria-roledescription="carousel"
-        aria-label={copy.work.carousel}
-        className="mt-10 -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-4 scrollbar-hide sm:mx-0 sm:px-0"
-      >
-        {CAROUSEL.map((p, idx) => {
-          const isClone = idx >= projects.length;
-          const dim = !!hoveredId && hoveredId !== p.id;
-          const lit = hoveredId === p.id;
-          // Registered before any click so framer has the card's box to morph from.
-          const layoutId = !isClone && morphEnabled ? `thumb-${p.id}` : undefined;
-          return (
-            <article
-              key={isClone ? `${p.id}-clone` : p.id}
-              ref={(el) => {
-                cardRefs.current[idx] = el;
-              }}
-              aria-hidden={isClone || undefined}
-              onPointerEnter={() => setHoveredId(p.id)}
-              onPointerLeave={() => setHoveredId(null)}
-              onFocus={() => setHoveredId(p.id)}
-              onBlur={() => setHoveredId(null)}
-              className={`group/card w-[88%] shrink-0 snap-center overflow-hidden rounded-3xl border bg-surface shadow-[var(--e2)] transition-[opacity,filter,border-color,transform] duration-300 sm:w-[70%] lg:w-[620px] ${
-                dim ? "opacity-35 grayscale-[0.5]" : "opacity-100"
-              } ${lit ? "border-summit/50 -translate-y-1" : "border-line hover:border-ink-3/60"}`}
-            >
-              {/* Browser chrome */}
-              <div className="flex items-center gap-3 border-b border-line bg-void/60 px-4 py-3">
-                <div className="flex shrink-0 items-center gap-1.5" aria-hidden="true">
-                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
-                </div>
+      <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-14">
+        {/* The index: one big row per project. */}
+        <ol className="lg:col-span-6 border-t border-line">
+          {projects.map((p, i) => {
+            const on = p.id === active.id;
+            return (
+              <li
+                key={p.id}
+                onPointerEnter={() => setActiveId(p.id)}
+                onFocus={() => setActiveId(p.id)}
+                className="group/row relative border-b border-line"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-0 top-0 hidden h-full w-px origin-top bg-summit transition-transform duration-500 ease-out lg:block ${
+                    on ? "scale-y-100" : "scale-y-0"
+                  }`}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => openCase(p.id, true)}
+                  aria-label={`${copy.work.openCase}: ${p.title}`}
+                  className="block w-full py-6 text-left transition-[padding] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-summit lg:py-7 lg:pl-0 lg:group-hover/row:pl-5 lg:data-[on=true]:pl-5"
+                  data-on={on}
+                >
+                  {/* Narrow screens: no preview panel, so the screenshot sits here. */}
+                  <span className="relative mb-5 block aspect-[16/10] overflow-hidden rounded-2xl border border-line bg-void lg:hidden">
+                    <Image src={p.thumbnail} alt="" fill sizes="(max-width: 1024px) 94vw, 0px" priority={i === 0} className="object-cover object-top" />
+                  </span>
+
+                  <span className="flex items-baseline gap-4">
+                    <span className={`font-mono text-xs tabular-nums transition-colors ${on ? "text-summit" : "text-ink-3"}`}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      className={`font-display text-[clamp(2.1rem,4.2vw,3.4rem)] leading-[1.02] tracking-[-0.03em] transition-colors duration-300 ${
+                        on ? "text-ink" : "text-ink lg:text-ink-3"
+                      }`}
+                    >
+                      {p.title}
+                    </span>
+                  </span>
+
+                  <span className="mt-3 block pl-0 sm:pl-[2.1rem]">
+                    <span className="block font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{p.category}</span>
+                    <span className="mt-1.5 block max-w-[34ch] text-sm leading-relaxed text-ink-2">{p.tagline}</span>
+                  </span>
+                </button>
+
                 <a
                   href={p.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  tabIndex={isClone ? -1 : undefined}
                   onClick={() => soundFx.playClick(900)}
-                  className="flex min-w-0 flex-1 items-center justify-center gap-2 truncate rounded-full border border-line bg-surface px-3 py-1 font-mono text-[0.6875rem] text-ink-2 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
-                  title={`Open ${p.domain}`}
+                  className="mb-6 ml-0 inline-flex items-center gap-1.5 font-mono text-xs text-ink-3 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit sm:ml-[2.1rem] lg:mb-7"
                 >
-                  <LuGlobe className="h-3 w-3 shrink-0 text-moss" aria-hidden="true" />
-                  <span className="truncate">{p.domain}</span>
+                  <LuGlobe className="h-3.5 w-3.5 text-moss" aria-hidden="true" />
+                  {p.domain}
+                  <LuArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
-              </div>
+              </li>
+            );
+          })}
+        </ol>
 
-              <button
-                type="button"
-                onClick={() => openCase(p.id, true)}
-                tabIndex={isClone ? -1 : undefined}
-                aria-label={`${copy.work.openCase}: ${p.title}`}
-                className="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-summit"
-              >
-                <motion.div
-                  layoutId={layoutId}
-                  transition={spring.smooth}
-                  className="relative aspect-[16/10] overflow-hidden bg-void"
-                >
-                  <Image
-                    src={p.thumbnail}
-                    alt=""
-                    fill
-                    sizes="(max-width: 1024px) 88vw, 620px"
-                    priority={idx === 0}
-                    className="object-cover object-top transition-transform duration-700 ease-out group-hover/card:scale-[1.025]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" aria-hidden="true" />
-                </motion.div>
-              </button>
-
-              <div className="p-5 sm:p-6">
-                <p className="truncate font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{p.category}</p>
-                <h3 className="mt-3 font-display text-[clamp(1.75rem,3vw,2.25rem)] leading-[1.05] tracking-[-0.02em] text-ink">
-                  {p.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-2">{p.tagline}</p>
-
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => openCase(p.id, true)}
-                    tabIndex={isClone ? -1 : undefined}
-                    className="group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-void transition-colors hover:bg-summit-dt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                  >
-                    {copy.work.openCase}
-                    <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </button>
-                  <a
-                    href={p.liveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    tabIndex={isClone ? -1 : undefined}
-                    onClick={() => soundFx.playClick(900)}
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-2.5 text-sm text-ink-2 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
-                  >
-                    {copy.work.visit}
-                    <LuArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                  </a>
+        {/* The preview: follows the hovered row. Decorative twin of the row's
+            own button, so it stays out of the tab order and the a11y tree. */}
+        <div className="hidden lg:col-span-6 lg:block" aria-hidden="true">
+          <div className="sticky top-28">
+            <div
+              onClick={() => openCase(active.id, true)}
+              className="cursor-pointer overflow-hidden rounded-3xl border border-line bg-surface shadow-[var(--e2)]"
+            >
+              <div className="flex items-center gap-3 border-b border-line bg-void/60 px-4 py-3">
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-ink-3/40" />
                 </div>
+                <span className="flex min-w-0 flex-1 items-center justify-center gap-2 truncate rounded-full border border-line bg-surface px-3 py-1 font-mono text-[0.6875rem] text-ink-2">
+                  <LuGlobe className="h-3 w-3 shrink-0 text-moss" />
+                  <span className="truncate">{active.domain}</span>
+                </span>
               </div>
-            </article>
-          );
-        })}
-      </motion.div>
 
-      {LOOPS && (
-        <div className="mt-5 flex justify-center gap-1.5">
-          {projects.map((p, idx) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => {
-                soundFx.playClick(900);
-                handleUserTakeover();
-                scrollToIndex(idx, true);
-              }}
-              aria-label={`${copy.work.goTo} ${p.title}`}
-              aria-current={idx === activeIndex % projects.length ? "true" : undefined}
-              className={`h-1.5 cursor-pointer rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit ${
-                idx === activeIndex % projects.length ? "w-7 bg-summit" : "w-1.5 bg-ink-3/40 hover:bg-ink-3"
-              }`}
-            />
-          ))}
+              <div className="relative aspect-[16/10] overflow-hidden bg-void">
+                {projects.map((p) => {
+                  const on = p.id === active.id;
+                  return (
+                    <motion.div
+                      key={p.id}
+                      layoutId={morphEnabled ? `thumb-${p.id}` : undefined}
+                      transition={spring.smooth}
+                      className={`absolute inset-0 transition-[opacity,transform] duration-500 ease-out ${
+                        on ? "opacity-100 scale-100" : "opacity-0 scale-[1.03]"
+                      }`}
+                    >
+                      <Image src={p.thumbnail} alt="" fill sizes="620px" priority={p.id === projects[0].id} className="object-cover object-top" />
+                    </motion.div>
+                  );
+                })}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface/80 via-transparent to-transparent" />
+              </div>
+            </div>
+            <p className="mt-3 text-center font-mono text-[0.6875rem] text-ink-3">{copy.work.openCase}</p>
+          </div>
         </div>
-      )}
+      </div>
 
       <Sheet isOpen={!!open} onClose={closeCase} titleId="case-title" size="xl" desktopMotion="fade">
         {open && (

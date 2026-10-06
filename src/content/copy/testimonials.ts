@@ -1,19 +1,27 @@
 export type Testimonial = {
   /** Their words, exactly as they gave them. Never write or edit one for them. */
   quote: string;
-  name: string;
-  /** Their role, e.g. "Engineering Lead". */
+  /** Optional: add only if they agreed to be named. */
+  name?: string;
+  /** Their role, e.g. "Project Manager". */
   role: string;
-  /** Where we worked together, e.g. "Vertere Global Solutions". */
+  /** Where we worked together, e.g. "UPLB Computer Science project". */
   org: string;
-  /** Year or "Month Year" we worked together. */
-  when: string;
+  /** Optional: year or "Month Year" we worked together. */
+  when?: string;
 };
 
 // Real quotes only, from real people who agreed to be quoted. The section
-// stays hidden until there is at least one entry — an empty or invented
-// testimonial is worse than none. To add one, append an object to `items`.
+// stays hidden when this list is empty — an empty or invented testimonial is
+// worse than none. To add one, append an object to `items`.
 export const testimonials = {
   title: "What people say",
-  items: [] as Testimonial[],
+  items: [
+    {
+      quote:
+        "Jake has been great to work with as our backend lead. He’s dependable, takes ownership, and is quick to figure things out when challenges come up. I really appreciate how proactive he is and how willing he is to learn. I’d gladly work with him again.",
+      role: "Project Manager",
+      org: "UPLB Computer Science project",
+    },
+  ] as Testimonial[],
 };

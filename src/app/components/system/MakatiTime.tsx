@@ -19,10 +19,7 @@ export default function MakatiTime({ className = "" }: { className?: string }) {
     <p className={`flex min-h-[1.25rem] items-center justify-center gap-2 font-mono text-xs text-ink-3 ${className}`}>
       {time && (
         <>
-          <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-moss opacity-60 motion-reduce:hidden" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-moss" />
-          </span>
+          <span className="h-1.5 w-1.5 rounded-full bg-moss" aria-hidden="true" />
           It&apos;s {time} in Makati right now.
         </>
       )}

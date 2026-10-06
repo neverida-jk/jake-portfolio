@@ -10,6 +10,7 @@ const SECTION_LABELS: Record<SectionId, string> = {
   journey: "Journey",
   work: "Work",
   toolkit: "Skills",
+  testimonials: "Testimonials",
   beyond: "Beyond",
   contact: "Contact",
 };
@@ -20,6 +21,7 @@ const ERA: Record<SectionId, string> = {
   journey: "Then",
   work: "Shipped",
   toolkit: "Tools",
+  testimonials: "Said",
   beyond: "Off the clock",
   contact: "Next",
 };
@@ -106,7 +108,9 @@ export default function Chronometer() {
           />
 
           {SECTION_IDS.map((id) => {
-            const offset = offsets[id] ?? 0;
+            const offset = offsets[id];
+            // A section that isn't on the page (e.g. no testimonials yet) gets no tick.
+            if (offset === undefined) return null;
             const isActive = activeId === id;
             const isHovered = hovered === id;
             return (

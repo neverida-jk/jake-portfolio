@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 // Section ids/order per ASCENT_MASTERPLAN.md §4. "beyond" has no nav entry
 // but still gets a waypoint on the chronometer rail.
-export const SECTION_IDS = ["hero", "journey", "work", "toolkit", "beyond", "contact"] as const;
+export const SECTION_IDS = ["hero", "journey", "work", "toolkit", "testimonials", "beyond", "contact"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 // One shared IntersectionObserver for the whole site (§5.3) — Navbar and

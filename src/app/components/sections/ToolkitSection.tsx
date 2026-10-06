@@ -40,7 +40,6 @@ export default function ToolkitSection() {
         <h2 id="toolkit-heading" className="text-xl sm:text-2xl font-display text-ink tracking-tight">
           The Toolkit
         </h2>
-        <span className="text-xs font-mono text-ink-3">Grouped by what it does</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

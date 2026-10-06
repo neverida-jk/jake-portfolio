@@ -26,10 +26,6 @@ export type Milestone = {
 export const journey = {
   eyebrow: "Then",
   title: "How I got here",
-  intro: {
-    plain: "Four years of study. One internship. Now QA at Vertere.",
-    technical: "UPLB → Limitless Lab → Vertere.",
-  } satisfies Dual,
   detailsLabel: "Details",
 
   milestones: [
