@@ -352,6 +352,7 @@ export default function WorkSection() {
                   type="button"
                   onClick={() => openCase(p.id, true)}
                   aria-label={`${copy.work.openCase}: ${p.title}`}
+                  data-cursor-label="Open"
                   className="block w-full py-6 text-left transition-[padding] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-summit lg:py-7 lg:pl-0 lg:group-hover/row:pl-5 lg:data-[on=true]:pl-5"
                   data-on={on}
                 >
@@ -401,6 +402,7 @@ export default function WorkSection() {
           <div className="sticky top-28">
             <div
               onClick={() => openCase(active.id, true)}
+              data-cursor-label="Open"
               className="cursor-pointer overflow-hidden rounded-3xl border border-line bg-surface shadow-[var(--e2)]"
             >
               <div className="flex items-center gap-3 border-b border-line bg-void/60 px-4 py-3">

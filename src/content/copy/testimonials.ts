@@ -19,7 +19,7 @@ export const testimonials = {
   items: [
     {
       quote:
-        "Jake has been great to work with as our backend lead. He’s dependable, takes ownership, and is quick to figure things out when challenges come up. I really appreciate how proactive he is and how willing he is to learn. I’d gladly work with him again.",
+        "Jake has been great to work with as our backend lead. He’s dependable, takes ownership, and is quick to figure things out when challenges come up. I’d gladly work with him again.",
       role: "Project Manager",
       org: "UPLB Computer Science project",
     },

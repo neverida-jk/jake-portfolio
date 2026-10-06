@@ -10,7 +10,6 @@ import { LuCopy, LuCheck, LuMail, LuArrowUpRight, LuPrinter } from "react-icons/
 import { SiGithub } from "react-icons/si";
 import TimeGhost from "../system/TimeGhost";
 import LoadTime from "../system/LoadTime";
-import MakatiTime from "../system/MakatiTime";
 
 interface ContactSectionProps {
   onCopyEmail?: () => void;
@@ -216,7 +215,6 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
         </div>
       </div>
 
-      <MakatiTime className="mt-12" />
 
       <footer className="mt-10 pt-6 border-t border-line text-center text-xs font-mono text-ink-2">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2">

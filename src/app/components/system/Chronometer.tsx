@@ -83,7 +83,7 @@ export default function Chronometer() {
   return (
     <>
       {/* Mobile: slim top progress bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-[2px] bg-line" aria-hidden="true" data-print-hide>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-[60] h-[2px] bg-line" aria-hidden="true" data-print-hide>
         <motion.div className="h-full bg-summit origin-left" style={{ scaleX: scrollYProgress }} />
       </div>
 

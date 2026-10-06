@@ -181,7 +181,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       id="hero"
       ref={sectionRef}
       aria-labelledby="hero-heading"
-      className="relative isolate min-h-[100svh] flex items-start overflow-hidden px-4 sm:px-6 pt-28 pb-24 lg:pt-[max(8rem,17vh)]"
+      className="relative isolate flex min-h-[100svh] items-center overflow-hidden px-4 pb-14 pt-20 sm:px-6 sm:pb-16 sm:pt-24"
     >
       {/* The dial, huge and cropped, running on live Manila time. Its centre
           sits in the open space top-right so the name stays clear; the Now
@@ -200,7 +200,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       </motion.div>
 
       <motion.div
-        className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-end"
+        className="relative w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end"
         style={reduceMotion ? undefined : { y: contentY, opacity: contentOpacity, scale: contentScale }}
       >
         {/* ---------- Identity ---------- */}
@@ -221,7 +221,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           <h1
             id="hero-heading"
             aria-label={NAME_LINES.join(" ")}
-            className="mt-5 font-display text-display leading-[0.9] tracking-[-0.035em] text-ink"
+            className="mt-[clamp(0.75rem,2svh,1.25rem)] font-display text-[clamp(2.75rem,min(11vw,15svh),8.5rem)] leading-[0.9] tracking-[-0.035em] text-ink"
           >
             {NAME_LINES.map((line, li) => (
               <span key={line} className="block" aria-hidden="true">
@@ -245,7 +245,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           </h1>
 
           <motion.div
-            className="intro-lift mt-7 max-w-[34rem]"
+            className="intro-lift mt-[clamp(0.75rem,2.6svh,1.75rem)] max-w-[34rem]"
             custom={T.role}
             variants={lift}
             animate={controls}
@@ -254,7 +254,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           </motion.div>
 
           <motion.div
-            className="intro-fade mt-9 flex flex-wrap items-center gap-3"
+            className="intro-fade mt-[clamp(1rem,3.4svh,2.25rem)] flex flex-wrap items-center gap-3"
             custom={T.cta}
             variants={fade}
             animate={controls}
@@ -289,7 +289,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           </motion.div>
 
           <motion.dl
-            className="intro-fade mt-12 grid max-w-[34rem] grid-cols-3 gap-4 border-t border-line pt-5"
+            className="intro-fade mt-[clamp(1.25rem,4svh,3rem)] grid max-w-[34rem] grid-cols-3 gap-4 border-t border-line pt-[clamp(0.75rem,2svh,1.25rem)]"
             custom={T.stats}
             variants={fade}
             animate={controls}
@@ -316,7 +316,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
           variants={fade}
           animate={controls}
         >
-          <div className="rounded-3xl border border-line bg-surface/90 p-6 shadow-[var(--e2)]">
+          <div className="rounded-3xl border border-line bg-surface/90 p-4 shadow-[var(--e2)] sm:p-6">
             <div className="flex items-center justify-between font-mono text-[0.6875rem] uppercase tracking-[0.14em]">
               <span className="flex items-center gap-2 text-ink-2">
                 <span className="relative flex h-2 w-2" aria-hidden="true">
@@ -328,7 +328,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
               <span className="text-ink-3 tabular-nums">{time ? `${time} · GMT+8` : "GMT+8"}</span>
             </div>
 
-            <div className="mt-5 flex items-center gap-4">
+            <div className="mt-4 flex items-center gap-4 sm:mt-5">
               <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-line">
                 <Image src="/jake.jpg" alt="Jake Neverida" fill sizes="56px" priority className="object-cover" />
               </div>
@@ -341,23 +341,27 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
               </div>
             </div>
 
-            <div className="mt-5 border-t border-line pt-5">
-              <Dual value={copy.hero.now} className="text-sm leading-relaxed text-ink-2" />
-            </div>
+            {/* Phones keep just the status strip above so the whole hero fits
+                one screen; the rest returns from the sm breakpoint up. */}
+            <div className="hidden sm:block">
+              <div className="mt-5 border-t border-line pt-5">
+                <Dual value={copy.hero.now} className="text-sm leading-relaxed text-ink-2" />
+              </div>
 
-            <GitHubActivity />
+              <GitHubActivity />
 
-            <div className="mt-5 flex items-center gap-2">
-              <a
-                href="https://github.com/neverida-jk"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => soundFx.playClick(900)}
-                className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-mono text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
-              >
-                <SiGithub className="h-3.5 w-3.5" aria-hidden="true" />
-                github.com/neverida-jk
-              </a>
+              <div className="mt-5 flex items-center gap-2">
+                <a
+                  href="https://github.com/neverida-jk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => soundFx.playClick(900)}
+                  className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-mono text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit"
+                >
+                  <SiGithub className="h-3.5 w-3.5" aria-hidden="true" />
+                  github.com/neverida-jk
+                </a>
+              </div>
             </div>
           </div>
         </motion.aside>

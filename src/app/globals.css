@@ -186,6 +186,11 @@ body {
   }
 }
 
+/* Cursor ring turns slowly, like a dial (Cursor.tsx). */
+@keyframes cursor-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Closing time watermark (TimeGhost.tsx): blinking colon, minute-long line. */
 @keyframes colon-blink {
   0%, 100% { opacity: 1; }
