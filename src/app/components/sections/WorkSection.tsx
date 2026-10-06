@@ -22,8 +22,6 @@ const RESUME_AFTER_MS = 5000;
 const LOOPS = projects.length > 1;
 const CAROUSEL = LOOPS ? [...projects, projects[0]] : projects;
 
-const fmtMetres = (m: number) => `${m.toLocaleString("en-US")} m`;
-
 function Hotspots({ project }: { project: Project }) {
   const [open, setOpen] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
@@ -128,12 +126,7 @@ function CaseStudy({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">
-            <span>{project.category}</span>
-            <span className="normal-case text-summit" title={copy.work.elevationTitle}>
-              {fmtMetres(project.elevation)}
-            </span>
-          </p>
+          <p className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{project.category}</p>
           <h3 id="case-title" className="mt-2 font-display text-h2 leading-[1.05] tracking-[-0.02em] text-ink">
             {project.title}
           </h3>
@@ -502,12 +495,7 @@ export default function WorkSection() {
               </button>
 
               <div className="p-5 sm:p-6">
-                <p className="flex items-center justify-between gap-3 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">
-                  <span className="truncate">{p.category}</span>
-                  <span className="shrink-0 normal-case text-summit" title={copy.work.elevationTitle}>
-                    {fmtMetres(p.elevation)}
-                  </span>
-                </p>
+                <p className="truncate font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-3">{p.category}</p>
                 <h3 className="mt-3 font-display text-[clamp(1.75rem,3vw,2.25rem)] leading-[1.05] tracking-[-0.02em] text-ink">
                   {p.title}
                 </h3>

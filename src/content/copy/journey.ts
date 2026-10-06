@@ -24,11 +24,11 @@ export type Milestone = {
 // Verified facts only (ASCENT_MASTERPLAN.md §9.1). Note: "Iskolar ng Bayan"
 // is what every UP student is called, not an award — never present it as one.
 export const journey = {
-  eyebrow: "The route",
+  eyebrow: "Then",
   title: "How I got here",
   intro: {
-    plain: "Four years of study, one internship, and now a job making sure software holds up.",
-    technical: "2022 → present · BS CS (UPLB) → SWE intern (Limitless Lab) → QA Analyst (Vertere).",
+    plain: "Four years of study. One internship. Now QA at Vertere.",
+    technical: "UPLB → Limitless Lab → Vertere.",
   } satisfies Dual,
   detailsLabel: "Details",
 
@@ -41,8 +41,8 @@ export const journey = {
       org: "University of the Philippines Los Baños",
       logo: "/uplb.png",
       body: {
-        plain: "Began a Computer Science degree at UP Los Baños.",
-        technical: "BS CS — algorithms & complexity, data structures, databases, operating systems.",
+        plain: "Started a Computer Science degree at UP Los Baños.",
+        technical: "Algorithms, data structures, databases, operating systems.",
       },
     },
     {
@@ -53,16 +53,15 @@ export const journey = {
       org: "Limitless Lab",
       logo: "/limitlesslab.jpeg",
       body: {
-        plain: "My first professional team — building real features alongside working engineers.",
-        technical: "React/Next.js feature work, REST API integration, component libraries, agile sprints.",
+        plain: "My first engineering team. I built real features next to working engineers.",
+        technical: "React, Next.js, REST APIs, agile sprints.",
       },
       detail: {
         heading: "Software Engineer Intern · Limitless Lab",
         period: "May 2025 – July 2025",
         summary: {
-          plain: "Built parts of real web applications with a cross-functional engineering team.",
-          technical:
-            "React, Next.js and TypeScript; refactored UI components for accessibility, responsiveness and state management.",
+          plain: "I built parts of real web apps with a cross-functional team.",
+          technical: "React, Next.js, TypeScript. Refactored UI for accessibility, responsiveness and state.",
         },
         points: [
           "Built modular, accessible React component libraries and client views",
@@ -79,18 +78,18 @@ export const journey = {
       org: "BS Computer Science · UP Los Baños",
       logo: "/uplb.png",
       body: {
-        plain: "Graduated with a 1.95 GWA — on UP's scale, 1.00 is the top mark.",
-        technical: "BS Computer Science, 2022 – 2026 · GWA 1.95 (UP grading scale, 1.00 highest).",
+        plain: "Graduated with a 1.95 GWA. On UP's scale, 1.00 is best.",
+        technical: "BS Computer Science, 2022 – 2026. GWA 1.95.",
       },
       detail: {
         heading: "BS Computer Science · UP Los Baños",
         period: "2022 – 2026",
         summary: {
-          plain: "A four-year degree that paired computer science theory with building real software.",
-          technical: "Cumulative GWA 1.95 on UP's 1.00–5.00 scale (1.00 highest).",
+          plain: "Four years of theory, plus building real software.",
+          technical: "GWA 1.95 on UP's 1.00–5.00 scale (1.00 highest).",
         },
         points: [
-          "Algorithms & complexity — asymptotic analysis, graph algorithms",
+          "Algorithms & complexity: asymptotic analysis, graph algorithms",
           "Data structures & object-oriented design",
           "Database design, query optimization & system design",
           "Operating systems, memory models & concurrency",
@@ -106,16 +105,15 @@ export const journey = {
       org: "Vertere Global Solutions Inc.",
       current: true,
       body: {
-        plain: "Now I make sure enterprise software works before it reaches the people who depend on it.",
-        technical: "Test planning, regression suites, defect lifecycle & root-cause isolation, release gating.",
+        plain: "I test enterprise software so problems surface before release.",
+        technical: "Test plans, regression suites, defect triage, release gating.",
       },
       detail: {
         heading: "QA Analyst · Vertere Global Solutions Inc.",
         period: "June 2026 – present",
         summary: {
-          plain: "I test enterprise software so problems are caught before release, not after.",
-          technical:
-            "Test case authoring, manual and automated regression suites, defect isolation & root-cause analysis, release gating.",
+          plain: "I find problems before users do.",
+          technical: "Test cases, manual and automated regression, root-cause analysis, release gating.",
         },
         points: [
           "Author test plans and regression suites",

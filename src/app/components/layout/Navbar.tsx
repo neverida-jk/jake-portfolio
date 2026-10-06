@@ -81,7 +81,6 @@ export default function Navbar({
     { id: "journey", label: "Journey" },
     { id: "work", label: "Work" },
     { id: "toolkit", label: "Skills" },
-    { id: "approach", label: "Approach" },
     { id: "contact", label: "Contact" },
   ];
 

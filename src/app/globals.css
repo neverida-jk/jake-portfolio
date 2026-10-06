@@ -160,7 +160,6 @@ html {
 }
 
 body {
-  /* Anchors the full-length sky gradient (AscentSky) to the document. */
   position: relative;
   background: var(--color-canvas);
   color: var(--color-ink);
@@ -180,10 +179,17 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Dial ticks fan in (opacity only, so JS can still resize ticks on hover). */
+@keyframes dial-tick {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Hero intro choreography (§5.6). These start hidden only when JS is
@@ -227,9 +233,9 @@ body {
    turns every existing `text-ink`/`bg-surface`/etc. utility into a print-safe
    style for free, instead of writing a parallel set of print overrides. Only
    the chrome that has no place on paper is hidden explicitly, via
-   [data-print-hide] (added to AscentSky, Altimeter, Navbar, Cursor,
-   Contours, Sheet/CommandPalette/TerminalSandbox overlays, the Beyond
-   terminal, and Journey's desktop-only story view). */
+   [data-print-hide] (added to TimeField, Chronometer, Dial, Navbar, Cursor,
+   Sheet/CommandPalette/TerminalSandbox overlays, the Beyond terminal, and
+   Journey's desktop-only story view). */
 @media print {
   @page {
     margin: 18mm;

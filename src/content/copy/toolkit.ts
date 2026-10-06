@@ -4,16 +4,15 @@ import type { Dual } from "./types";
 // that's the whole field-note budget for this section.
 export const toolkit: Record<"build" | "test" | "ship", Dual> = {
   build: {
-    plain: "I build the interfaces and systems that make an idea usable.",
-    technical: "React components, Node services, and a MongoDB schema, sharing one set of TypeScript contracts end to end.",
+    plain: "I build interfaces and the systems behind them.",
+    technical: "React, Node and MongoDB, with one set of TypeScript types end to end.",
   },
-  // Deliberately not the hero's line — that sentence is used once, up top.
   test: {
     plain: "I find what breaks before your users do.",
-    technical: "Regression suites, defect lifecycle management, and release gating for enterprise applications.",
+    technical: "Regression suites, defect triage, release gating.",
   },
   ship: {
-    plain: "I get the thing in front of people, and keep it there.",
-    technical: "Git-based CI through GitHub Actions, containerized with Docker, deployed to AWS and Vercel.",
+    plain: "I get it in front of people and keep it running.",
+    technical: "GitHub Actions CI, Docker, AWS and Vercel.",
   },
 };

@@ -2,11 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useAnimationControls } from "framer-motion";
-import { contourRings } from "./Contours";
+import { manilaAngles, manilaClockText } from "@/lib/manilaClock";
 
-// The opening (first visit per session, ~2.4s): a summit point ignites, the
-// mountain maps itself in contour lines, the altitude races to 2,954 m, and
-// the camera flies through the summit into the site.
+// The opening (first visit per session, ~2.4s): a dial draws itself, the
+// hands spin through the years from 2022 to now, and the readout lands on the
+// real time in Makati before the camera flies through the dial into the site.
 //
 // Visibility is decided before first paint by the inline script in
 // layout.tsx: it adds `intro-seen` to <html> for repeat visits and for
@@ -14,25 +14,30 @@ import { contourRings } from "./Contours";
 // is server-rendered (no flash of the page before it), never shown to
 // people who shouldn't see it, and has a CSS failsafe if JS never runs.
 //
-// Transform/opacity only (plus the rings' stroke draw) — no filters, no
+// Transform/opacity only (plus the rim's stroke draw) — no filters, no
 // blend modes — so it stays at 60fps on ordinary phones.
 
 export const INTRO_KEY = "jake.intro.seen";
 export const INTRO_REVEAL_EVENT = "ascent:intro-reveal";
 
-const SUMMIT = 2954;
-const RINGS = contourRings({ seed: 2954, rings: 10, cx: 500, cy: 500, r0: 30, dr: 27, points: 44 });
-const DRAW_END = 1.45; // s — rings finished, counter at the summit
+const FIRST_YEAR = 2022;
+const LAST_YEAR = 2026;
+const TURNS = 5; // minute-hand revolutions during the time-lapse
+const DRAW_END = 1.45; // s — hands have landed on the real time
 const ZOOM_AT = 1.7; // s — fly-through begins
+const TICKS = Array.from({ length: 60 }, (_, i) => i);
 
 const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+const rot = (deg: number) => `rotate(${deg.toFixed(2)} 500 500)`;
 
 export default function IntroSequence() {
   const [phase, setPhase] = useState<"run" | "done">("run");
-  const [summit, setSummit] = useState(false);
   const stage = useAnimationControls();
   const veil = useAnimationControls();
-  const counterRef = useRef<HTMLSpanElement>(null);
+  const yearRef = useRef<HTMLSpanElement>(null);
+  const minRef = useRef<SVGGElement>(null);
+  const hourRef = useRef<SVGGElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
   const zooming = useRef(false);
 
   useEffect(() => {
@@ -42,17 +47,25 @@ export default function IntroSequence() {
       return;
     }
 
+    const real = manilaAngles();
+    const timeText = manilaClockText();
     let raf = 0;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const reveal = () => window.dispatchEvent(new Event(INTRO_REVEAL_EVENT));
+
+    const land = () => {
+      if (yearRef.current) yearRef.current.textContent = String(LAST_YEAR);
+      minRef.current?.setAttribute("transform", rot(real.minute));
+      hourRef.current?.setAttribute("transform", rot(real.hour));
+      if (labelRef.current) labelRef.current.textContent = `Now · ${timeText} · Makati`;
+    };
 
     const zoomThrough = async (fast: boolean) => {
       if (zooming.current) return;
       zooming.current = true;
       timers.forEach(clearTimeout);
       cancelAnimationFrame(raf);
-      if (counterRef.current) counterRef.current.textContent = SUMMIT.toLocaleString("en-US");
-      setSummit(true);
+      land();
       sessionStorage.setItem(INTRO_KEY, "1");
       reveal(); // the hero starts rising as we fly in
       const d = fast ? 0.35 : 0.7;
@@ -70,13 +83,19 @@ export default function IntroSequence() {
       return;
     }
 
-    // The climb: altitude counter, eased, written straight to the DOM.
+    // The time-lapse: hands race around and land exactly on the real time,
+    // the year ticks up with them. Written straight to the DOM.
+    const endMinute = real.minute + 360 * TURNS;
     const start = performance.now() + 150;
     const tick = (now: number) => {
       const t = Math.min(1, Math.max(0, (now - start) / ((DRAW_END - 0.15) * 1000)));
-      if (counterRef.current) counterRef.current.textContent = Math.round(easeOutExpo(t) * SUMMIT).toLocaleString("en-US");
+      const e = easeOutExpo(t);
+      const minute = endMinute * e;
+      minRef.current?.setAttribute("transform", rot(minute));
+      hourRef.current?.setAttribute("transform", rot(real.hour - (endMinute - minute) / 12));
+      if (yearRef.current) yearRef.current.textContent = String(Math.floor(FIRST_YEAR + (LAST_YEAR - FIRST_YEAR) * e));
       if (t < 1) raf = requestAnimationFrame(tick);
-      else setSummit(true);
+      else land();
     };
     raf = requestAnimationFrame(tick);
 
@@ -113,51 +132,61 @@ export default function IntroSequence() {
         style={{ willChange: "transform, opacity" }}
       >
         <div className="relative h-[min(78vmin,540px)] w-[min(78vmin,540px)]">
-          {/* Soft glow behind the peak — a gradient, not a blur filter. */}
+          {/* Soft glow behind the dial — a gradient, not a blur filter. */}
           <motion.div
-            className="absolute inset-[18%] rounded-full"
+            className="absolute inset-[14%] rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(255,180,84,0.30) 0%, rgba(255,180,84,0.10) 35%, rgba(255,180,84,0) 70%)",
+                "radial-gradient(circle, rgba(255,180,84,0.22) 0%, rgba(255,180,84,0.07) 40%, rgba(255,180,84,0) 70%)",
             }}
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1, transition: { duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] } }}
           />
 
           <svg viewBox="0 0 1000 1000" className="absolute inset-0 h-full w-full" fill="none">
-            {RINGS.map((d, i) => (
-              <motion.path
-                key={i}
-                d={d}
-                stroke={i === 0 ? "var(--color-summit)" : "var(--color-ink-2)"}
-                strokeOpacity={i === 0 ? 0.9 : Math.max(0.1, 0.5 - i * 0.04)}
-                strokeWidth={i === 0 ? 2.4 : 1.4}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.95, delay: 0.12 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-              />
-            ))}
-            {/* The summit point */}
             <motion.circle
-              cx="500"
-              cy="500"
-              r="7"
-              fill="var(--color-summit)"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: [0, 1.6, 1], opacity: 1 }}
-              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              style={{ transformOrigin: "500px 500px" }}
+              cx={500}
+              cy={500}
+              r={470}
+              stroke="var(--color-ink-2)"
+              strokeOpacity={0.7}
+              strokeWidth={2}
+              transform="rotate(-90 500 500)"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 1.1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             />
+            {TICKS.map((i) => (
+              <g key={i} transform={rot(i * 6)}>
+                <line
+                  x1={500}
+                  y1={30}
+                  x2={500}
+                  y2={i % 5 === 0 ? 70 : 50}
+                  stroke="var(--color-ink-2)"
+                  strokeOpacity={i % 5 === 0 ? 0.9 : 0.45}
+                  strokeWidth={i % 5 === 0 ? 3 : 1.6}
+                  strokeLinecap="round"
+                  style={{ animation: "dial-tick 0.4s ease-out backwards", animationDelay: `${0.15 + i * 0.012}s` }}
+                />
+              </g>
+            ))}
+            <g ref={hourRef} transform={rot(0)}>
+              <line x1={500} y1={500} x2={500} y2={300} stroke="var(--color-ink)" strokeWidth={10} strokeLinecap="round" />
+            </g>
+            <g ref={minRef} transform={rot(0)}>
+              <line x1={500} y1={500} x2={500} y2={150} stroke="var(--color-summit)" strokeWidth={5} strokeLinecap="round" />
+            </g>
+            <circle cx={500} cy={500} r={12} fill="var(--color-summit)" />
           </svg>
         </div>
 
-        <div className="-mt-4 flex flex-col items-center">
-          <span className="font-mono text-[0.6875rem] uppercase tracking-[0.28em] text-ink-3">
-            {summit ? "Summit · Mt. Apo" : "Altitude"}
+        <div className="-mt-6 flex flex-col items-center">
+          <span ref={labelRef} className="font-mono text-[0.6875rem] uppercase tracking-[0.28em] text-ink-3">
+            Time
           </span>
           <span className="mt-2 font-display text-[clamp(3.5rem,11vw,6.5rem)] leading-none tracking-[-0.03em] text-ink tabular-nums">
-            <span ref={counterRef}>0</span>
-            <span className="ml-2 text-[0.4em] text-summit">m</span>
+            <span ref={yearRef}>{FIRST_YEAR}</span>
           </span>
         </div>
       </motion.div>

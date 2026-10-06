@@ -1,49 +1,42 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import {
-  motion,
-  useMotionValueEvent,
-  useScroll,
-  useSpring,
-} from "framer-motion";
-import { useReducedMotion } from "@/lib/useReducedMotion";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { soundFx } from "@/util/sound";
 import { SECTION_IDS, useActiveSection, type SectionId } from "@/lib/useActiveSection";
-
-const SUMMIT_METRES = 2954;
 
 const SECTION_LABELS: Record<SectionId, string> = {
   hero: "About",
   journey: "Journey",
   work: "Work",
   toolkit: "Skills",
-  approach: "Approach",
   beyond: "Beyond",
   contact: "Contact",
+};
+
+// The page reads as a timeline; the rail says where on it you are.
+const ERA: Record<SectionId, string> = {
+  hero: "Now",
+  journey: "Then",
+  work: "Shipped",
+  toolkit: "Tools",
+  beyond: "Off the clock",
+  contact: "Next",
 };
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
 
-// Fixed altitude rail (§5.3) — desktop only; mobile gets a 2px top progress
-// bar instead (rendered by this same component, toggled via Tailwind
-// breakpoints so there's exactly one scroll subscription either way).
-export default function Altimeter() {
-  const reduceMotion = useReducedMotion();
+// Fixed rail (desktop): a small dial whose hand makes exactly one turn from
+// the top of the page to the bottom, the era you're in, and a tick per
+// section. Mobile gets a 2px top progress bar instead (same component, one
+// scroll subscription).
+export default function Chronometer() {
   const { scrollYProgress } = useScroll();
-  // Reduced motion: track raw scroll directly — no spring lag/overshoot —
-  // rather than freezing the readout, since this is a functional progress
-  // indicator, not ambient motion.
-  // Raw scroll, not the spring: the rail is a progress indicator, and a
-  // spring made it visibly trail behind the scroll.
-  const progress = scrollYProgress;
   const activeId = useActiveSection();
   const [offsets, setOffsets] = useState<Record<string, number>>({});
-  // The readout is written straight to the DOM: a React state update per
-  // scroll frame re-rendered the whole rail (and its layout-animated dots).
-  const readoutRef = useRef<HTMLSpanElement>(null);
+  const handRef = useRef<SVGLineElement>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const lastWaypoint = useRef<string | null>(null);
 
@@ -54,17 +47,14 @@ export default function Altimeter() {
       const next: Record<string, number> = {};
       SECTION_IDS.forEach((id) => {
         const el = document.getElementById(id);
-        // Document-relative top, not offsetTop (which is relative to the
-        // nearest positioned ancestor).
         if (el) next[id] = Math.min(1, Math.max(0, (el.getBoundingClientRect().top + window.scrollY) / max));
       });
       setOffsets(next);
     };
 
     measure();
-    // Re-measure whenever the page's height changes (images, fonts, tall
-    // sections settling), not just on window resize — otherwise the ticks
-    // drift away from the sections they mark.
+    // Re-measure when the page's height changes (images, fonts, tall
+    // sections settling), or the ticks drift away from their sections.
     const ro = new ResizeObserver(measure);
     ro.observe(document.body);
     window.addEventListener("resize", measure);
@@ -74,8 +64,8 @@ export default function Altimeter() {
     };
   }, []);
 
-  useMotionValueEvent(progress, "change", (latest) => {
-    if (readoutRef.current) readoutRef.current.textContent = `${Math.round(latest * SUMMIT_METRES).toLocaleString("en-US")} m`;
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    handRef.current?.setAttribute("transform", `rotate(${(p * 360).toFixed(1)} 22 22)`);
   });
 
   useEffect(() => {
@@ -92,26 +82,27 @@ export default function Altimeter() {
     <>
       {/* Mobile: slim top progress bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-[2px] bg-line" aria-hidden="true" data-print-hide>
-        <motion.div
-          className="h-full bg-summit origin-left"
-          style={{ scaleX: progress }}
-        />
+        <motion.div className="h-full bg-summit origin-left" style={{ scaleX: scrollYProgress }} />
       </div>
 
-      {/* Desktop: vertical altitude rail */}
+      {/* Desktop: dial + vertical rail */}
       <div
-        className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-3"
+        className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2"
         aria-hidden="true"
         data-print-hide
       >
-        <span ref={readoutRef} className="font-mono text-[11px] text-ink-2 tabular-nums">
-          0 m
-        </span>
+        <svg width={44} height={44} viewBox="0 0 44 44" fill="none">
+          <circle cx={22} cy={22} r={20} stroke="var(--color-line)" strokeWidth={1.2} />
+          <circle cx={22} cy={22} r={16} stroke="var(--color-ink-3)" strokeWidth={4} strokeDasharray="1 7.38" />
+          <line ref={handRef} x1={22} y1={22} x2={22} y2={7} stroke="var(--color-summit)" strokeWidth={2} strokeLinecap="round" transform="rotate(0 22 22)" />
+          <circle cx={22} cy={22} r={2.4} fill="var(--color-summit)" />
+        </svg>
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2">{ERA[activeId]}</span>
 
-        <div className="relative w-px h-56 bg-line">
+        <div className="relative mt-1 h-52 w-px bg-line">
           <motion.div
             className="absolute top-0 left-0 w-px bg-summit origin-top"
-            style={{ height: "100%", scaleY: progress }}
+            style={{ height: "100%", scaleY: scrollYProgress }}
           />
 
           {SECTION_IDS.map((id) => {
@@ -130,7 +121,7 @@ export default function Altimeter() {
                 tabIndex={-1}
               >
                 <motion.span
-                  layoutId={isActive ? "altimeterActive" : undefined}
+                  layoutId={isActive ? "chronometerActive" : undefined}
                   className={`block rounded-full ${isActive ? "bg-summit ring-2 ring-summit/40" : "bg-ink-3"}`}
                   animate={{ width: isActive ? 9 : 4, height: isActive ? 9 : 4 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}

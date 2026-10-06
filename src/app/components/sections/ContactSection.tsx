@@ -1,18 +1,17 @@
 "use client";
 
-// Summit / Contact (§6.7 / Phase 7). The sun has finished rising by the
-// time this section is in view; a gold wash sweeps once, the headline
-// lands, and a small flag plants at the bottom of the section.
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+// Next / Contact (§6.7 / Phase 7). A gold wash sweeps once as the section
+// arrives, the headline lands, and the page ends on the live time in Makati.
+import React, { useCallback, useState } from "react";
+import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { soundFx } from "@/util/sound";
 import { copy } from "@/content/copy";
 import Dual from "@/components/system/Dual";
-import { spring } from "@/lib/motion";
-import { LuCopy, LuCheck, LuMail, LuArrowUpRight } from "react-icons/lu";
+import { LuCopy, LuCheck, LuMail, LuArrowUpRight, LuPrinter } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
 import LoadTime from "../system/LoadTime";
+import MakatiTime from "../system/MakatiTime";
 
 interface ContactSectionProps {
   onCopyEmail?: () => void;
@@ -38,16 +37,6 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const reduceMotion = useReducedMotion();
-
-  const headingRef = useRef<HTMLDivElement>(null);
-  const headingInView = useInView(headingRef, { once: true, margin: "-30% 0px" });
-
-  useEffect(() => {
-    if (!headingInView) return;
-    // Guarded: `summit` doesn't exist on the sound system yet (Phase 8
-    // extends util/sound.ts with the full palette). This no-ops until then.
-    (soundFx as unknown as { summit?: () => void }).summit?.();
-  }, [headingInView]);
 
   const handleCopy = useCallback(() => {
     soundFx.playSuccess();
@@ -83,7 +72,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
       aria-labelledby="contact-heading"
       className="reveal-item relative px-4 sm:px-6 pt-8 sm:pt-12 max-w-4xl mx-auto pb-16"
     >
-      {/* Gold light wash, once, on entering the summit */}
+      {/* Gold light wash, once, on arriving */}
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(120deg,transparent,color-mix(in_srgb,var(--color-summit)_20%,transparent),transparent)] bg-[length:220%_100%]"
@@ -93,9 +82,9 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
         transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
       />
 
-      <div ref={headingRef} className="mb-8 text-center">
+      <div className="mb-8 text-center">
         <h2 id="contact-heading" className="text-h1 font-display text-ink tracking-tight">
-          You made it to <span className="italic text-summit">the top.</span>
+          Time to <span className="italic text-summit">talk.</span>
         </h2>
         <Dual
           value={copy.contact.invite}
@@ -138,6 +127,21 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
             </div>
             <LuArrowUpRight className="w-3.5 h-3.5" />
           </a>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFx.playClick(900);
+              window.print();
+            }}
+            className="flex w-full items-center justify-between p-2.5 rounded-xl bg-raised/40 hover:bg-raised text-ink-2 hover:text-ink border border-line transition-colors text-xs font-mono cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <LuPrinter className="w-3.5 h-3.5" />
+              <span>Print or save résumé</span>
+            </div>
+            <LuArrowUpRight className="w-3.5 h-3.5" />
+          </button>
 
           <Dual value={copy.contact.availability} className="text-[11px] font-mono text-ink-3 pt-1" />
         </div>
@@ -222,19 +226,7 @@ export default function ContactSection({ onCopyEmail }: ContactSectionProps) {
         </div>
       </div>
 
-      {/* Summit flag */}
-      <motion.svg
-        aria-hidden="true"
-        viewBox="0 0 40 56"
-        className="w-6 h-8 mx-auto mt-12 text-summit"
-        initial={{ scale: 0, rotate: -25, opacity: 0 }}
-        whileInView={{ scale: 1, rotate: 0, opacity: 1 }}
-        viewport={{ once: true, margin: "-15% 0px" }}
-        transition={reduceMotion ? { duration: 0.2 } : spring.snappy}
-      >
-        <line x1="4" y1="2" x2="4" y2="54" stroke="currentColor" strokeWidth="2" />
-        <path d="M4 4 L28 12 L4 20 Z" fill="currentColor" />
-      </motion.svg>
+      <MakatiTime className="mt-12" />
 
       <footer className="mt-10 pt-6 border-t border-line text-center text-xs font-mono text-ink-2">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2">

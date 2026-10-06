@@ -115,7 +115,7 @@ export default function TerminalSandbox({
               <p className="text-ink font-semibold">Jake Neverida</p>
               <p className="text-moss">Software Engineer, full-stack.</p>
               <p>QA Analyst @ Vertere Global Solutions Inc.</p>
-              <p className="text-ink-2">Ships production web systems in Next.js, React, and TypeScript — and tests them properly.</p>
+              <p className="text-ink-2">Ships production web systems in Next.js, React and TypeScript. Tests them properly.</p>
             </div>
           );
           break;

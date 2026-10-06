@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ToolFocusProvider } from "./components/system/ToolFocusProvider";
-import AscentSky from "./components/system/AscentSky";
-import Altimeter from "./components/system/Altimeter";
+import TimeField from "./components/system/TimeField";
+import Chronometer from "./components/system/Chronometer";
 import SystemOverlays from "./components/system/SystemOverlays";
 import IntroSequence from "./components/system/IntroSequence";
 import "./globals.css";
@@ -93,9 +93,9 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <AscentSky />
+        <TimeField />
         <ToolFocusProvider>{children}</ToolFocusProvider>
-        <Altimeter />
+        <Chronometer />
         <SystemOverlays />
         <IntroSequence />
       </body>

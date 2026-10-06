@@ -1,22 +1,22 @@
 import type { Dual } from "./types";
 
 export const hero = {
-  eyebrow: "Base camp — Makati, Philippines",
-  coords: "14°N 121°E",
+  eyebrow: "Makati, Philippines",
+  coords: "14.55°N 121.02°E",
 
   role: {
-    plain: "I'm a software engineer first — testing just taught me how things actually break.",
-    technical: "Software Engineer — full-stack delivery end to end, QA Analyst by trade.",
+    plain: "I build software, then try to break it.",
+    technical: "Software Engineer. QA Analyst at Vertere.",
   } satisfies Dual,
 
   status: {
     plain: "QA Analyst at Vertere Global Solutions",
-    technical: "QA @ Vertere Global Solutions Inc. · June 2026 – present",
+    technical: "QA Analyst · June 2026 to now",
   } satisfies Dual,
 
   now: {
-    plain: "Testing enterprise software by day, building my own products on the side.",
-    technical: "Release gating at Vertere; side projects on Next.js 15 + TypeScript.",
+    plain: "Testing enterprise software by day. Building my own products on the side.",
+    technical: "Side projects in Next.js 15 and TypeScript.",
   } satisfies Dual,
 
   cta: {
@@ -25,10 +25,10 @@ export const hero = {
     copied: "Copied",
   },
 
-  scrollCue: "Scroll to climb",
+  scrollCue: "Scroll to turn the clock",
 
   stats: {
-    gwa: { value: "1.95", label: "GWA — 1.00 is the top mark" },
+    gwa: { value: "1.95", label: "GWA (1.00 is best)" },
     live: { label: "products live" },
     grad: { value: "’26", label: "UPLB Computer Science" },
   },

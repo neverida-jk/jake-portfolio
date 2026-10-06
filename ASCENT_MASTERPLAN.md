@@ -1,5 +1,26 @@
 # ASCENT — Master Technical Plan for jake-portfolio
 
+> ## Concept change (2026-10): mountains → TIME & PHILOSOPHIES ("Chronos")
+> The climb/summit/altitude concept below is **superseded**. Everything structural in this doc
+> (sections, Dual voice, perf/a11y contract, one-file project data, no mode toggles, no clutter)
+> still holds; only the metaphor changed. What replaced it:
+> - **Motif:** the dial. Roman-numeral clock face, hairline ticks, hands driven by live Manila time
+>   (UTC+8). Scrolling spins the hands (velocity warp); they swing back to real time when you stop.
+> - **Spine:** Now (hero) → Then (journey) → Shipped (work) → Toolkit → (What people say) → Beyond → Next (contact).
+> - **Time and philosophy are the theme (design, motion, voice), never content.** No philosopher names,
+>   no philosophy section, no per-idea artwork. The old "How I Work" section is gone (it repeated the
+>   Toolkit; a "Bugs I've found" defect log was tried and rejected because non-technical visitors don't
+>   care). A "What people say" section exists but stays hidden until src/content/copy/testimonials.ts holds
+>   real quotes from real people who agreed to be quoted. Never write or invent one.
+> - **Voice:** write as someone who does the whole lifecycle. Do not announce "I'm an engineer" or
+>   "I'm a QA"; the voice carries it.
+> - **Copy rule:** direct and concise; one read should be enough, for technical and non-technical visitors
+>   alike. Plain line first, one short mono note beneath. No placeholder text on the live site.
+> - **Gone:** hiker, altitude readout, elevation badges, contour map, sunrise sky. Mountain climbing stays
+>   as a *hobby fact* (Beyond the Resume, Tropa), not as the site's metaphor.
+> - Token names (`summit`, `canvas`, …) were kept to avoid churn; `summit` gold now reads as "the hand".
+> Old sections below still describe layout/phases accurately; read "climb/altitude" as "time/dial".
+
 > **For the executing model.** This is a complete redesign spec. Read §0 → §3 before writing any code.
 > Work in phases (§11). Every phase has acceptance criteria — do not advance until they pass.
 > The current site is competent but generic. The goal is *memorable*. Ship craft, not features.

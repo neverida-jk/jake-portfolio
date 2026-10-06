@@ -11,7 +11,6 @@ import {
   LuRoute,
   LuFolder,
   LuWrench,
-  LuCompass,
   LuTerminal as LuTerminalIcon,
   LuMail,
   LuCopy,
@@ -19,7 +18,7 @@ import {
   LuVolumeX,
   LuPrinter,
   LuFlag,
-  LuMountainSnow,
+  LuClock,
 } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
 
@@ -148,13 +147,12 @@ export default function CommandPalette({
 
   const commands: CommandItem[] = useMemo(() => {
     const sectionCmds: CommandItem[] = [
-      { id: "nav-hero", title: "Base Camp — About", category: "Jump to", icon: <LuUser className="h-4 w-4" />, action: () => scrollToSection("hero") },
-      { id: "nav-journey", title: "The Route — Journey", category: "Jump to", icon: <LuRoute className="h-4 w-4" />, action: () => scrollToSection("journey") },
-      { id: "nav-work", title: "Expeditions — Work", category: "Jump to", icon: <LuFolder className="h-4 w-4" />, action: () => scrollToSection("work") },
+      { id: "nav-hero", title: "About — Now", category: "Jump to", icon: <LuUser className="h-4 w-4" />, action: () => scrollToSection("hero") },
+      { id: "nav-journey", title: "Journey — Then", category: "Jump to", icon: <LuRoute className="h-4 w-4" />, action: () => scrollToSection("journey") },
+      { id: "nav-work", title: "Work — Shipped", category: "Jump to", icon: <LuFolder className="h-4 w-4" />, action: () => scrollToSection("work") },
       { id: "nav-toolkit", title: "The Toolkit — Skills", category: "Jump to", icon: <LuWrench className="h-4 w-4" />, action: () => scrollToSection("toolkit") },
-      { id: "nav-approach", title: "How I Work — Approach", category: "Jump to", icon: <LuCompass className="h-4 w-4" />, action: () => scrollToSection("approach") },
       { id: "nav-beyond", title: "Beyond the Resume", category: "Jump to", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-      { id: "nav-contact", title: "Summit — Contact", category: "Jump to", icon: <LuMail className="h-4 w-4" />, action: () => scrollToSection("contact") },
+      { id: "nav-contact", title: "Contact — Next", category: "Jump to", icon: <LuMail className="h-4 w-4" />, action: () => scrollToSection("contact") },
     ];
 
     const projectCmds: CommandItem[] = projects.map((p) => ({
@@ -181,9 +179,8 @@ export default function CommandPalette({
     const beyondCmds: CommandItem[] = [
       { id: "beyond-story", title: "Beyond: My Story", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
       { id: "beyond-hobbies", title: "Beyond: Hobbies", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-      { id: "beyond-philosophy", title: "Beyond: Philosophy", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
+      { id: "beyond-motto", title: "Beyond: Motto", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
       { id: "beyond-whyqa", title: "Beyond: Why QA?", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
-      { id: "beyond-whatsnext", title: "Beyond: What's next?", category: "Beyond the resume", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => scrollToSection("beyond") },
     ];
 
     const actionCmds: CommandItem[] = [
@@ -200,7 +197,7 @@ export default function CommandPalette({
       { id: "act-github", title: "Open GitHub profile", category: "Actions", icon: <SiGithub className="h-4 w-4" />, action: () => window.open("https://github.com/neverida-jk", "_blank", "noopener,noreferrer") },
       { id: "act-terminal", title: "Open terminal", category: "Actions", icon: <LuTerminalIcon className="h-4 w-4" />, action: () => onOpenTerminal?.() },
       { id: "act-print", title: "Print résumé", category: "Actions", icon: <LuPrinter className="h-4 w-4" />, action: () => window.print() },
-      { id: "act-summit", title: "Jump to summit", category: "Actions", icon: <LuFlag className="h-4 w-4" />, action: () => scrollToSection("contact") },
+      { id: "act-end", title: "Jump to the end", category: "Actions", icon: <LuFlag className="h-4 w-4" />, action: () => scrollToSection("contact") },
       {
         id: "act-sound",
         title: isMuted ? "Unmute sound" : "Mute sound",
@@ -365,7 +362,7 @@ export default function CommandPalette({
             <span>&crarr; select</span>
           </div>
           <span className="flex items-center gap-1">
-            <LuMountainSnow className="h-3 w-3" />
+            <LuClock className="h-3 w-3" />
             jake.dev
           </span>
         </div>

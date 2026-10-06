@@ -12,8 +12,7 @@ const VB_W = 240;
 const VB_H = 40;
 
 // Open Catmull-Rom spline through the weekly points, emitted as cubic
-// beziers — the same technique as Contours.tsx's closed rings, just not
-// wrapped back to the start.
+// beziers — a closed loop's smoothing, just not wrapped back to the start.
 function smoothOpenPath(pts: [number, number][]) {
   if (pts.length < 2) return `M${pts[0]?.[0] ?? 0},${pts[0]?.[1] ?? 0}`;
   let d = `M${pts[0][0]},${pts[0][1]}`;

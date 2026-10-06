@@ -19,10 +19,9 @@ import {
   LuCopy,
   LuCheck,
   LuCircleHelp,
-  LuCompass,
 } from "react-icons/lu";
 
-type LayerId = "story" | "hobbies" | "philosophy" | "funfact" | "sayhi" | "whyqa" | "whatsnext";
+type LayerId = "story" | "hobbies" | "motto" | "funfact" | "sayhi" | "whyqa";
 
 interface LogEntry {
   id: number;
@@ -33,15 +32,14 @@ interface LogEntry {
 const PROMPTS: { id: LayerId; label: string; keywords: string[] }[] = [
   { id: "story", label: "My Story", keywords: ["story", "my story", "journey"] },
   { id: "hobbies", label: "Hobbies", keywords: ["hobbies", "hobby"] },
-  { id: "philosophy", label: "Philosophy", keywords: ["philosophy", "motto"] },
+  { id: "motto", label: "Motto", keywords: ["motto", "principles"] },
   { id: "whyqa", label: "Why QA?", keywords: ["why qa", "whyqa", "why quality", "qa"] },
-  { id: "whatsnext", label: "What's next?", keywords: ["what's next", "whats next", "next"] },
   { id: "funfact", label: "Fun Fact", keywords: ["fun fact", "funfact", "fact"] },
   { id: "sayhi", label: "Say Hi", keywords: ["say hi", "hi", "hire", "contact"] },
 ];
 
 const FALLBACK_RESPONSE =
-  "Not sure about that one — try a button above, or press ⌘K for the full command palette.";
+  "Not sure about that one. Try a button above, or press ⌘K.";
 
 let logIdCounter = 1;
 
@@ -82,9 +80,9 @@ function jumpTo(id: string) {
 function StoryLayer() {
   const milestones = [
     { year: "2022", label: "Started BS Computer Science", detail: "University of the Philippines Los Baños" },
-    { year: "2025", label: "Software Engineer Intern", detail: "Limitless Lab — shipped React & Next.js features on an agile team" },
-    { year: "2026", label: "Graduated, Iskolar ng Bayan", detail: "BS Computer Science, 1.95 GWA" },
-    { year: "2026", label: "QA Analyst", detail: "Vertere Global Solutions Inc. — still building on the side" },
+    { year: "2025", label: "Software Engineer Intern", detail: "Limitless Lab · React and Next.js features" },
+    { year: "2026", label: "Graduated", detail: "BS Computer Science, 1.95 GWA" },
+    { year: "2026", label: "QA Analyst", detail: "Vertere Global Solutions · still building on the side" },
   ];
 
   return (
@@ -117,8 +115,8 @@ function HobbiesLayer({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-2 font-sans leading-relaxed">
-        I climb mountains around the Philippines with a small group of friends. Planning those
-        trips got annoying enough that I built an app for it.
+        I climb mountains around the Philippines with friends. Planning the trips got annoying
+        enough that I built an app for it.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -153,9 +151,7 @@ function HobbiesLayer({ onClose }: { onClose: () => void }) {
   );
 }
 
-function PhilosophyLayer({ onClose }: { onClose: () => void }) {
-  const principles = ["Quality & Reliability", "Clean Architecture", "Execution & Ownership", "Engineering Rigor"];
-
+function MottoLayer() {
   return (
     <div className="space-y-4">
       <p className="text-base sm:text-lg font-sans font-semibold text-ink leading-snug">
@@ -163,46 +159,14 @@ function PhilosophyLayer({ onClose }: { onClose: () => void }) {
         works.&rdquo;
       </p>
       <p className="text-xs sm:text-sm text-ink-2 font-sans leading-relaxed">
-        Quality isn&apos;t a phase at the end — it&apos;s a habit, whether I&apos;m testing someone
-        else&apos;s code or writing my own.
+        I test while I build, whether it&apos;s my code or someone else&apos;s.
       </p>
-
-      <div className="flex flex-wrap gap-1.5">
-        {principles.map((p, i) => (
-          <motion.span
-            key={p}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.06 * i }}
-            className="px-2.5 py-1 rounded-lg bg-raised text-ink-2 border border-line text-[11px] font-mono"
-          >
-            {p}
-          </motion.span>
-        ))}
-      </div>
-
-      <motion.button
-        onClick={() => {
-          soundFx.playClick(900);
-          onClose();
-          jumpTo("approach");
-        }}
-        whileHover={{ x: 3 }}
-        className="flex items-center gap-1.5 text-xs font-mono text-alpine hover:underline cursor-pointer"
-      >
-        <span>Read the full breakdown</span>
-        <LuArrowRight className="w-3.5 h-3.5" />
-      </motion.button>
     </div>
   );
 }
 
 function WhyQaLayer() {
   return <Dual value={copy.beyond.whyQa} className="text-sm sm:text-base text-ink-2 font-sans leading-relaxed" />;
-}
-
-function WhatsNextLayer() {
-  return <Dual value={copy.beyond.whatsNext} className="text-sm sm:text-base text-ink-2 font-sans leading-relaxed" />;
 }
 
 function FunFactLayer() {
@@ -221,8 +185,8 @@ function FunFactLayer() {
         🎉
       </motion.div>
       <p className="text-sm sm:text-base text-ink font-sans leading-relaxed">
-        This whole site has a working terminal, a command palette, and sound effects I
-        synthesized myself — nobody asked for that, I just wanted to see if I could.
+        This site has a working terminal, a command palette, and sound effects I synthesized
+        myself. Nobody asked. I wanted to see if I could.
       </p>
     </div>
   );
@@ -234,8 +198,7 @@ function SayHiLayer({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-2 font-sans leading-relaxed">
-        Always happy to talk shop or just chat. Say hi below, or jump straight to the contact
-        form.
+        Happy to talk shop. Copy my email or use the form.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -275,9 +238,8 @@ function SayHiLayer({ onClose }: { onClose: () => void }) {
 const LAYER_META: Record<LayerId, { eyebrow: string; title: string; icon: React.ReactNode }> = {
   story: { eyebrow: "MY STORY", title: "From UPLB to QA", icon: <LuGraduationCap className="w-5 h-5" /> },
   hobbies: { eyebrow: "HOBBIES", title: "Chasing Summits", icon: <LuMountainSnow className="w-5 h-5" /> },
-  philosophy: { eyebrow: "PHILOSOPHY", title: "Why Quality Matters", icon: <LuSparkles className="w-5 h-5" /> },
+  motto: { eyebrow: "MOTTO", title: "Small and working", icon: <LuSparkles className="w-5 h-5" /> },
   whyqa: { eyebrow: "WHY QA?", title: "Why QA?", icon: <LuCircleHelp className="w-5 h-5" /> },
-  whatsnext: { eyebrow: "LOOKING AHEAD", title: "What's Next?", icon: <LuCompass className="w-5 h-5" /> },
   funfact: { eyebrow: "FUN FACT", title: "Just Because", icon: <LuPartyPopper className="w-5 h-5" /> },
   sayhi: { eyebrow: "LET'S TALK", title: "Say Hi", icon: <LuMail className="w-5 h-5" /> },
 };
@@ -443,9 +405,8 @@ export default function BeyondResumeSection() {
 
             {activeLayer === "story" && <StoryLayer />}
             {activeLayer === "hobbies" && <HobbiesLayer onClose={closeLayer} />}
-            {activeLayer === "philosophy" && <PhilosophyLayer onClose={closeLayer} />}
+            {activeLayer === "motto" && <MottoLayer />}
             {activeLayer === "whyqa" && <WhyQaLayer />}
-            {activeLayer === "whatsnext" && <WhatsNextLayer />}
             {activeLayer === "funfact" && <FunFactLayer />}
             {activeLayer === "sayhi" && <SayHiLayer onClose={closeLayer} />}
           </div>

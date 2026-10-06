@@ -78,7 +78,7 @@ export default function Sheet({
 
     // Lock scroll with overflow:hidden on <html>, NOT position:fixed on
     // <body>. Pinning the body collapses the document height, so every
-    // scroll-linked value (the sky, the altimeter) jumps to its end state
+    // scroll-linked value (the rings, the chronometer) jumps to its end state
     // behind the open sheet. Pad by the scrollbar width to avoid a shift.
     const root = document.documentElement;
     const scrollbar = window.innerWidth - root.clientWidth;

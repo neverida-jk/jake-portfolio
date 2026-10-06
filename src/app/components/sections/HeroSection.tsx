@@ -14,7 +14,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { LuArrowDown, LuCheck, LuCopy, LuMapPin } from "react-icons/lu";
 import { SiGithub } from "react-icons/si";
 import Dual from "../system/Dual";
-import Contours from "../system/Contours";
+import Dial from "../system/Dial";
 import { INTRO_REVEAL_EVENT } from "../system/IntroSequence";
 import Magnetic from "../motion/Magnetic";
 import GitHubActivity from "../system/GitHubActivity";
@@ -58,10 +58,9 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const [copied, setCopied] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  // Contours mount when the hero starts (not behind the intro overlay), as
-  // ONE instance for the current breakpoint — two animated copies, one
-  // CSS-hidden, was wasted work on every frame of the draw-in.
-  const [contours, setContours] = useState<null | "mobile" | "desktop">(null);
+  // The dial mounts when the hero starts (not behind the intro overlay), so
+  // its ticks fan in as part of the arrival rather than unseen under it.
+  const [dialOn, setDialOn] = useState(false);
   const time = useManilaTime();
 
   // Keyframed from 0 so the animation starts from the CSS-hidden state
@@ -97,7 +96,6 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     const root = document.documentElement;
     // The opening is playing: wait for its fly-through before rising.
     const introPlaying = !root.classList.contains("intro-seen");
-    const layout = window.matchMedia("(min-width: 640px)").matches ? "desktop" : "mobile";
 
     // Read the preference directly: the hook reports false on its first pass
     // (hydration safety), which would start the intro for a frame and then
@@ -105,7 +103,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced || lateHydration) {
       controls.set("show");
-      setContours(layout);
+      setDialOn(true);
       return;
     }
 
@@ -140,7 +138,7 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       if (begun) return;
       begun = true;
       if (fallback) clearTimeout(fallback);
-      setContours(layout);
+      setDialOn(true);
       controls.start("show").then(finish);
     };
     if (introPlaying) {
@@ -156,12 +154,12 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
     };
   }, [controls]);
 
-  // Leaving base camp: the hero recedes as you scroll past it.
+  // Scrolling on: the hero recedes while the dial drifts slower than the page.
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -70]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const contentScale = useTransform(scrollYProgress, [0, 1], [1, 0.97]);
-  const contoursY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const dialY = useTransform(scrollYProgress, [0, 1], [0, 120]);
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (v) => {
@@ -185,32 +183,20 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
       aria-labelledby="hero-heading"
       className="relative isolate min-h-[100svh] flex items-start overflow-hidden px-4 sm:px-6 pt-28 pb-24 lg:pt-[max(8rem,17vh)]"
     >
-      {/* Topography around the summit — draws itself in on arrival. */}
+      {/* The dial, huge and cropped, running on live Manila time. Its centre
+          sits in the open space top-right so the name stays clear; the Now
+          panel passes in front of the hands. Mounts when the hero starts so
+          the ticks fan in as part of the arrival. */}
       <motion.div
         className="absolute inset-0 -z-10"
-        style={reduceMotion ? undefined : { y: contoursY }}
+        style={reduceMotion ? undefined : { y: dialY }}
         aria-hidden="true"
       >
-        {/* Mobile: the peak sits in the open space top-right, clear of the name. */}
-        {contours === "mobile" && <Contours
-          className="absolute right-0 top-0 h-[62svh] w-full opacity-80"
-          seed={2954}
-          rings={9}
-          cx={800}
-          cy={400}
-          r0={40}
-          dr={40}
-          draw
-          drawDelay={0.05}
-        />}
-        {/* Desktop: a wide landform behind the Now panel. */}
-        {contours === "desktop" && <Contours
-          className="absolute -right-[10%] top-[-8%] h-[118%] w-[78%] lg:w-[64%] opacity-90"
-          seed={2954}
-          rings={10}
-          draw
-          drawDelay={0.05}
-        />}
+        {dialOn && (
+          <div className="absolute -right-[46%] -top-[2%] aspect-square w-[140%] opacity-70 sm:-right-[18%] sm:-top-[33%] sm:h-[122%] sm:w-auto sm:opacity-90">
+            <Dial className="h-full w-full" reactive fan />
+          </div>
+        )}
       </motion.div>
 
       <motion.div
@@ -377,8 +363,8 @@ export default function HeroSection({ onCopyEmail }: HeroSectionProps) {
         </motion.aside>
       </motion.div>
 
-      {/* Scroll cue — tells non-technical visitors what to do, and sets up
-          the climb metaphor. Gone as soon as they start. */}
+      {/* Scroll cue — tells non-technical visitors what to do, and hints that
+          scrolling moves the clock. Gone as soon as they start. */}
       <motion.div
         className="intro-fade pointer-events-none absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         custom={T.cue}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   AnimatePresence,
@@ -22,39 +22,46 @@ import { ease } from "@/lib/motion";
 
 const MILESTONES: Milestone[] = copy.journey.milestones;
 
-// Trail geometry lives in a fixed 1200x600 viewBox, so every coordinate
-// scales with the SVG — markers are placed with getPointAtLength() on the
-// real path, never hardcoded pixels.
+// The dial lives in a fixed 1200x600 viewBox, so every coordinate scales with
+// the SVG. A semicircular gauge: 2022 at nine o'clock, now at three, and a
+// hand that sweeps across as you scroll. Stations are placed analytically on
+// the arc — no DOM measuring.
 const VB_W = 1200;
 const VB_H = 600;
-const RIDGE =
-  "M0,600 L0,500 C120,480 200,420 300,400 C400,380 450,350 540,330 C620,312 620,260 700,240 C780,220 820,180 880,150 C940,120 980,70 1040,62 C1100,55 1150,90 1200,120 L1200,600 Z";
-// The crest alone, for the outline — stroking the closed RIDGE shape would
-// also draw its bottom and side edges as a visible box.
-const RIDGE_CREST =
-  "M0,500 C120,480 200,420 300,400 C400,380 450,350 540,330 C620,312 620,260 700,240 C780,220 820,180 880,150 C940,120 980,70 1040,62 C1100,55 1150,90 1200,120";
-const TRAIL =
-  "M60,540 C170,530 230,470 320,448 C410,426 440,470 520,430 C600,390 560,330 640,300 C720,270 780,300 840,250 C900,200 880,150 950,120 C1000,98 1040,104 1080,92";
-// Where along the trail (0-1 of its length) each milestone sits.
+const CX = 600;
+const CY = 500;
+const R = 440;
+const ARC = `M${CX - R},${CY} A${R},${R} 0 0 1 ${CX + R},${CY}`;
+// Where along the arc (0-1) each milestone sits.
 const FRACTIONS = [0.03, 0.36, 0.68, 0.97];
-// Scroll progress (0-1) at which the trail finishes drawing; the rest is a
+// Scroll progress (0-1) at which the hand reaches the end; the rest is a
 // short dwell on the final milestone before the section releases.
 const DRAW_END = 0.92;
+// Time on this dial is not uniform: it lingers where more happened. The
+// readout interpolates between each station's real year.
+const YEAR_AT: [number, number][] = [
+  [0, 2022],
+  [0.03, 2022],
+  [0.36, 2025.4],
+  [0.68, 2026],
+  [0.97, 2026.5],
+  [1, 2026.5],
+];
+const TICK_COUNT = 48;
 
-type Pt = { x: number; y: number };
-
-function Hiker() {
-  // Faces right (uphill). Drawn in a 24x24 box with the feet at the bottom.
-  return (
-    <g transform="translate(-12,-23) scale(1)">
-      <circle cx="13.2" cy="3.4" r="2.4" fill="var(--color-ink)" />
-      <rect x="7.3" y="6.9" width="3.6" height="6.2" rx="1.2" fill="var(--color-summit)" />
-      <path d="M10.6 6.8 L14.2 7.2 L13.1 14.1 L10.1 13.8 Z" fill="var(--color-ink)" />
-      <path d="M11 13.8 L9.4 20.4 M12.8 14 L15.2 20.2" stroke="var(--color-ink)" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M13.8 8.4 L16.9 11.4 M17.1 10.2 L18.4 20.6" stroke="var(--color-ink)" strokeWidth="1.3" strokeLinecap="round" />
-    </g>
-  );
-}
+const r1 = (n: number) => n.toFixed(1);
+const pointAt = (f: number, radius = R) => {
+  const a = Math.PI * (1 - f);
+  return { x: CX + radius * Math.cos(a), y: CY - radius * Math.sin(a) };
+};
+const yearAt = (f: number) => {
+  for (let i = 1; i < YEAR_AT.length; i++) {
+    const [f1, y1] = YEAR_AT[i];
+    const [f0, y0] = YEAR_AT[i - 1];
+    if (f <= f1) return Math.floor(f1 === f0 ? y1 : y0 + ((f - f0) / (f1 - f0)) * (y1 - y0));
+  }
+  return 2026;
+};
 
 function Trail({
   drawn,
@@ -67,99 +74,75 @@ function Trail({
   onPick: (i: number) => void;
   compact?: boolean;
 }) {
-  const pathRef = useRef<SVGPathElement>(null);
-  const [points, setPoints] = useState<Pt[]>([]);
-  // The hiker reads its position from a table sampled once at mount;
-  // getPointAtLength() on every scroll frame was measurable main-thread work.
-  const lut = useRef<Pt[]>([]);
-  const hx = useMotionValue(60);
-  const hy = useMotionValue(540);
+  const handRef = useRef<SVGGElement>(null);
+  const yearRef = useRef<SVGTextElement>(null);
 
-  useLayoutEffect(() => {
-    const path = pathRef.current;
-    if (!path) return;
-    const L = path.getTotalLength();
-    const SAMPLES = 240;
-    lut.current = Array.from({ length: SAMPLES + 1 }, (_, i) => {
-      const p = path.getPointAtLength((i / SAMPLES) * L);
-      return { x: p.x, y: p.y };
-    });
-    setPoints(FRACTIONS.map((f) => {
-      const p = path.getPointAtLength(f * L);
-      return { x: p.x, y: p.y };
-    }));
+  const place = useCallback((v: number) => {
+    const f = Math.min(1, Math.max(0, v));
+    handRef.current?.setAttribute("transform", `rotate(${(-90 + 180 * f).toFixed(2)} ${CX} ${CY})`);
+    if (yearRef.current) yearRef.current.textContent = String(yearAt(f));
   }, []);
-
-  const placeHiker = useCallback(
-    (v: number) => {
-      const table = lut.current;
-      if (table.length < 2) return;
-      const f = Math.min(1, Math.max(0, v)) * (table.length - 1);
-      const i = Math.floor(f);
-      const a = table[i];
-      const b = table[Math.min(i + 1, table.length - 1)];
-      const t = f - i;
-      hx.set(a.x + (b.x - a.x) * t);
-      hy.set(a.y + (b.y - a.y) * t);
-    },
-    [hx, hy]
-  );
-  useMotionValueEvent(drawn, "change", placeHiker);
-  useEffect(() => placeHiker(drawn.get()), [placeHiker, drawn, points]);
+  useMotionValueEvent(drawn, "change", place);
+  useEffect(() => place(drawn.get()), [place, drawn]);
 
   const markerR = compact ? 9 : 7;
 
   return (
     <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="block h-auto w-full overflow-visible" aria-hidden="true">
-      <defs>
-        <linearGradient id="journey-ridge" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--color-raised)" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="var(--color-canvas)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
+      <path d={ARC} fill="none" stroke="var(--color-line)" strokeWidth={1.4} />
 
-      <path d={RIDGE} fill="url(#journey-ridge)" />
-      <path d={RIDGE_CREST} fill="none" stroke="var(--color-line)" strokeWidth="1.2" />
+      {/* Minute-style ticks along the arc: one per month across four years. */}
+      {Array.from({ length: TICK_COUNT + 1 }, (_, i) => {
+        const f = i / TICK_COUNT;
+        const major = i % 12 === 0;
+        const a = pointAt(f, R + 6);
+        const b = pointAt(f, R - (major ? 26 : 14));
+        return (
+          <line
+            key={i}
+            x1={r1(a.x)}
+            y1={r1(a.y)}
+            x2={r1(b.x)}
+            y2={r1(b.y)}
+            stroke="var(--color-ink-3)"
+            strokeOpacity={major ? 0.9 : 0.5}
+            strokeWidth={major ? 2.2 : 1.2}
+            strokeLinecap="round"
+          />
+        );
+      })}
 
-      {/* The route ahead, faintly — then the route already walked, in gold. */}
-      <path ref={pathRef} d={TRAIL} fill="none" stroke="var(--color-ink-3)" strokeOpacity="0.45" strokeWidth="2" strokeDasharray="2 9" strokeLinecap="round" />
-      <motion.path
-        d={TRAIL}
-        fill="none"
-        stroke="var(--color-summit)"
-        strokeWidth={compact ? 4 : 3}
-        strokeLinecap="round"
-        style={{ pathLength: drawn }}
-      />
+      {/* The time already passed, in gold. */}
+      <motion.path d={ARC} fill="none" stroke="var(--color-summit)" strokeWidth={compact ? 4 : 3} strokeLinecap="round" style={{ pathLength: drawn }} />
 
-      {points.map((p, i) => {
+      {FRACTIONS.map((f, i) => {
+        const p = pointAt(f);
+        const label = pointAt(f, R - (compact ? 74 : 64));
         const reached = i <= activeIndex;
         const current = i === activeIndex;
         return (
-          <g
-            key={MILESTONES[i].id}
-            transform={`translate(${p.x},${p.y})`}
-            className="cursor-pointer"
-            onClick={() => onPick(i)}
-          >
+          <g key={MILESTONES[i].id} className="cursor-pointer" onClick={() => onPick(i)}>
             {current && (
-              <circle r={markerR + 7} fill="none" stroke="var(--color-summit)" strokeOpacity="0.5" strokeWidth="1.5" className="motion-safe:animate-pulse" />
+              <circle cx={r1(p.x)} cy={r1(p.y)} r={markerR + 7} fill="none" stroke="var(--color-summit)" strokeOpacity="0.5" strokeWidth="1.5" className="motion-safe:animate-pulse" />
             )}
             <circle
+              cx={r1(p.x)}
+              cy={r1(p.y)}
               r={markerR}
               fill={reached ? "var(--color-summit)" : "var(--color-canvas)"}
               stroke={reached ? "var(--color-summit)" : "var(--color-ink-3)"}
               strokeWidth="2"
             />
             <text
-              y={compact ? 42 : 32}
+              x={r1(label.x)}
+              y={r1(label.y)}
               textAnchor="middle"
               fontFamily="var(--font-mono)"
-              fontSize={compact ? 26 : 16}
+              fontSize={compact ? 26 : 17}
               fill={reached ? "var(--color-ink)" : "var(--color-ink-3)"}
             >
               {MILESTONES[i].short}
-              <tspan x="0" dy={compact ? 28 : 18} fill="var(--color-ink-3)" fontSize={compact ? 22 : 14}>
+              <tspan x={r1(label.x)} dy={compact ? 28 : 19} fill="var(--color-ink-3)" fontSize={compact ? 22 : 14}>
                 {MILESTONES[i].year}
               </tspan>
             </text>
@@ -167,11 +150,23 @@ function Trail({
         );
       })}
 
-      <motion.g style={{ x: hx, y: hy }}>
-        <g transform={compact ? "scale(2.4)" : "scale(1.9)"}>
-          <Hiker />
-        </g>
-      </motion.g>
+      <g ref={handRef} transform={`rotate(-90 ${CX} ${CY})`}>
+        <line x1={CX} y1={CY} x2={CX} y2={CY - R + 22} stroke="var(--color-summit)" strokeWidth={compact ? 5 : 4} strokeLinecap="round" />
+      </g>
+      <circle cx={CX} cy={CY} r={compact ? 15 : 13} fill="var(--color-canvas)" stroke="var(--color-summit)" strokeWidth={3} />
+
+      <text
+        ref={yearRef}
+        x={CX}
+        y={VB_H - 14}
+        textAnchor="middle"
+        fontFamily="var(--font-instrument-serif)"
+        fontSize={compact ? 92 : 78}
+        fill="var(--color-ink)"
+        fillOpacity={0.92}
+      >
+        2022
+      </text>
     </svg>
   );
 }
@@ -293,7 +288,7 @@ export default function JourneySection() {
     if (!isDesktop.current) raw.set(p);
   });
 
-  // Stiff: the trail and hiker should track the scroll almost directly —
+  // Stiff: the arc and the hand should track the scroll almost directly —
   // a soft spring here read as the page lagging behind the finger.
   const smooth = useSpring(raw, { stiffness: 420, damping: 44, mass: 0.5 });
   const drawn = reduceMotion ? raw : smooth;
@@ -339,7 +334,7 @@ export default function JourneySection() {
               <Dual value={copy.journey.intro} className="text-base leading-relaxed text-ink-2" />
             </div>
 
-            {/* Desktop: one milestone at a time, in step with the hiker.
+            {/* Desktop: one milestone at a time, in step with the hand.
                 Print shows every milestone as a flat list instead (below). */}
             <div className="hidden lg:block" data-print-hide>
               {/* Crossfade (cards stacked absolutely), not mode="wait": scrolling
@@ -377,32 +372,6 @@ export default function JourneySection() {
                 </AnimatePresence>
               </div>
 
-              <nav aria-label="Milestones" className="mt-6">
-                <ol className="flex items-center gap-2">
-                  {MILESTONES.map((m, i) => (
-                    <li key={m.id}>
-                      <button
-                        type="button"
-                        onClick={() => pick(i)}
-                        aria-current={i === activeIndex ? "step" : undefined}
-                        aria-label={`${m.year} — ${m.title}`}
-                        className={`relative isolate rounded-full px-3 py-1.5 font-mono text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-summit ${
-                          i === activeIndex ? "text-void" : i < activeIndex ? "text-ink-2 hover:text-ink" : "text-ink-3 hover:text-ink-2"
-                        }`}
-                      >
-                        {i === activeIndex && (
-                          <motion.span
-                            layoutId="journey-step"
-                            className="absolute inset-0 -z-10 rounded-full bg-summit"
-                            transition={{ type: "spring", stiffness: 500, damping: 38 }}
-                          />
-                        )}
-                        {m.short}
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-              </nav>
             </div>
           </div>
 
@@ -435,8 +404,8 @@ export default function JourneySection() {
           </div>
 
           {/* Mobile: a milestone's card opens as it actually scrolls into
-              view — not the whole route dumped up front, and not on a
-              scroll-fraction guess shared with the hiker above (that could
+              view — not the whole timeline dumped up front, and not on a
+              scroll-fraction guess shared with the hand above (that could
               fire once the card had already passed, under the pinned
               header). Each still reserves its layout height (opacity/
               transform only), so the list's own scroll distance — which

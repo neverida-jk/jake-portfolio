@@ -36,8 +36,6 @@ export type Project = {
   liveUrl: string;
   thumbnail: string;
   category: string;
-  /** Fictional "altitude" badge, consistent with the ascent motif. */
-  elevation: number;
   tagline: string;
   tools: string[];
   stack: string[];
@@ -56,16 +54,15 @@ export const projects: Project[] = [
     liveUrl: "https://quant.dev-jk.me",
     thumbnail: "/projects/quant.jpg",
     category: "Quantitative research",
-    elevation: 2410,
-    tagline: "Spotting when prediction-market odds are wrong — and sizing bets sensibly.",
+    tagline: "Spots wrong prediction-market odds and sizes bets sensibly.",
     tools: ["typescript", "react"],
     stack: ["TypeScript", "React", "Probability modeling", "Kelly criterion"],
     problem: {
-      plain: "Prediction markets price real events like odds. Sometimes the odds are wrong — I wanted to know if you could reliably spot when.",
-      technical: "Detect mispricing between market-implied probabilities and independent forecasts, and size positions rationally.",
+      plain: "Prediction markets price events like odds. I wanted to know if you can reliably spot when the odds are wrong.",
+      technical: "Detect mispricing between market-implied probability and independent forecasts; size positions rationally.",
     },
     constraint: {
-      plain: "Being wrong costs real money, so it had to prove itself before being trusted.",
+      plain: "Mistakes cost real money, so it has to prove itself first.",
       technical: "No edge claim without statistical validity; capital at risk only after simulated validation.",
     },
     decisions: [
@@ -74,7 +71,7 @@ export const projects: Project[] = [
       { plain: "Wait for enough results before believing it.", technical: "An n = 50 resolved-market gate before any edge counts as real." },
     ],
     outcome: {
-      plain: "Live and collecting data — and honest about what it doesn't know yet.",
+      plain: "Live and collecting data. Honest about what it doesn't know yet.",
       technical: "Deployed in alpha: data-collection phase, paper trading only.",
     },
     hotspots: [
@@ -84,7 +81,7 @@ export const projects: Project[] = [
         y: 0.27,
         label: "Honest by default",
         body: {
-          plain: "It admits it doesn't know yet — nothing is trusted until 50 markets resolve.",
+          plain: "It admits it doesn't know yet. Nothing counts until 50 markets resolve.",
           technical: "Sample-size gate: the edge stays “theoretical” until n = 50 resolved markets.",
         },
       },
@@ -104,7 +101,7 @@ export const projects: Project[] = [
         y: 0.63,
         label: "Bet sizing",
         body: {
-          plain: "A formula decides how much to risk — and deliberately risks less than the maximum.",
+          plain: "A formula sets the bet, and deliberately risks less than the maximum.",
           technical: "Quarter-Kelly position sizing, capped at $5 per position.",
         },
       },
@@ -127,8 +124,7 @@ export const projects: Project[] = [
     liveUrl: "https://tropa.dev-jk.me",
     thumbnail: "/projects/tropa.jpg",
     category: "Full-stack web app",
-    elevation: 1980,
-    tagline: "Plan a group climb — trail, schedule, gear and shared costs — in one place.",
+    tagline: "Plan a group climb in one place: trail, schedule, gear, shared costs.",
     tools: ["nextjs", "react", "typescript", "tailwind"],
     stack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS"],
     problem: {
@@ -145,8 +141,8 @@ export const projects: Project[] = [
       { plain: "Costs tracked from the first invite to the final split.", technical: "Multi-party shared-expense ledger through to settlement." },
     ],
     outcome: {
-      plain: "Live — the whole trip in one place.",
-      technical: "Next.js App Router, React 19, Tailwind CSS — deployed and live.",
+      plain: "Live. The whole trip in one place.",
+      technical: "Next.js App Router, React 19, Tailwind CSS. Deployed.",
     },
     hotspots: [
       {
@@ -155,7 +151,7 @@ export const projects: Project[] = [
         y: 0.45,
         label: "Start a climb",
         body: {
-          plain: "Pick a mountain and build the plan — trail, schedule, gear.",
+          plain: "Pick a mountain and build the plan: trail, schedule, gear.",
           technical: "Guided climb creation: trail selection, transport timetables, gear & permit tracking.",
         },
       },
@@ -188,7 +184,6 @@ export const projects: Project[] = [
     liveUrl: "https://finance.dev-jk.me",
     thumbnail: "/projects/finance.jpg",
     category: "Offline-first app",
-    elevation: 1640,
     tagline: "A private budget app that works offline and explains your money in plain words.",
     tools: ["react", "typescript"],
     stack: ["React", "Dexie.js (IndexedDB)", "Recharts", "Framer Motion", "PWA"],
@@ -206,7 +201,7 @@ export const projects: Project[] = [
       { plain: "Installs like an app.", technical: "Installable PWA; Recharts analytics and Framer Motion transitions." },
     ],
     outcome: {
-      plain: "Live — private by design.",
+      plain: "Live. Private by design.",
       technical: "Deployed as an installable PWA.",
     },
     hotspots: [
@@ -217,7 +212,7 @@ export const projects: Project[] = [
         label: "Offline-first",
         body: {
           plain: "Your data stays on your device and works without internet.",
-          technical: "Dexie.js over IndexedDB — local-first persistence.",
+          technical: "Dexie.js over IndexedDB: local-first persistence.",
         },
       },
       {
@@ -249,12 +244,10 @@ export const projects: Project[] = [
     // but linked to GitHub Pages.
     domain: "dev-jk.me",
     liveUrl: "https://neverida-jk.github.io/portfolio",
-    // TODO(jake): this screenshot shows the previous design — retake it after
-    // the redesign ships, then add hotspots.
+    // Screenshot of the current (time-dial) design; add hotspots if wanted.
     thumbnail: "/projects/portfolio-v2.jpg",
     category: "Design & engineering",
-    elevation: 2954,
-    tagline: "The site you're on — built to work for recruiters and engineers alike.",
+    tagline: "This site. Built to work for recruiters and engineers alike.",
     tools: ["nextjs", "react", "typescript", "tailwind"],
     stack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS v4", "Framer Motion", "Web Audio"],
     problem: {
@@ -266,9 +259,9 @@ export const projects: Project[] = [
       technical: "Transform/opacity-only motion, full keyboard & screen-reader support, reduced-motion parity.",
     },
     decisions: [
-      { plain: "Plain words first, technical detail right beneath.", technical: "Two-voice copy: primary text plus a mono field note — no mode toggle." },
-      { plain: "Scrolling is a climb to the summit.", technical: "Scroll-linked sky interpolation and altimeter, one fixed layer." },
-      { plain: "Every project is data, so it's easy to update.", technical: "Single projects registry drives cards, case studies and skill cross-links." },
+      { plain: "Plain words first, technical detail right beneath.", technical: "Two-voice copy: plain text plus a mono field note. No mode toggle." },
+      { plain: "Scrolling turns the clock.", technical: "Scroll speed warps the dial's hands and the background rings; one shared ticker, transform-only." },
+      { plain: "Every project is data, so it's easy to update.", technical: "One projects file drives the cards, case studies and printed résumé." },
     ],
     outcome: {
       plain: "You're looking at it.",
