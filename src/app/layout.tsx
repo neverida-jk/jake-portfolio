@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ToolFocusProvider } from "./components/system/ToolFocusProvider";
 import TimeField from "./components/system/TimeField";
 import Chronometer from "./components/system/Chronometer";
@@ -98,6 +99,7 @@ export default function RootLayout({
         <Chronometer />
         <SystemOverlays />
         <IntroSequence />
+        <Analytics />
       </body>
     </html>
   );
